@@ -1,0 +1,148 @@
+{
+  "key": "group_tb_athletic_record",
+  "title": "Athletic Record Fields",
+  "fields": [
+    {
+      "key": "field_tb_athlete",
+      "label": "Athlete",
+      "name": "athlete",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "post_object",
+      "post_type": [
+        "athlete"
+      ],
+      "post_status": "",
+      "taxonomy": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_event",
+      "label": "Event",
+      "name": "event",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "post_object",
+      "post_type": [
+        "athletic_event"
+      ],
+      "post_status": "",
+      "taxonomy": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_result",
+      "label": "Result",
+      "name": "result",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "post_object",
+      "post_type": [
+        "athletic_result"
+      ],
+      "post_status": "",
+      "taxonomy": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_record_type",
+      "label": "Record Type",
+      "name": "record_type",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "select",
+      "choices": {
+        "PR": "PR",
+        "SR": "SR"
+      },
+      "default_value": false,
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "ajax": 0,
+      "placeholder": ""
+    },
+    {
+      "key": "field_tb_date",
+      "label": "Date",
+      "name": "date",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "date_picker",
+      "display_format": "m/d/Y",
+      "return_format": "Y-m-d",
+      "first_day": 0
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "post_type",
+        "operator": "==",
+        "value": "athletic_record"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "",
+  "show_in_rest": 1,
+  "modified": 1774208842
+}

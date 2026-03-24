@@ -1,0 +1,280 @@
+{
+  "key": "group_tb_athletic_meet",
+  "title": "Athletic Meet Fields",
+  "fields": [
+    {
+      "key": "field_tb_meet_name",
+      "label": "Meet Name",
+      "name": "meet_name",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "text",
+      "default_value": "",
+      "maxlength": "",
+      "allow_in_bindings": 0,
+      "placeholder": "",
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_tb_season",
+      "label": "Season",
+      "name": "season",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "post_object",
+      "post_type": [
+        "athletic_season"
+      ],
+      "post_status": "",
+      "taxonomy": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_date",
+      "label": "Date",
+      "name": "date",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "date_picker",
+      "display_format": "m/d/Y",
+      "return_format": "Y-m-d",
+      "first_day": 0
+    },
+    {
+      "key": "field_tb_state",
+      "label": "State",
+      "name": "state",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "select",
+      "choices": {
+        "AL": "AL",
+        "AK": "AK",
+        "AZ": "AZ",
+        "AR": "AR",
+        "CA": "CA",
+        "CO": "CO",
+        "CT": "CT",
+        "DE": "DE",
+        "FL": "FL",
+        "GA": "GA",
+        "HI": "HI",
+        "ID": "ID",
+        "IL": "IL",
+        "IN": "IN",
+        "IA": "IA",
+        "KS": "KS",
+        "KY": "KY",
+        "LA": "LA",
+        "ME": "ME",
+        "MD": "MD",
+        "MA": "MA",
+        "MI": "MI",
+        "MN": "MN",
+        "MS": "MS",
+        "MO": "MO",
+        "MT": "MT",
+        "NE": "NE",
+        "NV": "NV",
+        "NH": "NH",
+        "NJ": "NJ",
+        "NM": "NM",
+        "NY": "NY",
+        "NC": "NC",
+        "ND": "ND",
+        "OH": "OH",
+        "OK": "OK",
+        "OR": "OR",
+        "PA": "PA",
+        "RI": "RI",
+        "SC": "SC",
+        "SD": "SD",
+        "TN": "TN",
+        "TX": "TX",
+        "UT": "UT",
+        "VT": "VT",
+        "VA": "VA",
+        "WA": "WA",
+        "WV": "WV",
+        "WI": "WI",
+        "WY": "WY",
+        "DC": "DC"
+      },
+      "default_value": false,
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "ajax": 0,
+      "placeholder": ""
+    },
+    {
+      "key": "field_tb_city",
+      "label": "City",
+      "name": "city",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "text",
+      "default_value": "",
+      "maxlength": "",
+      "allow_in_bindings": 0,
+      "placeholder": "",
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_tb_venue",
+      "label": "Venue",
+      "name": "venue",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "text",
+      "default_value": "",
+      "maxlength": "",
+      "allow_in_bindings": 0,
+      "placeholder": "",
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_tb_directions",
+      "label": "Directions",
+      "name": "directions",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "link",
+      "return_format": "array"
+    },
+    {
+      "key": "field_tb_status",
+      "label": "Status",
+      "name": "status",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "select",
+      "choices": {
+        "Upcoming": "Upcoming",
+        "Completed": "Completed",
+        "Cancelled": "Cancelled"
+      },
+      "default_value": false,
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "ajax": 0,
+      "placeholder": ""
+    },
+    {
+      "key": "field_tb_results_status",
+      "label": "Results Status",
+      "name": "results_status",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "select",
+      "choices": {
+        "Future": "Future",
+        "Pending": "Pending",
+        "Available": "Available"
+      },
+      "default_value": false,
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "ajax": 0,
+      "placeholder": ""
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "post_type",
+        "operator": "==",
+        "value": "athletic_meet"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "",
+  "show_in_rest": 1,
+  "modified": 1774208842
+}

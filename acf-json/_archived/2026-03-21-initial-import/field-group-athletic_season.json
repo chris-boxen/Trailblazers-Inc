@@ -1,0 +1,353 @@
+{
+  "key": "group_tb_athletic_season",
+  "title": "Athletic Season Fields",
+  "fields": [
+    {
+      "key": "field_tb_season_title",
+      "label": "Season Title",
+      "name": "season_title",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "text",
+      "default_value": "",
+      "maxlength": "",
+      "allow_in_bindings": 0,
+      "placeholder": "",
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_tb_description",
+      "label": "Description",
+      "name": "description",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "textarea",
+      "default_value": "",
+      "maxlength": "",
+      "allow_in_bindings": 0,
+      "rows": "",
+      "placeholder": "",
+      "new_lines": ""
+    },
+    {
+      "key": "field_tb_start_date",
+      "label": "Start Date",
+      "name": "start_date",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "date_picker",
+      "display_format": "m/d/Y",
+      "return_format": "Y-m-d",
+      "first_day": 0
+    },
+    {
+      "key": "field_tb_end_date",
+      "label": "End Date",
+      "name": "end_date",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "date_picker",
+      "display_format": "m/d/Y",
+      "return_format": "Y-m-d",
+      "first_day": 0
+    },
+    {
+      "key": "field_tb_featured_image",
+      "label": "Featured Image",
+      "name": "featured_image",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "image",
+      "return_format": "id",
+      "library": "all",
+      "min_width": "",
+      "min_height": "",
+      "min_size": "",
+      "max_width": "",
+      "max_height": "",
+      "max_size": "",
+      "mime_types": "",
+      "preview_size": "medium"
+    },
+    {
+      "key": "field_tb_year",
+      "label": "Year",
+      "name": "year",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "number",
+      "default_value": "",
+      "min": "",
+      "max": "",
+      "allow_in_bindings": 0,
+      "placeholder": "",
+      "step": 1,
+      "prepend": "",
+      "append": ""
+    },
+    {
+      "key": "field_tb_timeline_status",
+      "label": "Timeline Status",
+      "name": "timeline_status",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "select",
+      "choices": {
+        "Past": "Past",
+        "Current": "Current",
+        "Future": "Future"
+      },
+      "default_value": false,
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "ajax": 0,
+      "placeholder": ""
+    },
+    {
+      "key": "field_tb_handbook",
+      "label": "Handbook",
+      "name": "handbook",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "link",
+      "return_format": "array"
+    },
+    {
+      "key": "field_tb_coach_roster",
+      "label": "Coach Roster",
+      "name": "coach_roster",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "repeater",
+      "pagination": 0,
+      "min": 0,
+      "max": 0,
+      "collapsed": "",
+      "button_label": "Add Row",
+      "rows_per_page": 20,
+      "layout": "block",
+      "sub_fields": [
+        {
+          "key": "field_tb_coach_roster_coach",
+          "label": "Coach",
+          "name": "coach",
+          "aria-label": "",
+          "instructions": "",
+          "required": 0,
+          "conditional_logic": 0,
+          "wrapper": {
+            "width": "",
+            "class": "",
+            "id": ""
+          },
+          "type": "post_object",
+          "post_type": [
+            "coach"
+          ],
+          "post_status": "",
+          "taxonomy": "",
+          "return_format": "id",
+          "multiple": 0,
+          "allow_null": 0,
+          "allow_in_bindings": 0,
+          "ui": 1,
+          "bidirectional": 0
+        },
+        {
+          "key": "field_tb_coach_roster_coach_role",
+          "label": "Role",
+          "name": "coach_role",
+          "aria-label": "",
+          "instructions": "",
+          "required": 0,
+          "conditional_logic": 0,
+          "wrapper": {
+            "width": "",
+            "class": "",
+            "id": ""
+          },
+          "type": "text",
+          "default_value": "",
+          "maxlength": "",
+          "allow_in_bindings": 0,
+          "placeholder": "",
+          "prepend": "",
+          "append": ""
+        },
+        {
+          "key": "field_tb_coach_roster_override_bio",
+          "label": "Override Bio?",
+          "name": "override_bio",
+          "aria-label": "",
+          "instructions": "",
+          "required": 0,
+          "conditional_logic": 0,
+          "wrapper": {
+            "width": "",
+            "class": "",
+            "id": ""
+          },
+          "type": "true_false",
+          "message": "",
+          "default_value": 0,
+          "allow_in_bindings": 0,
+          "ui": 1,
+          "ui_on_text": "Yes",
+          "ui_off_text": "No"
+        },
+        {
+          "key": "field_tb_coach_roster_bio_override",
+          "label": "Bio Override",
+          "name": "bio_override",
+          "aria-label": "",
+          "instructions": "",
+          "required": 0,
+          "conditional_logic": 0,
+          "wrapper": {
+            "width": "",
+            "class": "",
+            "id": ""
+          },
+          "type": "wysiwyg",
+          "default_value": "",
+          "tabs": "all",
+          "toolbar": "full",
+          "media_upload": 1,
+          "delay": 0
+        },
+        {
+          "key": "field_tb_coach_roster_override_image",
+          "label": "Override Image?",
+          "name": "override_image",
+          "aria-label": "",
+          "instructions": "",
+          "required": 0,
+          "conditional_logic": 0,
+          "wrapper": {
+            "width": "",
+            "class": "",
+            "id": ""
+          },
+          "type": "true_false",
+          "message": "",
+          "default_value": 0,
+          "allow_in_bindings": 0,
+          "ui": 1,
+          "ui_on_text": "Yes",
+          "ui_off_text": "No"
+        },
+        {
+          "key": "field_tb_coach_roster_coach_featured_image",
+          "label": "Featured Image",
+          "name": "coach_featured_image",
+          "aria-label": "",
+          "instructions": "",
+          "required": 0,
+          "conditional_logic": 0,
+          "wrapper": {
+            "width": "",
+            "class": "",
+            "id": ""
+          },
+          "type": "image",
+          "return_format": "id",
+          "library": "all",
+          "min_width": "",
+          "min_height": "",
+          "min_size": "",
+          "max_width": "",
+          "max_height": "",
+          "max_size": "",
+          "mime_types": "",
+          "preview_size": "medium"
+        }
+      ]
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "post_type",
+        "operator": "==",
+        "value": "athletic_season"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "",
+  "show_in_rest": 1,
+  "modified": 1774208842
+}

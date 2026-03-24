@@ -1,0 +1,313 @@
+{
+  "key": "group_tb_athletic_physical",
+  "title": "Athletic Physical Fields",
+  "fields": [
+    {
+      "key": "field_tb_athlete",
+      "label": "Athlete",
+      "name": "athlete",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "post_object",
+      "post_type": [
+        "athlete"
+      ],
+      "post_status": "",
+      "taxonomy": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_family",
+      "label": "Family",
+      "name": "family",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "post_object",
+      "post_type": [
+        "family"
+      ],
+      "post_status": "",
+      "taxonomy": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_season_received",
+      "label": "Season Received",
+      "name": "season_received",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "post_object",
+      "post_type": [
+        "athletic_season"
+      ],
+      "post_status": "",
+      "taxonomy": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_exam_date",
+      "label": "Exam Date",
+      "name": "exam_date",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "date_picker",
+      "display_format": "m/d/Y",
+      "return_format": "Y-m-d",
+      "first_day": 0
+    },
+    {
+      "key": "field_tb_valid_until",
+      "label": "Valid Until",
+      "name": "valid_until",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "date_picker",
+      "display_format": "m/d/Y",
+      "return_format": "Y-m-d",
+      "first_day": 0
+    },
+    {
+      "key": "field_tb_status",
+      "label": "Status",
+      "name": "status",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "select",
+      "choices": {
+        "Awaiting": "Awaiting",
+        "Received": "Received",
+        "Verified": "Verified",
+        "Rejected/Incomplete": "Rejected/Incomplete",
+        "Expired": "Expired"
+      },
+      "default_value": false,
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "ajax": 0,
+      "placeholder": ""
+    },
+    {
+      "key": "field_tb_format_received",
+      "label": "Format Received",
+      "name": "format_received",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "select",
+      "choices": {
+        "Digital Upload": "Digital Upload",
+        "Email Attachment": "Email Attachment",
+        "Paper Copy": "Paper Copy"
+      },
+      "default_value": false,
+      "return_format": "value",
+      "multiple": 0,
+      "allow_null": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "ajax": 0,
+      "placeholder": ""
+    },
+    {
+      "key": "field_tb_digital_copy_on_file",
+      "label": "Digital Copy On File",
+      "name": "digital_copy_on_file",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "true_false",
+      "message": "",
+      "default_value": 0,
+      "allow_in_bindings": 0,
+      "ui": 1,
+      "ui_on_text": "Yes",
+      "ui_off_text": "No"
+    },
+    {
+      "key": "field_tb_link",
+      "label": "Link",
+      "name": "link",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "link",
+      "return_format": "array"
+    },
+    {
+      "key": "field_tb_received_by",
+      "label": "Received By",
+      "name": "received_by",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "user",
+      "role": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_reviewed_by",
+      "label": "Reviewed By",
+      "name": "reviewed_by",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "user",
+      "role": "",
+      "return_format": "id",
+      "multiple": 0,
+      "allow_null": 0,
+      "bidirectional": 0
+    },
+    {
+      "key": "field_tb_reviewed_date",
+      "label": "Reviewed Date",
+      "name": "reviewed_date",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "date_picker",
+      "display_format": "m/d/Y",
+      "return_format": "Y-m-d",
+      "first_day": 0
+    },
+    {
+      "key": "field_tb_physical_notes",
+      "label": "Notes",
+      "name": "physical_notes",
+      "aria-label": "",
+      "instructions": "",
+      "required": 0,
+      "conditional_logic": 0,
+      "wrapper": {
+        "width": "",
+        "class": "",
+        "id": ""
+      },
+      "type": "textarea",
+      "default_value": "",
+      "maxlength": "",
+      "allow_in_bindings": 0,
+      "rows": "",
+      "placeholder": "",
+      "new_lines": ""
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "post_type",
+        "operator": "==",
+        "value": "athletic_physical"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "",
+  "show_in_rest": 1,
+  "modified": 1774208842
+}
