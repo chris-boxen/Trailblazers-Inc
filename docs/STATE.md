@@ -1,7 +1,7 @@
 # STATE
 
 ## Current Objective
-Build a robust custom WordPress theme for Trailblazers using ACF Pro, ACF Local JSON, and a durable schema for families, athletes, seasons, applications, enrollments, physicals, results, and records.
+Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF Local JSON, and a durable schema for families, athletes, seasons, applications, enrollments, physicals, results, and records.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -54,24 +54,16 @@ Build a robust custom WordPress theme for Trailblazers using ACF Pro, ACF Local 
 - Sport is implemented as a taxonomy rather than only a select field.
 - Event-specific labels on results remain free text where needed (`event_name`) while canonical event structure lives in Athletic Event.
 - Stored records linked to source results are preferred over fully computing every PR/SR on demand.
+- Athletic Result normalization is resolved: `result_display` for human-readable output plus type-specific normalized numeric fields (`result_time_seconds`, `result_distance_meters`, `result_height_meters`, `result_points`).
 
 ## Current Template Status
-Theme currently has:
-- `functions.php`
-- `style.css`
-- `assets/`
-- `acf-json/`
-
-Template buildout is still early and needs baseline fallback templates.
+- This is a Divi 5 child theme. Divi provides all baseline fallback templates.
+- `index.php` exists in the child theme to satisfy WordPress theme validity requirement.
+- No other baseline templates are needed unless deliberately overriding Divi behavior.
+- CPT-specific template strategy is confirmed (see TEMPLATES.md).
+- No CPT templates have been built yet. `single-athlete.php` is the first priority.
 
 ## Current Risks / Watchouts
 - ACF schema changes can create DB/JSON drift if Git branches are switched carelessly.
-- Athletic Result schema still needs normalization for sortable result data.
 - `functions.php` should be split into an `inc/` structure before it becomes crowded.
 - Theme folder name currently contains a space; consider changing to a slug-style folder name later.
-
-## Immediate Next Actions
-1. Finalize Athletic Event / Athletic Result field strategy.
-2. Add baseline template files.
-3. Split `functions.php` into `inc/`.
-4. Begin building public-facing templates for Athlete, Season, Meet, and Sport.

@@ -1,18 +1,9 @@
 # OPEN QUESTIONS
 
 ## 1. Athletic Result normalization
-### Question
-How should athletic results be stored so they are both human-readable and sortable/filterable?
-
-### Why it matters
-Results need to power athlete pages, meet pages, records, leaderboards, and PR/SR logic.
-
-### Current options
-- Display text + one generic numeric field
-- Display text + multiple normalized numeric fields by measurement type
-
-### Current lean
-Use `result_display` plus type-specific normalized numeric fields.
+### Status: RESOLVED
+### Decision
+Use `result_display` for human-readable output plus type-specific normalized numeric fields: `result_time_seconds`, `result_distance_meters`, `result_height_meters`, and `result_points`. This is reflected in the current `group_tb_athletic_result.json`.
 
 ---
 
@@ -49,3 +40,35 @@ May become necessary if partial payments, refunds, or multiple payment methods g
 
 ### Current lean
 Keep payment as status/summary fields for now.
+
+---
+
+## 5. Baseline templates in a Divi child theme
+### Status: RESOLVED
+### Decision
+Baseline fallback templates (`header.php`, `footer.php`, `page.php`, `single.php`, `archive.php`) are not needed in the child theme. Divi provides these in the parent. The child theme only needs `index.php` to satisfy WordPress theme validity, which already exists.
+
+---
+
+## 6. PHP template vs Divi Theme Builder split
+### Status: RESOLVED
+### Decision
+Templates that require relational queries or custom loops must be built as PHP templates. Templates that are primarily layout and dynamic field display can use Divi Theme Builder.
+
+- `single-athlete.php` → PHP (results history, PR/SR records, season history require WP_Query)
+- `single-athletic_meet.php` → PHP (results table with event filtering requires a loop)
+- `single-athletic_season.php` → Divi Theme Builder
+- `taxonomy-sport.php` → Divi Theme Builder
+- `single-coach.php` → Divi Theme Builder
+
+---
+
+## 7. Event metadata on results vs derived from Athletic Event
+### Question
+How much event metadata should be stored directly on Athletic Result vs derived at render time from the linked Athletic Event?
+
+### Why it matters
+Affects query complexity, template logic, and how much denormalization is acceptable on the result record.
+
+### Current lean
+Unresolved. Deferred until template build begins and query patterns become clearer.
