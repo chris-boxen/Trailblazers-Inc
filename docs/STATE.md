@@ -32,6 +32,17 @@ Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF 
 ### Taxonomies
 - Sport
 
+## Confirmed CPT URL Slugs
+- athlete → `/athlete/`
+- family → `/family/`
+- enrollment → `/enrollment/`
+- athletic_season → `/season/`
+- athletic_meet → `/meet/`
+- athletic_event → `/athletic-event/`
+- athletic_result → `/result/`
+- athletic_record → `/record/`
+- athletic_physical → `/physical/`
+
 ## Confirmed Conceptual Model
 - Family = household/account context
 - Athlete = person/participant
@@ -55,15 +66,38 @@ Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF 
 - Event-specific labels on results remain free text where needed (`event_name`) while canonical event structure lives in Athletic Event.
 - Stored records linked to source results are preferred over fully computing every PR/SR on demand.
 - Athletic Result normalization is resolved: `result_display` for human-readable output plus type-specific normalized numeric fields (`result_time_seconds`, `result_distance_meters`, `result_height_meters`, `result_points`).
+- `results_status` on Athletic Meet gates whether results are displayed (Future / Pending / Available). Empty field treated as Future.
+
+## Seed Data
+Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
+- Sport term: Cross Country (ID: 2)
+- Season: Cross Country 2025 (ID: 169)
+- Events: 1 Mile (ID: 170), 5K (ID: 171)
+- Meets: Autumn Opener (ID: 172), Harvest Classic (ID: 173)
+- Families: Nguyen (ID: 174), Okafor (ID: 175)
+- Athletes: Maya Nguyen (ID: 176), Leo Nguyen (ID: 177), Adaeze Okafor (ID: 178)
+- Enrollments: IDs 179, 180, 181
+- Results: IDs 182–187
+- Records: Maya PR (ID: 188), Adaeze PR (ID: 189)
 
 ## Current Template Status
 - This is a Divi 5 child theme. Divi provides all baseline fallback templates.
 - `index.php` exists in the child theme to satisfy WordPress theme validity requirement.
 - No other baseline templates are needed unless deliberately overriding Divi behavior.
 - CPT-specific template strategy is confirmed (see TEMPLATES.md).
-- No CPT templates have been built yet. `single-athlete.php` is the first priority.
+
+### Built
+- `single-athlete.php` — complete. Shows bio, season history, PRs, results grouped by Season → Meet. Cross-links to family, season, and meet pages.
+- `single-athletic_meet.php` — complete. Shows meet header, results grouped by event sorted by place. Cross-links to athletes and season. Gated by `results_status` field.
+
+### Not yet built
+- `single-athletic_season.php` (Divi Theme Builder)
+- `taxonomy-sport.php` (Divi Theme Builder)
+- `single-coach.php` (Divi Theme Builder)
+- Archive templates (approach TBD)
 
 ## Current Risks / Watchouts
 - ACF schema changes can create DB/JSON drift if Git branches are switched carelessly.
 - `functions.php` should be split into an `inc/` structure before it becomes crowded.
 - Theme folder name currently contains a space; consider changing to a slug-style folder name later.
+- Divi Theme Builder can silently override PHP templates — check Theme Builder assignments when a template appears blank.

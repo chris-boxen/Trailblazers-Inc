@@ -1,18 +1,17 @@
 # NEXT STEPS
 
 ## Now
-- Build `single-athlete.php` (PHP template — requires relational queries for results, records, season history)
-- Split `functions.php` into an `inc/` structure
-- Confirm all field groups are saving cleanly to `acf-json/`
-
-## Next
-- Build `single-athletic_meet.php` (PHP template — requires results loop with event filtering)
 - Build `single-athletic_season.php` (Divi Theme Builder)
 - Build `taxonomy-sport.php` (Divi Theme Builder)
+- Split `functions.php` into an `inc/` structure
+- Harden `single-athletic_meet.php` — treat empty `results_status` as Future (minor template fix)
+
+## Next
+- Build `single-coach.php` (Divi Theme Builder)
 - Add `template-parts/` structure to support PHP templates
+- Confirm all field groups are saving cleanly to `acf-json/`
 
 ## Later
-- Build `single-coach.php` (Divi Theme Builder)
 - Build `archive-athlete.php` (approach TBD)
 - Build `archive-athletic_meet.php` (approach TBD)
 - Build `single-athletic_event.php` (approach TBD)
