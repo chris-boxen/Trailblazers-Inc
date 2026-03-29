@@ -1,4 +1,77 @@
-## 2026-03 (continued)
+# CHANGELOG
+
+## 2026-03 (TEC integration + schema restructure)
+
+### Integrated The Events Calendar Pro — retired athletic_meet CPT
+The Events Calendar Pro (TEC) is now part of the project stack. After architectural
+review, `athletic_meet` has been retired as a custom CPT. `tribe_events` now serves
+as the single anchor post for all meet data.
+
+**Rationale:** Maintaining a parallel `athletic_meet` post alongside a TEC event for
+every XC meet added admin overhead without architectural benefit. A single `tribe_events`
+post per meet is cleaner — TEC handles public calendar display natively, and ACF fields
+on `tribe_events` handle the internal data layer.
+
+**What changed:**
+- `post_type_tb_athletic_meet` — deleted from ACF, JSON retired to archive
+- `group_tb_athletic_meet` — deleted from ACF, JSON retired to archive
+- `single-athletic_meet.php` — moved to `_archived-templates/`
+- `archive-athletic_meet.php` — moved to `_archived-templates/`
+- New ACF field group `group_tb_tec_event` created on `tribe_events`:
+  - `season` — Post Object → `athletic_season`
+  - `results_status` — Select (Future / Pending / Available)
+- `group_tb_athletic_result` — `meet` field target changed from `athletic_meet`
+  to `tribe_events`
+- TEC event slug configured as `/event/`
+- `tribe_venue` adopted for venue management
+- TEC archive (`/event/`) to be redirected to a custom query page via
+  `template_redirect` hook in `inc/cpt-hooks.php`
+- Single meet display to be built as TEC theme override:
+  `tribe/events/single-event.php`
+
+**Non-calendar meets (T&F / SportsYou coaches):**
+All `tribe_events` meet posts are published regardless of public calendar visibility.
+The `calendar_show_meets` season flag controls whether meets surface on the public
+schedule. Published status is required for ACF post object queries to resolve.
+
+**Two concepts named "event" — critical distinction:**
+- `athletic_event` — canonical event *definition* (5K, 100m, Long Jump). Unchanged.
+- `tribe_events` — a meet *instance* (specific date, location, season). Replaces `athletic_meet`.
+This distinction must be maintained in all code comments and documentation.
+
+---
+
+### Added per-season feature flags to Athletic Season CPT
+New True/False fields added to `group_tb_athletic_season`:
+
+| Field | Purpose |
+|---|---|
+| `calendar_show_meets` | Whether upcoming meets publish to TEC public calendar |
+| `calendar_show_practices` | Whether practices publish to TEC public calendar |
+| `results_enabled` | Whether results are surfaced in templates (display control only) |
+| `link_milesplit` | Whether Milesplit athlete links are rendered |
+| `link_athletic_net` | Whether AthleticNet athlete links are rendered |
+
+New Textarea field: `results_unavailable_message` — shown in templates when
+`results_enabled = false`. Falls back to a generic message if blank.
+
+Flags control display only. They do not prevent data entry. An admin can flip
+`results_enabled` at any time to start or stop surfacing results for a season.
+
+**Naming note:** The field was intentionally named `results_enabled` rather than
+`track_results` to avoid semantic ambiguity with "track and field results."
+
+---
+
+### Resolved: `results_enabled` naming
+Confirmed `results_enabled` as the canonical field name. `track_results` was
+rejected because in a track and field context it reads as a noun phrase
+("track-and-field results") rather than the intended verb phrase ("record/monitor
+results"). Documented in SCHEMA.md.
+
+---
+
+## 2026-03 (continued from previous entries)
 
 ### Designed GravityForms registration form architecture
 Replaced the previous multi-form, multi-user approach with a simplified architecture

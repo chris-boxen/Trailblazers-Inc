@@ -28,15 +28,6 @@ Probably yes, but not urgent.
 Family, Application, Enrollment, and Athletic Physical are **admin-only data objects**.
 They have no public-facing templates and will not be given meaningful ones.
 
-- `family` — no public template. Managed via GravityForms registration flow and WP admin.
-- `application` — no public template. Created programmatically via form submission hook.
-- `enrollment` — no public template. Created programmatically via form submission hook.
-- `athletic_physical` — no public template. Managed via WP admin or a future
-  admin-facing form.
-
-If a family-facing dashboard is built in the future, it will be a custom page template
-that queries these CPTs — not their native single templates.
-
 **Action item:** Confirm `publicly_queryable` is set to false on all four CPTs in their
 ACF Post Type settings. Flag if any are currently set to true.
 
@@ -47,10 +38,6 @@ ACF Post Type settings. Flag if any are currently set to true.
 At what point should payment become its own object rather than status fields on
 Application/Enrollment?
 
-### Why it matters
-May become necessary if partial payments, refunds, or multiple payment methods grow
-more complex.
-
 ### Current lean
 Keep payment as status/summary fields for now. Revisit if the workflow grows.
 
@@ -59,31 +46,27 @@ Keep payment as status/summary fields for now. Revisit if the workflow grows.
 ## 5. Baseline templates in a Divi child theme
 ### Status: RESOLVED
 ### Decision
-Baseline fallback templates (`header.php`, `footer.php`, `page.php`, `single.php`,
-`archive.php`) are not needed in the child theme. Divi provides these in the parent.
-The child theme only needs `index.php` to satisfy WordPress theme validity, which
-already exists.
+Baseline fallback templates are not needed in the child theme. Divi provides these
+in the parent. The child theme only needs `index.php`.
 
 ---
 
 ## 6. PHP template vs Divi Theme Builder split
-### Status: RESOLVED
+### Status: RESOLVED (updated for TEC)
 ### Decision
-Templates that require relational queries or custom loops must be built as PHP
-templates. Templates that are primarily layout and dynamic field display can use
-Divi Theme Builder.
+All CPT templates are PHP files. Divi Theme Builder is not used for any CPT templates.
 
-- `single-athlete.php` → PHP
-- `single-athletic_meet.php` → PHP
+**Updated template list reflecting TEC integration:**
+- `single-athlete.php` → PHP (needs flag check updates)
 - `single-athletic_season.php` → PHP
 - `single-coach.php` → PHP
-- `single-athletic_event.php` → PHP
-- `taxonomy-sport.php` → PHP
+- `single-athletic_event.php` → PHP (needs flag check + query updates)
+- `taxonomy-sport.php` → PHP (needs query update)
 - `archive-athlete.php` → PHP
-- `archive-athletic_meet.php` → PHP
-- `archive-athletic_record.php` → PHP
-
-All CPT templates are PHP files. Divi Theme Builder is not used for any CPT templates.
+- `archive-athletic_record.php` → PHP (needs query update)
+- `tribe/events/single-event.php` → PHP TEC theme override (to build)
+- `single-athletic_meet.php` → **ARCHIVED** (`_archived-templates/`)
+- `archive-athletic_meet.php` → **ARCHIVED** (`_archived-templates/`)
 
 ---
 
@@ -91,10 +74,6 @@ All CPT templates are PHP files. Divi Theme Builder is not used for any CPT temp
 ### Question
 How much event metadata should be stored directly on Athletic Result vs derived at
 render time from the linked Athletic Event?
-
-### Why it matters
-Affects query complexity, template logic, and how much denormalization is acceptable
-on the result record.
 
 ### Current lean
 Unresolved. Deferred until query patterns from the GravityForms build make the
@@ -105,66 +84,61 @@ tradeoff clearer.
 ## 8. GravityForms registration form architecture
 ### Status: RESOLVED
 ### Decision
-
-**Form set:**
-- `Start` — new vs. returning gate; redirect only; no submission hook
-- `New Family` — creates Family post, Application post, Athlete posts, Enrollment posts
-- `Returning Family` — updates Family post, creates Application post, new Athlete posts
-  where needed, Enrollment posts for all registered athletes
-- `Nested: Register Athlete` — single combined nested form for both Athlete and Sibling
-  Runner entries; participation type radio drives conditional eligibility block display
-
-**Eliminated from the 2025 form set:**
-- `Register New Parent` — additional contacts are now collected inline via a conditional
-  section in the parent form and written to the `parents_guardians` repeater on Family
-- `Register Returning Athlete` — athlete lookup is handled via GP Populate Anything
-  querying Athlete CPT posts by family; no separate form needed
-- `Register Sibling Runner` — Sibling Runner is now a participation type within the
-  combined athlete nested form, not a separate form
-
-**Login requirement:**
-- Both New Family and Returning Family forms require the user to be logged in
-- New Family: WP account must exist before submission; Family post is created at
-  submission time and immediately linked to `account_user`
-- Returning Family: Family post is located at hook time via
-  `account_user = get_current_user_id()` — no user-visible Family ID field
-
-**Season targeting:**
-- A hidden field on both parent forms is populated at form load via `gform_field_value`
-  reading an `active_season_id` site option set by the admin
-- Admin sets the active season in one place; both forms pick it up automatically
-
-**Athlete nested form — participation type handling:**
-- `participation_type` radio (Athlete / Sibling Runner) appears at the top of the form
-- Eligibility checkbox block is conditional on participation type selection
-- Athlete block: Residency, Homeschooled, Academic Eligibility, Running Commitment,
-  Policy Compliance
-- Sibling Runner block: Parent Supervision Acknowledgment, Policy Compliance (lighter)
-- Grade field is visible to both; appropriate range enforced via eligibility checkboxes
-
-**Hook strategy (all logic in `inc/gravity-helpers.php`):**
-- One flat function per CPT operation — no cascading smart logic
-- Execution sequence: Family → Application → Athletes → Enrollments
-- Each function receives IDs from previous steps directly; no re-querying mid-chain
-- Each function writes its own `error_log()` trail
-- A failure at any step does not roll back prior steps — each is independently
-  recoverable by an admin
+See CHANGELOG.md 2026-03 for full decision record.
 
 ---
 
-## 9. Athlete.participation_type denormalization
+## 9. athletic_meet CPT retirement + TEC integration
 ### Status: RESOLVED
 ### Decision
-A `participation_type` field (Select: Athlete / Sibling Runner) is added to the
-Athlete CPT as a **denormalized convenience field** for archive filtering.
+`athletic_meet` CPT is retired. `tribe_events` (The Events Calendar Pro) is the
+single anchor post for all meet data — both public calendar events and internal
+results-bearing records.
 
-The source of truth for any given season remains `Enrollment.participation_type`.
-The Athlete field reflects the most recent enrollment and is updated by the enrollment
-creation hook each time a new enrollment is written.
+**Key rules:**
+- All `tribe_events` meet posts are published (never draft), regardless of whether
+  they appear publicly. Published status is required for ACF queries.
+- `calendar_show_meets` on Athletic Season controls public surfacing, not post status.
+- `athletic_result.meet` now points to `tribe_events`.
+- TEC's native archive (`/event/`) is redirected to a custom query page via
+  `template_redirect` hook.
+- Single meet display is a TEC theme override at `tribe/events/single-event.php`.
+- **Naming rule:** Always say "Athletic Event" (the definition CPT) vs. "TEC Event"
+  or "Meet Event" (the `tribe_events` instance). Never just "event."
 
-Empty values — for posts created manually or via CSV import — are treated as `Athlete`
-in both PHP templates and JS filter logic. See SCHEMA.md for implementation patterns.
+---
 
-**ACF JSON change required:** add `participation_type` field to `group_tb_athlete.json`.
-**Risk level:** Low — additive only. No existing field renamed or removed.
-**Workflow:** Make the change via ACF admin UI, let ACF write the JSON, then commit.
+## 10. TEC event categories — sport differentiation
+### Question
+Should `tribe_events_cat` include sport-specific sub-categories under `athletic-meet`
+(e.g., `athletic-meet > cross-country`, `athletic-meet > track-field`)?
+
+### Why it matters
+The TEC public calendar and custom query page may need to filter meets by sport.
+The Sport taxonomy is registered on `athletic_event` and other CPTs but is not
+natively available to `tribe_events`. Options:
+- Add top-level sport terms to `tribe_events_cat` (simple, some duplication)
+- Add Sport taxonomy registration to `tribe_events` (cleaner, requires ACF/code change)
+- Use sub-categories under `athletic-meet` in `tribe_events_cat`
+- Filter the custom query page by season (which implies sport) rather than by taxonomy term
+
+### Current lean
+Unresolved. Defer until the custom meet schedule query page is being built. The
+answer depends on how the calendar needs to be filtered by site visitors.
+
+---
+
+## 11. T&F coach calendar adoption
+### Question
+Track & Field coaches are currently leaning toward SportsYou for events. If they
+adopt TEC later, what is the migration path for existing T&F meet results?
+
+### Why it matters
+T&F results are attached to `tribe_events` posts. If T&F meets are currently
+created as bare `tribe_events` posts with no public calendar presence, enabling
+them later only requires flipping `calendar_show_meets` on the season. No data
+migration needed.
+
+### Current lean
+Non-issue architecturally. Document this for coaches so they understand the path
+forward is low-friction.
