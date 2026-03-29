@@ -196,6 +196,28 @@
                     "parent_repeater": "field_tb_parents_guardians"
                 },
                 {
+                    "key": "field_69c92f673f72f",
+                    "label": "Guardian Notifications",
+                    "name": "guardian_notifications",
+                    "aria-label": "",
+                    "type": "true_false",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "message": "",
+                    "default_value": 0,
+                    "allow_in_bindings": 0,
+                    "ui_on_text": "",
+                    "ui_off_text": "",
+                    "ui": 1,
+                    "parent_repeater": "field_tb_parents_guardians"
+                },
+                {
                     "key": "field_tb_parents_guardians_guardian_phone",
                     "label": "Phone",
                     "name": "guardian_phone",
@@ -413,5 +435,5 @@
     "description": "",
     "show_in_rest": 1,
     "display_title": "",
-    "modified": 1774211323
+    "modified": 1774792626
 }
