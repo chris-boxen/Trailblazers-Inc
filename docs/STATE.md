@@ -72,6 +72,7 @@ Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF 
 - Athletic Result normalization is resolved: `result_display` for human-readable output plus type-specific normalized numeric fields (`result_time_seconds`, `result_distance_meters`, `result_height_meters`, `result_points`).
 - `results_status` on Athletic Meet gates whether results are displayed (Future / Pending / Available). Empty field treated as Future.
 - All CPT templates are PHP files. Divi Theme Builder is not used for any CPT templates at this stage.
+- "Current" record detection: for each athlete + event + record_type group, the record with the most recent meet date is flagged `is_current = true`. Derived at render time from the linked result's meet date.
 
 ## Theme Structure
 - `functions.php` — clean loader only; requires all inc/ files
@@ -100,18 +101,19 @@ Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - `index.php` exists in the child theme to satisfy WordPress theme validity requirement.
 - All CPT templates are built as PHP files.
 
-### Built
+### Built — all complete
 - `single-athlete.php` — bio, season history, PRs, results grouped by Season → Meet.
 - `single-athletic_meet.php` — meet header, results grouped by event sorted by place. Gated by `results_status`.
 - `single-athletic_season.php` — season header, coaches roster, meet schedule, athlete roster.
 - `single-coach.php` — photo, name, title, bio.
-- `single-athletic_event.php` — event header (name, sport linked to taxonomy, category, distance, measurement), all-time records, results grouped by Season → Meet.
+- `single-athletic_event.php` — event header with linked sport taxonomy, records, results grouped by Season → Meet.
 - `taxonomy-sport.php` — sport header, seasons, coaches, athletes table with filtering attributes.
-- `archive-athlete.php` — all athletes, sortable/filterable table, data attributes.
-- `archive-athletic_meet.php` — all meets, sortable/filterable table, data attributes.
+- `archive-athlete.php` — all athletes, sortable/filterable table with data attributes.
+- `archive-athletic_meet.php` — all meets, sortable/filterable table with data attributes.
+- `archive-athletic_record.php` — Sport → Event → Records. Data attributes for JS filtering including `data-is-current`.
 
 ### Not yet built
-- `archive-athletic_record.php`
+- Nothing currently planned. Next phase is JS filtering and GravityForms integration.
 
 ## Current Risks / Watchouts
 - ACF schema changes can create DB/JSON drift if Git branches are switched carelessly.
@@ -119,4 +121,5 @@ Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - Divi Theme Builder can silently override PHP templates — check Theme Builder assignments when a template appears blank.
 - Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.
 - Archive templates require `has_archive => true` on the CPT — verify in ACF Post Types if an archive URL 404s.
-- Results on single-athletic_event.php are queried via the `event` post object field on Athletic Result. Results with only a free-text `event_name` (no linked event post) will not appear here — they still appear on athlete and meet pages.
+- Results on single-athletic_event.php query via the `event` post object field. Results with only a free-text `event_name` won't appear — they still show on athlete and meet pages.
+- Current record detection is derived at render time from meet date. If two records for the same athlete/event/type share the same meet date, both will be flagged as current.

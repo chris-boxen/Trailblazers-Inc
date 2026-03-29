@@ -3,7 +3,7 @@
 ## Approach
 This is a Divi 5 child theme. Divi provides all baseline fallback templates in the parent. The child theme only needs `index.php` for WordPress theme validity — no other baseline overrides are required unless deliberately changing Divi's default behavior.
 
-All CPT-specific templates are built as PHP files. Divi Theme Builder may be used later to replace any template if a visual editing workflow is preferred, but PHP is the current standard.
+All CPT-specific templates are built as PHP files.
 
 ## Template status
 
@@ -17,7 +17,7 @@ All CPT-specific templates are built as PHP files. Divi Theme Builder may be use
 | `taxonomy-sport.php` | PHP | ✅ Built | Sport header, seasons, coaches, athletes table with filtering attributes |
 | `archive-athlete.php` | PHP | ✅ Built | All athletes, sortable/filterable table, data attributes |
 | `archive-athletic_meet.php` | PHP | ✅ Built | All meets, sortable/filterable table, data attributes |
-| `archive-athletic_record.php` | PHP | ⬜ Not started | — |
+| `archive-athletic_record.php` | PHP | ✅ Built | Sport → Event → Records, data attributes including data-is-current |
 
 ## Likely no public template
 - Family
@@ -26,12 +26,16 @@ All CPT-specific templates are built as PHP files. Divi Theme Builder may be use
 - Athletic Physical
 
 ## Data attributes pattern
-Archive and taxonomy templates follow a consistent pattern for JS filtering:
-- Athlete rows: `data-gender`, `data-grad-year`, `data-status`, `data-sport`
-- Meet rows: `data-season`, `data-sport`, `data-status`, `data-results-status`, `data-year`
-- Sport taxonomy athlete rows: `data-gender`, `data-status`
-- Attribute values are always lowercase slugs
-- Space-separated values used when a row has multiple terms (e.g. multi-sport athletes)
+All archive and taxonomy templates use consistent data attributes for JS filtering:
+
+| Template | Data attributes |
+|---|---|
+| `archive-athlete.php` | `data-gender`, `data-grad-year`, `data-status`, `data-sport` |
+| `archive-athletic_meet.php` | `data-season`, `data-sport`, `data-status`, `data-results-status`, `data-year` |
+| `archive-athletic_record.php` | `data-record-type`, `data-sport`, `data-event`, `data-is-current` |
+| `taxonomy-sport.php` athlete rows | `data-gender`, `data-status` |
+
+Attribute values are always lowercase slugs. Space-separated values used for multi-term fields.
 
 ## Template-parts direction
 Add when individual templates grow complex enough to warrant partials:
@@ -41,8 +45,9 @@ Add when individual templates grow complex enough to warrant partials:
 - `template-parts/globals/`
 
 ## Watchouts
-- Divi Theme Builder can silently override PHP templates. If a PHP template appears blank, check Theme Builder for a conflicting Singles or All Posts assignment targeting that CPT.
+- Divi Theme Builder can silently override PHP templates. If a template appears blank, check Theme Builder assignments.
 - Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.
-- Coach role/bio override per season lives in the `coach_roster` repeater on Athletic Season — not on the Coach post itself.
+- Coach role/bio override per season lives in the `coach_roster` repeater on Athletic Season — not on the Coach post.
 - Archive templates require `has_archive => true` on the CPT. If an archive URL 404s, check ACF Post Types → Advanced → Has Archive.
-- Results on single-athletic_event.php query via the `event` post object field. Results with only a free-text `event_name` won't appear — they still show on athlete and meet pages.
+- Results on `single-athletic_event.php` query via the `event` post object field. Results with only a free-text `event_name` won't appear here.
+- Current record detection: if two records for the same athlete/event/type share the same meet date, both are flagged as current.

@@ -1,22 +1,27 @@
 # NEXT STEPS
 
 ## Now
-- Build `archive-athletic_record.php`
+- Decide on next phase — options below
 
-## Next
-- Add JavaScript filtering to athlete and meet archive tables (data attributes are ready)
-- Add JavaScript filtering to taxonomy-sport.php athlete table
-- Populate `inc/enqueue.php` when JS filtering is added
+## JS Filtering (data attributes are ready on all archive templates)
+- Add filter controls + JS to archive-athlete.php
+- Add filter controls + JS to archive-athletic_meet.php
+- Add filter controls + JS to archive-athletic_record.php (including current/all toggle)
+- Add filter controls + JS to taxonomy-sport.php athlete table
+- Populate `inc/enqueue.php` with the filtering script
+
+## GravityForms Integration
+- Design application form flow (family → athletes → payment)
+- Map form fields to CPT creation via gform_after_submission hooks
+- Add logic to inc/gravity-helpers.php
 
 ## Later
 - Add coach → season backreference on single-coach.php
-- Refine athletic record querying/display strategy
 - Revisit payment abstraction if workflow becomes more complex
 - Add stronger review workflows for physicals and approvals
 - Revisit theme folder naming
-- Decide which additional CPTs should have public archives
 - Add `template-parts/` structure when templates grow complex enough to warrant it
-- Populate stub inc/ files as functionality is needed
+- Populate remaining stub inc/ files as functionality is needed
 
 ## Blocked / Waiting
 - Final decision on how much event metadata is stored directly on results vs derived from athletic event
