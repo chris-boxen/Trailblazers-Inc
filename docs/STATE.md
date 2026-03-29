@@ -73,6 +73,15 @@ Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF 
 - `results_status` on Athletic Meet gates whether results are displayed (Future / Pending / Available). Empty field treated as Future.
 - All CPT templates are PHP files. Divi Theme Builder is not used for any CPT templates at this stage.
 
+## Theme Structure
+- `functions.php` — clean loader only; requires all inc/ files
+- `inc/divi.php` — Divi-specific filters
+- `inc/enqueue.php` — scripts and styles (stub)
+- `inc/cpt-hooks.php` — CPT/taxonomy behavior modifications (stub)
+- `inc/query-mods.php` — pre_get_posts and archive query adjustments (stub)
+- `inc/acf-helpers.php` — reusable ACF utility functions (stub)
+- `inc/gravity-helpers.php` — Gravity Forms / GravityPerks helpers (stub)
+
 ## Seed Data
 Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - Sport term: Cross Country (ID: 2)
@@ -96,17 +105,17 @@ Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - `single-athletic_meet.php` — meet header, results grouped by event sorted by place. Cross-links to athletes and season. Gated by `results_status`.
 - `single-athletic_season.php` — season header, coaches roster, meet schedule, athlete roster. Cross-links throughout.
 - `single-coach.php` — photo, name, title, bio.
-- `taxonomy-sport.php` — sport header, seasons list, coaches list, athletes table with gender/grad year/status columns and data attributes for filtering.
+- `taxonomy-sport.php` — sport header, seasons, coaches, athletes table with filtering attributes.
+- `archive-athlete.php` — all athletes table with name, gender, grad year, status, sport. Data attributes for JS filtering.
+- `archive-athletic_meet.php` — all meets table with name, date, location, season, status. Data attributes for JS filtering.
 
 ### Not yet built
-- `archive-athlete.php`
-- `archive-athletic_meet.php`
 - `single-athletic_event.php`
 - `archive-athletic_record.php`
 
 ## Current Risks / Watchouts
 - ACF schema changes can create DB/JSON drift if Git branches are switched carelessly.
-- `functions.php` should be split into an `inc/` structure before it becomes crowded.
 - Theme folder name currently contains a space; consider changing to a slug-style folder name later.
 - Divi Theme Builder can silently override PHP templates — check Theme Builder assignments when a template appears blank.
 - Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.
+- Archive templates require `has_archive => true` on the CPT — verify in ACF Post Types if an archive URL 404s.

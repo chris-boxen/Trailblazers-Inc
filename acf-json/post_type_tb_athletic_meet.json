@@ -71,7 +71,7 @@
     "taxonomies": [
         "sport"
     ],
-    "has_archive": false,
+    "has_archive": true,
     "has_archive_slug": "",
     "rewrite": {
         "permalink_rewrite": "custom_permalink",
@@ -86,5 +86,5 @@
     "delete_with_user": false,
     "register_meta_box_cb": "",
     "enter_title_here": "",
-    "modified": 1774737608
+    "modified": 1774747624
 }

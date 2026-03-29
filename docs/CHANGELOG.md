@@ -44,6 +44,9 @@ Added sport taxonomy to Coach CPT registration. Coaches are now directly queryab
 ### Created dev seed data script
 `public/scripts/seed-data.sh` — WP-CLI script that creates 2 families, 3 athletes, 1 season, 2 meets, 2 events, 3 enrollments, 6 results, and 2 PR records with correct ACF field key meta entries. Note: `wp post term set` requires slug not term ID.
 
+### Split functions.php into inc/ structure
+Moved Divi Projects filter to `inc/divi.php`. Added stub files for `inc/enqueue.php`, `inc/cpt-hooks.php`, `inc/query-mods.php`, `inc/acf-helpers.php`, and `inc/gravity-helpers.php`. `functions.php` is now a clean loader.
+
 ### Built single-athlete.php
 PHP template. Displays athlete bio, season history, PR/SR records, and results grouped by Season → Meet. Cross-links to family, season, and meet pages.
 
@@ -58,3 +61,9 @@ PHP template. Displays coach photo, name, preferred title, and bio.
 
 ### Built taxonomy-sport.php
 PHP template. Displays sport name and description, seasons list, coaches list (queried directly via sport taxonomy), and athletes table. Athletes table includes gender, graduation year, and account status columns. Rows have `data-gender` and `data-status` attributes for JavaScript filtering. Athletes and coaches sorted by last name.
+
+### Built archive-athlete.php
+PHP template. Public athlete archive. Table with name, gender, grad year, account status, and sport columns. Rows have `data-gender`, `data-grad-year`, `data-status`, and `data-sport` attributes for JS filtering. Sorted by last name.
+
+### Built archive-athletic_meet.php
+PHP template. Public meet archive. Table with meet name, date, location, season, and status columns. Rows have `data-season`, `data-sport`, `data-status`, `data-results-status`, and `data-year` attributes for JS filtering. Sorted by date descending.

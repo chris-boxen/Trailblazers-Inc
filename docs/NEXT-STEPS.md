@@ -1,23 +1,23 @@
 # NEXT STEPS
 
 ## Now
-- Split `functions.php` into an `inc/` structure
+- Build `single-athletic_event.php`
+- Build `archive-athletic_record.php`
 
 ## Next
-- Build `archive-athlete.php` (approach TBD)
-- Build `archive-athletic_meet.php` (approach TBD)
+- Add JavaScript filtering to athlete and meet archive tables (data attributes are ready)
+- Add JavaScript filtering to taxonomy-sport.php athlete table
+- Populate `inc/enqueue.php` when JS filtering is added
 
 ## Later
-- Build `single-athletic_event.php` (approach TBD)
-- Build `archive-athletic_record.php` (approach TBD)
-- Refine athletic record querying/display strategy
-- Add JavaScript filtering to taxonomy-sport.php athlete table (data attributes are ready)
 - Add coach → season backreference on single-coach.php
+- Refine athletic record querying/display strategy
 - Revisit payment abstraction if workflow becomes more complex
 - Add stronger review workflows for physicals and approvals
 - Revisit theme folder naming
-- Decide which CPTs should have public archives vs admin-only existence
+- Decide which additional CPTs should have public archives
 - Add `template-parts/` structure when templates grow complex enough to warrant it
+- Populate stub inc/ files as functionality is needed
 
 ## Blocked / Waiting
 - Final decision on how much event metadata is stored directly on results vs derived from athletic event
