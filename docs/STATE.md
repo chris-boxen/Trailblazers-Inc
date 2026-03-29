@@ -31,6 +31,7 @@ Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF 
 
 ### Taxonomies
 - Sport (hierarchical — behaves like a category)
+- Registered on: Athletic Season, Athletic Meet, Athletic Event, Athletic Result, Athletic Record, Enrollment, Coach, Athlete
 
 ## Confirmed CPT URL Slugs
 - athlete → `/athlete/`
@@ -64,11 +65,12 @@ Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF 
 - Season no longer stores athlete roster rows; athlete-season participation is modeled through Enrollment.
 - Participation Type belongs on Enrollment, not Athlete.
 - Sport is implemented as a hierarchical taxonomy (category-style).
+- Coach is registered with the sport taxonomy for direct sport-based querying. Role and bio override per season are managed via the `coach_roster` repeater on Athletic Season.
+- Coaches can span multiple sports; roles are season/sport-specific and stored on the season.
 - Event-specific labels on results remain free text where needed (`event_name`) while canonical event structure lives in Athletic Event.
 - Stored records linked to source results are preferred over fully computing every PR/SR on demand.
 - Athletic Result normalization is resolved: `result_display` for human-readable output plus type-specific normalized numeric fields (`result_time_seconds`, `result_distance_meters`, `result_height_meters`, `result_points`).
 - `results_status` on Athletic Meet gates whether results are displayed (Future / Pending / Available). Empty field treated as Future.
-- Coach-season relationship is stored on Athletic Season via `coach_roster` repeater (coach → season direction). Reverse lookup (season → coach page) is not currently implemented.
 - All CPT templates are PHP files. Divi Theme Builder is not used for any CPT templates at this stage.
 
 ## Seed Data
@@ -93,10 +95,10 @@ Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - `single-athlete.php` — bio, season history, PRs, results grouped by Season → Meet. Cross-links to family, season, and meet pages.
 - `single-athletic_meet.php` — meet header, results grouped by event sorted by place. Cross-links to athletes and season. Gated by `results_status`.
 - `single-athletic_season.php` — season header, coaches roster, meet schedule, athlete roster. Cross-links throughout.
-- `single-coach.php` — photo, name, title, bio. No season backreference (deferred).
+- `single-coach.php` — photo, name, title, bio.
+- `taxonomy-sport.php` — sport header, seasons list, coaches list, athletes table with gender/grad year/status columns and data attributes for filtering.
 
 ### Not yet built
-- `taxonomy-sport.php`
 - `archive-athlete.php`
 - `archive-athletic_meet.php`
 - `single-athletic_event.php`
@@ -108,4 +110,3 @@ Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - Theme folder name currently contains a space; consider changing to a slug-style folder name later.
 - Divi Theme Builder can silently override PHP templates — check Theme Builder assignments when a template appears blank.
 - Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.
-- Coach CPT has no direct season link — season backreference requires a repeater meta LIKE query (fragile, deferred).

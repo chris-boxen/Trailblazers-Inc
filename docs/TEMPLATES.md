@@ -12,8 +12,8 @@ All CPT-specific templates are built as PHP files. Divi Theme Builder may be use
 | `single-athlete.php` | PHP | ✅ Built | Bio, season history, PRs, results (Season → Meet) |
 | `single-athletic_meet.php` | PHP | ✅ Built | Meet header, results by event, gated by `results_status` |
 | `single-athletic_season.php` | PHP | ✅ Built | Header, coaches, meet schedule, athlete roster |
-| `single-coach.php` | PHP | ✅ Built | Photo, name, title, bio. No season backreference. |
-| `taxonomy-sport.php` | PHP | ⬜ Not started | Sport landing/archive page |
+| `single-coach.php` | PHP | ✅ Built | Photo, name, title, bio |
+| `taxonomy-sport.php` | PHP | ✅ Built | Sport header, seasons, coaches, athletes table with filtering attributes |
 | `archive-athlete.php` | TBD | ⬜ Not started | — |
 | `archive-athletic_meet.php` | TBD | ⬜ Not started | — |
 | `single-athletic_event.php` | TBD | ⬜ Not started | — |
@@ -34,5 +34,5 @@ Add when individual templates grow complex enough to warrant partials:
 
 ## Watchouts
 - Divi Theme Builder can silently override PHP templates. If a PHP template appears blank, check Theme Builder for a conflicting Singles or All Posts assignment targeting that CPT.
-- Coach CPT has no direct season link. Season backreference requires a repeater meta LIKE query (fragile). Deferred.
 - Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.
+- Coach role/bio override per season lives in the `coach_roster` repeater on Athletic Season — not on the Coach post itself.

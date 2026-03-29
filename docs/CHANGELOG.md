@@ -38,8 +38,11 @@ Simplified all CPT rewrite slugs via ACF Post Types:
 ### Set sport taxonomy to hierarchical
 Changed Sport taxonomy to hierarchical (category-style) to support future sub-sport or division structure.
 
+### Registered Coach CPT with sport taxonomy
+Added sport taxonomy to Coach CPT registration. Coaches are now directly queryable by sport via tax_query. Role and bio override per season remain managed via the `coach_roster` repeater on Athletic Season. Coaches can span multiple sports.
+
 ### Created dev seed data script
-`public/scripts/seed-data.sh` — WP-CLI script that creates 2 families, 3 athletes, 1 season, 2 meets, 2 events, 3 enrollments, 6 results, and 2 PR records with correct ACF field key meta entries. Note: `wp post term set` requires slug not term ID — fixed in documentation.
+`public/scripts/seed-data.sh` — WP-CLI script that creates 2 families, 3 athletes, 1 season, 2 meets, 2 events, 3 enrollments, 6 results, and 2 PR records with correct ACF field key meta entries. Note: `wp post term set` requires slug not term ID.
 
 ### Built single-athlete.php
 PHP template. Displays athlete bio, season history, PR/SR records, and results grouped by Season → Meet. Cross-links to family, season, and meet pages.
@@ -48,7 +51,10 @@ PHP template. Displays athlete bio, season history, PR/SR records, and results g
 PHP template. Displays meet header (name, date, location, season, status) and results grouped by event and sorted by place. Cross-links to athlete pages and season. Results display gated by `results_status` field (Future / Pending / Available). Empty `results_status` treated as Future.
 
 ### Built single-athletic_season.php
-PHP template (originally planned for Divi Theme Builder, converted to PHP for consistency and to support relational queries). Displays season header, coaches roster (from `coach_roster` repeater), meet schedule, and athlete roster (from Enrollments). Cross-links throughout.
+PHP template. Displays season header, coaches roster (from `coach_roster` repeater), meet schedule, and athlete roster (from Enrollments). Cross-links throughout.
 
 ### Built single-coach.php
-PHP template. Displays coach photo, name, preferred title, and bio. Season backreference not included — coach-season relationship is stored on Season, not Coach. Deferred as future enhancement.
+PHP template. Displays coach photo, name, preferred title, and bio.
+
+### Built taxonomy-sport.php
+PHP template. Displays sport name and description, seasons list, coaches list (queried directly via sport taxonomy), and athletes table. Athletes table includes gender, graduation year, and account status columns. Rows have `data-gender` and `data-status` attributes for JavaScript filtering. Athletes and coaches sorted by last name.
