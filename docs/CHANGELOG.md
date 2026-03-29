@@ -1,68 +1,41 @@
-# CHANGELOG
+## 2026-03 (continued)
 
-## 2026-03
-### Established initial content architecture
-Defined the core CPT model for Family, Athlete, Season, Application, Enrollment, Physical, Result, and Record.
+### Designed GravityForms registration form architecture
+Replaced the previous multi-form, multi-user approach with a simplified architecture
+reflecting the new single-household-user model. Key decisions:
+- Registration entry point is a WP page with two buttons, not a form
+- New Family and Returning Family are separate parent forms (5 pages each)
+- Single combined nested form for Athlete + Sibling Runner registration
+  (participation type radio drives conditional eligibility blocks)
+- `Register New Parent`, `Register Returning Athlete`, and `Register Sibling Runner`
+  from the 2025 form set are eliminated
+- Both forms require login; Returning Family locates the Family post via
+  `account_user = get_current_user_id()` — no user-visible Family ID
+- Active season populated via `gform_field_value` filter reading `tb_active_season_id`
+  site option
+- Handbook page (Page 3) pulls handbook URL dynamically from the Athletic Season CPT
+  `handbook` link field via `gform_field_value`
+- Payment page includes optional processing contribution as a native GF Product field
+  (radio buttons: No thanks $0 / Help a little $3 / Cover processing $5 / Pay it
+  forward $10); folds into GF order total natively with no custom code
+- Full field map documented in `docs/FORM-FIELD-MAP.md`
 
-### Moved athlete-season participation into Enrollment
-Removed athlete roster duplication from Season and made Enrollment the athlete-season operational hub.
+### Added participation_type to Athlete CPT
+Added `participation_type` select field (Athlete / Sibling Runner, allow null) to
+`group_tb_athlete.json`. Denormalized convenience field for archive filtering. Source
+of truth for season-specific type remains Enrollment. Updated by enrollment creation
+hook. Empty values treated as Athlete in templates and JS filters. See SCHEMA.md.
 
-### Removed mirrored Family → Athletes relationship
-Kept Athlete → Family as the primary relationship direction to avoid duplicate maintenance.
+### Added payment_amount to Application CPT
+Added `payment_amount` number field (step 0.01, prepend $) to
+`group_tb_application.json`. Set by hook from GF order total at submission. Reflects
+combined registration fee plus any optional processing contribution donation.
 
-### Converted sport into a taxonomy
-Chose Sport as a taxonomy rather than only a select field to support filtering across multiple content types.
+### Resolved: account_status vs participation_type distinction
+Confirmed Alumni belongs in `account_status`, not `participation_type`. The two
+fields answer different questions — lifecycle state vs. season enrollment type.
+Documented in SCHEMA.md.
 
-### Separated Physical from Enrollment
-Kept physicals as independent records because a single physical may span more than one season.
-
-### Added ACF Local JSON package
-Imported CPTs, taxonomy, and field groups into ACF and confirmed local JSON saving is working.
-
-### Archived original imported JSON files
-Moved original imported JSON into `acf-json/_archived/2026-03-21-initial-import` and allowed ACF to own active canonical filenames going forward.
-
-### Confirmed all CPT templates as PHP files
-Decision made to build all CPT templates as PHP files rather than mixing PHP and Divi Theme Builder. Theme Builder can be used later to replace any template if preferred.
-
-### Updated CPT URL slugs
-Simplified all CPT rewrite slugs via ACF Post Types.
-
-### Set sport taxonomy to hierarchical
-Changed Sport taxonomy to hierarchical (category-style) to support future sub-sport or division structure.
-
-### Registered Coach CPT with sport taxonomy
-Added sport taxonomy to Coach CPT registration. Coaches are now directly queryable by sport via tax_query. Role and bio override per season remain managed via the `coach_roster` repeater on Athletic Season. Coaches can span multiple sports.
-
-### Created dev seed data script
-`public/scripts/seed-data.sh` — WP-CLI script. Note: `wp post term set` requires slug not term ID.
-
-### Split functions.php into inc/ structure
-Moved Divi Projects filter to `inc/divi.php`. Added stub files for `inc/enqueue.php`, `inc/cpt-hooks.php`, `inc/query-mods.php`, `inc/acf-helpers.php`, and `inc/gravity-helpers.php`. `functions.php` is now a clean loader.
-
-### Built single-athlete.php
-PHP template. Bio, season history, PR/SR records, results grouped by Season → Meet. Cross-links throughout.
-
-### Built single-athletic_meet.php
-PHP template. Meet header, results grouped by event sorted by place. Gated by `results_status`. Cross-links to athletes and season.
-
-### Built single-athletic_season.php
-PHP template. Season header, coaches roster (from repeater), meet schedule, athlete roster. Cross-links throughout.
-
-### Built single-coach.php
-PHP template. Photo, name, preferred title, bio.
-
-### Built single-athletic_event.php
-PHP template. Event header (name, sport linked to taxonomy, category, distance, measurement), all-time records, results grouped by Season → Meet. Sports link via get_term_link().
-
-### Built taxonomy-sport.php
-PHP template. Sport header, seasons, coaches (queried via sport taxonomy), athletes table with gender/grad year/status columns and data attributes for JS filtering.
-
-### Built archive-athlete.php
-PHP template. All athletes. Table with name, gender, grad year, account status, sport. Data attributes: data-gender, data-grad-year, data-status, data-sport. Sorted by last name.
-
-### Built archive-athletic_meet.php
-PHP template. All meets. Table with name, date, location, season, status. Data attributes: data-season, data-sport, data-status, data-results-status, data-year. Sorted by date descending.
-
-### Built archive-athletic_record.php
-PHP template. Structure: Sport → Event → Records table. Data attributes: data-record-type, data-sport, data-event, data-is-current. Current record detection derived from most recent meet date per athlete/event/record_type group. Sport headings link to taxonomy archive. Event headings link to event pages.
+### Determined build sequence for registration system
+Data population must precede form build; form build must precede hook code (hooks
+require real GF field IDs). Parked GravityForms work pending data population thread.
