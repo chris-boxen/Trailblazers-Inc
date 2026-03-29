@@ -101,16 +101,16 @@ Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - All CPT templates are built as PHP files.
 
 ### Built
-- `single-athlete.php` — bio, season history, PRs, results grouped by Season → Meet. Cross-links to family, season, and meet pages.
-- `single-athletic_meet.php` — meet header, results grouped by event sorted by place. Cross-links to athletes and season. Gated by `results_status`.
-- `single-athletic_season.php` — season header, coaches roster, meet schedule, athlete roster. Cross-links throughout.
+- `single-athlete.php` — bio, season history, PRs, results grouped by Season → Meet.
+- `single-athletic_meet.php` — meet header, results grouped by event sorted by place. Gated by `results_status`.
+- `single-athletic_season.php` — season header, coaches roster, meet schedule, athlete roster.
 - `single-coach.php` — photo, name, title, bio.
+- `single-athletic_event.php` — event header (name, sport linked to taxonomy, category, distance, measurement), all-time records, results grouped by Season → Meet.
 - `taxonomy-sport.php` — sport header, seasons, coaches, athletes table with filtering attributes.
-- `archive-athlete.php` — all athletes table with name, gender, grad year, status, sport. Data attributes for JS filtering.
-- `archive-athletic_meet.php` — all meets table with name, date, location, season, status. Data attributes for JS filtering.
+- `archive-athlete.php` — all athletes, sortable/filterable table, data attributes.
+- `archive-athletic_meet.php` — all meets, sortable/filterable table, data attributes.
 
 ### Not yet built
-- `single-athletic_event.php`
 - `archive-athletic_record.php`
 
 ## Current Risks / Watchouts
@@ -119,3 +119,4 @@ Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - Divi Theme Builder can silently override PHP templates — check Theme Builder assignments when a template appears blank.
 - Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.
 - Archive templates require `has_archive => true` on the CPT — verify in ACF Post Types if an archive URL 404s.
+- Results on single-athletic_event.php are queried via the `event` post object field on Athletic Result. Results with only a free-text `event_name` (no linked event post) will not appear here — they still appear on athlete and meet pages.

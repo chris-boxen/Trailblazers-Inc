@@ -59,6 +59,9 @@ PHP template. Displays season header, coaches roster (from `coach_roster` repeat
 ### Built single-coach.php
 PHP template. Displays coach photo, name, preferred title, and bio.
 
+### Built single-athletic_event.php
+PHP template. Displays event header (name, sport linked to taxonomy page, category, distance, measurement type), all-time records table, and results history grouped by Season → Meet → Results. Sports link to their taxonomy archive pages via get_term_link().
+
 ### Built taxonomy-sport.php
 PHP template. Displays sport name and description, seasons list, coaches list (queried directly via sport taxonomy), and athletes table. Athletes table includes gender, graduation year, and account status columns. Rows have `data-gender` and `data-status` attributes for JavaScript filtering. Athletes and coaches sorted by last name.
 

@@ -1,7 +1,6 @@
 # NEXT STEPS
 
 ## Now
-- Build `single-athletic_event.php`
 - Build `archive-athletic_record.php`
 
 ## Next

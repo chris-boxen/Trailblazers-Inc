@@ -13,10 +13,10 @@ All CPT-specific templates are built as PHP files. Divi Theme Builder may be use
 | `single-athletic_meet.php` | PHP | ✅ Built | Meet header, results by event, gated by `results_status` |
 | `single-athletic_season.php` | PHP | ✅ Built | Header, coaches, meet schedule, athlete roster |
 | `single-coach.php` | PHP | ✅ Built | Photo, name, title, bio |
+| `single-athletic_event.php` | PHP | ✅ Built | Header with linked sport, records, results (Season → Meet) |
 | `taxonomy-sport.php` | PHP | ✅ Built | Sport header, seasons, coaches, athletes table with filtering attributes |
 | `archive-athlete.php` | PHP | ✅ Built | All athletes, sortable/filterable table, data attributes |
 | `archive-athletic_meet.php` | PHP | ✅ Built | All meets, sortable/filterable table, data attributes |
-| `single-athletic_event.php` | PHP | ⬜ Not started | — |
 | `archive-athletic_record.php` | PHP | ⬜ Not started | — |
 
 ## Likely no public template
@@ -45,3 +45,4 @@ Add when individual templates grow complex enough to warrant partials:
 - Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.
 - Coach role/bio override per season lives in the `coach_roster` repeater on Athletic Season — not on the Coach post itself.
 - Archive templates require `has_archive => true` on the CPT. If an archive URL 404s, check ACF Post Types → Advanced → Has Archive.
+- Results on single-athletic_event.php query via the `event` post object field. Results with only a free-text `event_name` won't appear — they still show on athlete and meet pages.
