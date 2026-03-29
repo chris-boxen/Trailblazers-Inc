@@ -44,22 +44,24 @@
                 "id": ""
             },
             "post_type": [
-                "athletic_meet"
+                "tribe_events"
             ],
             "post_status": "",
-            "taxonomy": "",
+            "taxonomy": [
+                "tribe_events_cat:athletic-meet"
+            ],
             "return_format": "id",
             "multiple": 0,
             "allow_null": 0,
             "allow_in_bindings": 0,
-            "ui": 1,
             "bidirectional": 0,
+            "ui": 1,
             "bidirectional_target": []
         },
         {
             "key": "field_tb_event",
-            "label": "Event",
-            "name": "event",
+            "label": "Athletic Event",
+            "name": "athletic_event",
             "aria-label": "",
             "type": "post_object",
             "instructions": "",
@@ -79,8 +81,8 @@
             "multiple": 0,
             "allow_null": 0,
             "allow_in_bindings": 0,
-            "ui": 1,
             "bidirectional": 0,
+            "ui": 1,
             "bidirectional_target": []
         },
         {
@@ -392,5 +394,5 @@
     "description": "",
     "show_in_rest": 1,
     "display_title": "",
-    "modified": 1774317121
+    "modified": 1774814202
 }

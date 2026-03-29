@@ -152,8 +152,8 @@
         },
         {
             "key": "field_tb_handbook",
-            "label": "Handbook Link",
-            "name": "handbook_link",
+            "label": "Handbook",
+            "name": "handbook",
             "aria-label": "",
             "type": "link",
             "instructions": "",
@@ -166,27 +166,6 @@
             },
             "return_format": "array",
             "allow_in_bindings": 1
-        },
-        {
-            "key": "field_69c95329ecce2",
-            "label": "Handbook Title",
-            "name": "handbook_title",
-            "aria-label": "",
-            "type": "text",
-            "instructions": "",
-            "required": 0,
-            "conditional_logic": 0,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "default_value": "",
-            "maxlength": "",
-            "allow_in_bindings": 0,
-            "placeholder": "",
-            "prepend": "",
-            "append": ""
         },
         {
             "key": "field_69c97a933ea6a",
@@ -270,7 +249,7 @@
                 {
                     "key": "field_69c97d3a55510",
                     "label": "Results Unavailable Message",
-                    "name": "link",
+                    "name": "results_unavailable_message",
                     "aria-label": "",
                     "type": "wysiwyg",
                     "instructions": "",
@@ -555,5 +534,5 @@
     "description": "",
     "show_in_rest": 1,
     "display_title": "",
-    "modified": 1774812710
+    "modified": 1774814463
 }
