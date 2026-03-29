@@ -30,10 +30,11 @@ Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF 
 - Enrollment
 
 ### Taxonomies
-- Sport
+- Sport (hierarchical — behaves like a category)
 
 ## Confirmed CPT URL Slugs
 - athlete → `/athlete/`
+- coach → `/coach/`
 - family → `/family/`
 - enrollment → `/enrollment/`
 - athletic_season → `/season/`
@@ -62,11 +63,13 @@ Build a robust custom WordPress child theme for Trailblazers using ACF Pro, ACF 
 - Family does not maintain a mirrored Athlete relationship field as source of truth.
 - Season no longer stores athlete roster rows; athlete-season participation is modeled through Enrollment.
 - Participation Type belongs on Enrollment, not Athlete.
-- Sport is implemented as a taxonomy rather than only a select field.
+- Sport is implemented as a hierarchical taxonomy (category-style).
 - Event-specific labels on results remain free text where needed (`event_name`) while canonical event structure lives in Athletic Event.
 - Stored records linked to source results are preferred over fully computing every PR/SR on demand.
 - Athletic Result normalization is resolved: `result_display` for human-readable output plus type-specific normalized numeric fields (`result_time_seconds`, `result_distance_meters`, `result_height_meters`, `result_points`).
 - `results_status` on Athletic Meet gates whether results are displayed (Future / Pending / Available). Empty field treated as Future.
+- Coach-season relationship is stored on Athletic Season via `coach_roster` repeater (coach → season direction). Reverse lookup (season → coach page) is not currently implemented.
+- All CPT templates are PHP files. Divi Theme Builder is not used for any CPT templates at this stage.
 
 ## Seed Data
 Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
@@ -79,25 +82,30 @@ Dev seed data exists in `public/scripts/seed-data.sh`. Creates:
 - Enrollments: IDs 179, 180, 181
 - Results: IDs 182–187
 - Records: Maya PR (ID: 188), Adaeze PR (ID: 189)
+- Note: 2 coaches added manually (not in seed script)
 
 ## Current Template Status
 - This is a Divi 5 child theme. Divi provides all baseline fallback templates.
 - `index.php` exists in the child theme to satisfy WordPress theme validity requirement.
-- No other baseline templates are needed unless deliberately overriding Divi behavior.
-- CPT-specific template strategy is confirmed (see TEMPLATES.md).
+- All CPT templates are built as PHP files.
 
 ### Built
-- `single-athlete.php` — complete. Shows bio, season history, PRs, results grouped by Season → Meet. Cross-links to family, season, and meet pages.
-- `single-athletic_meet.php` — complete. Shows meet header, results grouped by event sorted by place. Cross-links to athletes and season. Gated by `results_status` field.
+- `single-athlete.php` — bio, season history, PRs, results grouped by Season → Meet. Cross-links to family, season, and meet pages.
+- `single-athletic_meet.php` — meet header, results grouped by event sorted by place. Cross-links to athletes and season. Gated by `results_status`.
+- `single-athletic_season.php` — season header, coaches roster, meet schedule, athlete roster. Cross-links throughout.
+- `single-coach.php` — photo, name, title, bio. No season backreference (deferred).
 
 ### Not yet built
-- `single-athletic_season.php` (Divi Theme Builder)
-- `taxonomy-sport.php` (Divi Theme Builder)
-- `single-coach.php` (Divi Theme Builder)
-- Archive templates (approach TBD)
+- `taxonomy-sport.php`
+- `archive-athlete.php`
+- `archive-athletic_meet.php`
+- `single-athletic_event.php`
+- `archive-athletic_record.php`
 
 ## Current Risks / Watchouts
 - ACF schema changes can create DB/JSON drift if Git branches are switched carelessly.
 - `functions.php` should be split into an `inc/` structure before it becomes crowded.
 - Theme folder name currently contains a space; consider changing to a slug-style folder name later.
 - Divi Theme Builder can silently override PHP templates — check Theme Builder assignments when a template appears blank.
+- Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.
+- Coach CPT has no direct season link — season backreference requires a repeater meta LIKE query (fragile, deferred).

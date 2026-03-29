@@ -3,32 +3,21 @@
 ## Approach
 This is a Divi 5 child theme. Divi provides all baseline fallback templates in the parent. The child theme only needs `index.php` for WordPress theme validity — no other baseline overrides are required unless deliberately changing Divi's default behavior.
 
-CPT-specific templates are built in the child theme because Divi has no meaningful fallback for custom post type data and relational queries.
+All CPT-specific templates are built as PHP files. Divi Theme Builder may be used later to replace any template if a visual editing workflow is preferred, but PHP is the current standard.
 
-## Template strategy: PHP vs Divi Theme Builder
+## Template status
 
-| Template | Approach | Status | Reason |
+| Template | Approach | Status | Notes |
 |---|---|---|---|
-| `single-athlete.php` | PHP template | ✅ Built | Results history, PR/SR records, and season history require relational WP_Query loops |
-| `single-athletic_meet.php` | PHP template | ✅ Built | Results table with event filtering requires a custom loop and sort logic |
-| `single-athletic_season.php` | Divi Theme Builder | ⬜ Not started | Primarily layout + dynamic fields; no complex relational queries |
-| `taxonomy-sport.php` | Divi Theme Builder | ⬜ Not started | Filtered archive view; Divi handles this reasonably |
-| `single-coach.php` | Divi Theme Builder | ⬜ Not started | Bio, image, season associations — simple dynamic fields |
-
-## Build order
-
-### Now
-- `single-athletic_season.php` (Theme Builder)
-- `taxonomy-sport.php` (Theme Builder)
-
-### Next
-- `single-coach.php` (Theme Builder)
-
-### Later
-- `archive-athlete.php` (approach TBD)
-- `archive-athletic_meet.php` (approach TBD)
-- `single-athletic_event.php` (approach TBD)
-- `archive-athletic_record.php` (approach TBD)
+| `single-athlete.php` | PHP | ✅ Built | Bio, season history, PRs, results (Season → Meet) |
+| `single-athletic_meet.php` | PHP | ✅ Built | Meet header, results by event, gated by `results_status` |
+| `single-athletic_season.php` | PHP | ✅ Built | Header, coaches, meet schedule, athlete roster |
+| `single-coach.php` | PHP | ✅ Built | Photo, name, title, bio. No season backreference. |
+| `taxonomy-sport.php` | PHP | ⬜ Not started | Sport landing/archive page |
+| `archive-athlete.php` | TBD | ⬜ Not started | — |
+| `archive-athletic_meet.php` | TBD | ⬜ Not started | — |
+| `single-athletic_event.php` | TBD | ⬜ Not started | — |
+| `archive-athletic_record.php` | TBD | ⬜ Not started | — |
 
 ## Likely no public template
 - Family
@@ -37,14 +26,13 @@ CPT-specific templates are built in the child theme because Divi has no meaningf
 - Athletic Physical
 
 ## Template-parts direction
-Add for PHP templates when complexity grows:
+Add when individual templates grow complex enough to warrant partials:
 - `template-parts/athlete/`
 - `template-parts/meet/`
+- `template-parts/season/`
 - `template-parts/globals/`
 
-Not needed (Theme Builder handles):
-- `template-parts/season/`
-- `template-parts/coach/`
-
-## Watchout
-Divi Theme Builder can silently override PHP templates. If a PHP template appears blank, check Theme Builder for a conflicting Singles or All Posts assignment targeting that CPT.
+## Watchouts
+- Divi Theme Builder can silently override PHP templates. If a PHP template appears blank, check Theme Builder for a conflicting Singles or All Posts assignment targeting that CPT.
+- Coach CPT has no direct season link. Season backreference requires a repeater meta LIKE query (fragile). Deferred.
+- Hierarchical sport taxonomy: use `'include_children' => false` in `tax_query` when exact-term matching is needed.

@@ -22,8 +22,8 @@ Imported CPTs, taxonomy, and field groups into ACF and confirmed local JSON savi
 ### Archived original imported JSON files
 Moved original imported JSON into `acf-json/_archived/2026-03-21-initial-import` and allowed ACF to own active canonical filenames going forward.
 
-### Confirmed Divi child theme template strategy
-Baseline templates not needed — Divi parent handles fallbacks. Only `index.php` required for theme validity. PHP templates used only where relational queries are required; Divi Theme Builder used for layout-only CPTs.
+### Confirmed all CPT templates as PHP files
+Decision made to build all CPT templates as PHP files rather than mixing PHP and Divi Theme Builder. Theme Builder can be used later to replace any template if preferred.
 
 ### Updated CPT URL slugs
 Simplified all CPT rewrite slugs via ACF Post Types:
@@ -33,12 +33,22 @@ Simplified all CPT rewrite slugs via ACF Post Types:
 - `athletic_result` → `result`
 - `athletic_record` → `record`
 - `athletic_physical` → `physical`
+- `coach` → `coach` (explicitly set)
+
+### Set sport taxonomy to hierarchical
+Changed Sport taxonomy to hierarchical (category-style) to support future sub-sport or division structure.
 
 ### Created dev seed data script
-`public/scripts/seed-data.sh` — WP-CLI script that creates 2 families, 3 athletes, 1 season, 2 meets, 2 events, 3 enrollments, 6 results, and 2 PR records with correct ACF field key meta entries.
+`public/scripts/seed-data.sh` — WP-CLI script that creates 2 families, 3 athletes, 1 season, 2 meets, 2 events, 3 enrollments, 6 results, and 2 PR records with correct ACF field key meta entries. Note: `wp post term set` requires slug not term ID — fixed in documentation.
 
 ### Built single-athlete.php
 PHP template. Displays athlete bio, season history, PR/SR records, and results grouped by Season → Meet. Cross-links to family, season, and meet pages.
 
 ### Built single-athletic_meet.php
 PHP template. Displays meet header (name, date, location, season, status) and results grouped by event and sorted by place. Cross-links to athlete pages and season. Results display gated by `results_status` field (Future / Pending / Available). Empty `results_status` treated as Future.
+
+### Built single-athletic_season.php
+PHP template (originally planned for Divi Theme Builder, converted to PHP for consistency and to support relational queries). Displays season header, coaches roster (from `coach_roster` repeater), meet schedule, and athlete roster (from Enrollments). Cross-links throughout.
+
+### Built single-coach.php
+PHP template. Displays coach photo, name, preferred title, and bio. Season backreference not included — coach-season relationship is stored on Season, not Coach. Deferred as future enhancement.
