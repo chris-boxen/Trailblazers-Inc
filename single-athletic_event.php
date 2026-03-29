@@ -7,12 +7,21 @@
  *   1. Event header (name, category, measurement type, distance, relay status)
  *   2. All-time records for this event (queried from Athletic Record)
  *   3. Results history — all results for this event across all athletes and meets,
- *      grouped by meet, sorted by date descending
+ *      grouped by season → meet, sorted by date descending
  *
  * Field references:
  *   group_tb_athletic_event.json  — event fields
- *   group_tb_athletic_record.json — record fields (queried)
- *   group_tb_athletic_result.json — result fields (queried)
+ *   group_tb_athletic_record.json — record fields (queried); event field name: 'event'
+ *   group_tb_athletic_result.json — result fields (queried); event field name: 'athletic_event'
+ *   group_tb_athletic_season.json — results_enabled flag (customize_data group, direct query)
+ *
+ * TEC field references (postmeta, not ACF):
+ *   _EventStartDate — meet start datetime (format: Y-m-d H:i:s)
+ *
+ * FIELD NAME NOTE:
+ *   On athletic_result: the Athletic Event relationship field is named 'athletic_event'
+ *   On athletic_record: the Athletic Event relationship field is named 'event'
+ *   These differ — use the correct name per CPT or meta_query will return nothing.
  */
 
 get_header();
@@ -48,7 +57,8 @@ while ( have_posts() ) :
 	}
 
 	// -------------------------------------------------------------------------
-	// RECORDS — all-time records for this event, ordered by record type
+	// RECORDS — all-time records for this event
+	// Note: athletic_record uses field name 'event' for the Athletic Event link
 	// -------------------------------------------------------------------------
 	$records_query = new WP_Query( [
 		'post_type'      => 'athletic_record',
@@ -74,7 +84,9 @@ while ( have_posts() ) :
 			$preferred = $athlete_id ? get_field( 'preferred_name', $athlete_id ) : '';
 			$last      = $athlete_id ? get_field( 'last_name', $athlete_id ) : '';
 
-			$meet_date = $meet_id ? get_field( 'date', $meet_id ) : '';
+			// TEC date from _EventStartDate postmeta
+			$raw_date  = $meet_id ? get_post_meta( $meet_id, '_EventStartDate', true ) : '';
+			$meet_date = $raw_date ? date( 'Y-m-d', strtotime( $raw_date ) ) : '';
 
 			$records[] = [
 				'record_id'      => $record->ID,
@@ -83,7 +95,7 @@ while ( have_posts() ) :
 				'athlete_name'   => trim( ( $preferred ?: $first ) . ' ' . $last ),
 				'result_display' => $linked_result_id ? get_field( 'result_display', $linked_result_id ) : '—',
 				'meet_id'        => $meet_id,
-				'meet_name'      => $meet_id ? get_field( 'meet_name', $meet_id ) : '—',
+				'meet_name'      => $meet_id ? get_the_title( $meet_id ) : '—',
 				'meet_date'      => $meet_date ? date_i18n( 'F j, Y', strtotime( $meet_date ) ) : '—',
 			];
 		}
@@ -92,6 +104,8 @@ while ( have_posts() ) :
 
 	// -------------------------------------------------------------------------
 	// RESULTS HISTORY — all results for this event, grouped by season → meet
+	// Note: athletic_result uses field name 'athletic_event' for the Athletic Event link
+	// Seasons where results_enabled = false are excluded from display
 	// -------------------------------------------------------------------------
 	$results_query = new WP_Query( [
 		'post_type'      => 'athletic_result',
@@ -99,7 +113,7 @@ while ( have_posts() ) :
 		'post_status'    => 'publish',
 		'meta_query'     => [
 			[
-				'key'     => 'event',
+				'key'     => 'athletic_event',
 				'value'   => $event_id,
 				'compare' => '=',
 			],
@@ -108,7 +122,7 @@ while ( have_posts() ) :
 
 	// Group: season_id => meet_id => [ results ]
 	$results_by_season = [];
-	$season_meta       = []; // season_id => [ title, start_date ]
+	$season_meta       = []; // season_id => [ title, start_date, results_enabled ]
 
 	if ( $results_query->have_posts() ) {
 		foreach ( $results_query->posts as $result ) {
@@ -119,9 +133,25 @@ while ( have_posts() ) :
 			$season_id = get_field( 'season', $meet_id );
 			if ( ! $season_id ) continue;
 
+			// Cache season metadata — only look up once per season
+			if ( ! isset( $season_meta[ $season_id ] ) ) {
+				$season_meta[ $season_id ] = [
+					'title'           => get_field( 'season_title', $season_id ) ?: get_the_title( $season_id ),
+					'start_date'      => get_field( 'start_date', $season_id ),
+					'results_enabled' => get_field( 'results_enabled', $season_id ),
+				];
+			}
+
+			// Skip seasons where results display is disabled
+			if ( ! $season_meta[ $season_id ]['results_enabled'] ) continue;
+
 			$first     = $athlete_id ? get_field( 'first_name', $athlete_id ) : '';
 			$preferred = $athlete_id ? get_field( 'preferred_name', $athlete_id ) : '';
 			$last      = $athlete_id ? get_field( 'last_name', $athlete_id ) : '';
+
+			// TEC date from _EventStartDate postmeta
+			$raw_date  = get_post_meta( $meet_id, '_EventStartDate', true );
+			$meet_date = $raw_date ? date( 'Y-m-d', strtotime( $raw_date ) ) : '';
 
 			$results_by_season[ $season_id ][ $meet_id ][] = [
 				'result_id'      => $result->ID,
@@ -129,24 +159,17 @@ while ( have_posts() ) :
 				'athlete_name'   => trim( ( $preferred ?: $first ) . ' ' . $last ) ?: 'Unknown',
 				'result_display' => get_field( 'result_display', $result->ID ),
 				'place'          => get_field( 'place', $result->ID ),
-				'meet_name'      => get_field( 'meet_name', $meet_id ),
-				'meet_date'      => get_field( 'date', $meet_id ),
+				'meet_name'      => get_the_title( $meet_id ),
+				'meet_date'      => $meet_date,
 			];
-
-			// Cache season metadata
-			if ( ! isset( $season_meta[ $season_id ] ) ) {
-				$season_meta[ $season_id ] = [
-					'title'      => get_field( 'season_title', $season_id ) ?: get_the_title( $season_id ),
-					'start_date' => get_field( 'start_date', $season_id ),
-				];
-			}
 		}
 
-		// Sort each meet's results by place ascending
+		// Sort each meet's results by place ascending (nulls last)
 		foreach ( $results_by_season as $sid => &$meets ) {
-			// Sort meets within season by date ascending
 			uasort( $meets, function( $a, $b ) {
-				return strcmp( $a[0]['meet_date'], $b[0]['meet_date'] );
+				$da = $a[0]['meet_date'] ?? '';
+				$db = $b[0]['meet_date'] ?? '';
+				return strcmp( $da, $db ); // ascending by date
 			} );
 			foreach ( $meets as $mid => &$meet_results ) {
 				usort( $meet_results, function( $a, $b ) {
@@ -159,11 +182,11 @@ while ( have_posts() ) :
 		}
 		unset( $meets );
 
-		// Sort seasons by start date using season_meta
+		// Sort seasons by start date descending (most recent first)
 		uksort( $results_by_season, function( $a, $b ) use ( $season_meta ) {
 			$da = $season_meta[ $a ]['start_date'] ?? '';
 			$db = $season_meta[ $b ]['start_date'] ?? '';
-			return strcmp( $db, $da ); // descending
+			return strcmp( $db, $da );
 		} );
 	}
 	wp_reset_postdata();
@@ -183,7 +206,8 @@ while ( have_posts() ) :
 
 			<?php if ( $sports && ! is_wp_error( $sports ) ) : ?>
 				<p class="tb-event-sport">
-					<?php $sport_links = [];
+					<?php
+					$sport_links = [];
 					foreach ( $sports as $sport ) {
 						$sport_url = get_term_link( $sport );
 						if ( ! is_wp_error( $sport_url ) ) {
@@ -192,7 +216,8 @@ while ( have_posts() ) :
 							$sport_links[] = esc_html( $sport->name );
 						}
 					}
-					echo implode( ', ', $sport_links ); ?>
+					echo implode( ', ', $sport_links );
+					?>
 				</p>
 			<?php endif; ?>
 
@@ -283,33 +308,39 @@ while ( have_posts() ) :
 		<h2>Results History</h2>
 
 		<?php if ( empty( $results_by_season ) ) : ?>
-			<p class="tb-no-data">No results on record for this event.</p>
+			<p class="tb-no-data">No results on file for this event.</p>
 		<?php else : ?>
 
 			<?php foreach ( $results_by_season as $season_id => $meets ) :
-				$season_title = $season_meta[ $season_id ]['title'] ?? 'Season ' . $season_id;
+				$season_info = $season_meta[ $season_id ] ?? [];
+				$season_url  = get_permalink( $season_id );
 			?>
 
 			<div class="tb-results-season">
 				<h3 class="tb-season-label">
-					<a href="<?php echo esc_url( get_permalink( $season_id ) ); ?>">
-						<?php echo esc_html( $season_title ); ?>
-					</a>
+					<?php if ( $season_url ) : ?>
+						<a href="<?php echo esc_url( $season_url ); ?>">
+							<?php echo esc_html( $season_info['title'] ?? '' ); ?>
+						</a>
+					<?php else : ?>
+						<?php echo esc_html( $season_info['title'] ?? '' ); ?>
+					<?php endif; ?>
 				</h3>
 
 				<?php foreach ( $meets as $meet_id => $meet_results ) :
-					$meet_name         = $meet_results[0]['meet_name'] ?? 'Meet ' . $meet_id;
-					$meet_date         = $meet_results[0]['meet_date'] ?? '';
-					$meet_date_display = $meet_date ? date_i18n( 'F j, Y', strtotime( $meet_date ) ) : '';
+					$first_result = $meet_results[0];
+					$meet_date_display = $first_result['meet_date']
+						? date_i18n( 'F j, Y', strtotime( $first_result['meet_date'] ) )
+						: '';
 				?>
 
 				<div class="tb-results-meet">
 					<h4 class="tb-meet-label">
 						<a href="<?php echo esc_url( get_permalink( $meet_id ) ); ?>">
-							<?php echo esc_html( $meet_name ); ?>
+							<?php echo esc_html( $first_result['meet_name'] ); ?>
 						</a>
 						<?php if ( $meet_date_display ) : ?>
-							<span class="tb-meet-date"><?php echo esc_html( $meet_date_display ); ?></span>
+							<span class="tb-meet-date">(<?php echo esc_html( $meet_date_display ); ?>)</span>
 						<?php endif; ?>
 					</h4>
 
@@ -324,7 +355,7 @@ while ( have_posts() ) :
 						<tbody>
 							<?php foreach ( $meet_results as $r ) : ?>
 							<tr>
-								<td><?php echo $r['place'] !== '' && $r['place'] !== null ? esc_html( $r['place'] ) : '—'; ?></td>
+								<td><?php echo ( $r['place'] !== '' && $r['place'] !== null ) ? esc_html( $r['place'] ) : '—'; ?></td>
 								<td>
 									<?php if ( $r['athlete_id'] ) : ?>
 										<a href="<?php echo esc_url( get_permalink( $r['athlete_id'] ) ); ?>">

@@ -4,15 +4,21 @@
  * Displays a single Athletic Season page.
  *
  * Sections:
- *   1. Season header (title, sport, dates, status, description)
- *   2. Meets — queried from Athletic Meet where season = this post
- *   3. Athlete roster — queried from Enrollment where season = this post
+ *   1. Season header (title, sport, dates, status, description, handbook)
+ *   2. Coaches — from coach_roster repeater on this season
+ *   3. Meet Schedule — queried from tribe_events where season = this post
+ *   4. Athlete Roster — queried from Enrollment where season = this post
  *
  * Field references:
- *   group_tb_athletic_season.json — season fields
- *   group_tb_athletic_meet.json   — meet fields (queried)
+ *   group_tb_athletic_season.json — season fields, season flags (customize_data group)
+ *   group_tb_athletic_meet.json   — season + results_status on tribe_events (via ACF)
  *   group_tb_enrollment.json      — enrollment fields (queried)
  *   group_tb_athlete.json         — athlete name fields (queried via enrollment)
+ *
+ * TEC field references (postmeta, not ACF):
+ *   _EventStartDate — meet start datetime (format: Y-m-d H:i:s)
+ *   _EventVenueID   — linked tribe_venue post ID
+ *   _VenueCity, _VenueStateProvince — on the venue post
  */
 
 get_header();
@@ -27,12 +33,17 @@ while ( have_posts() ) :
 	// -------------------------------------------------------------------------
 	$season_title    = get_field( 'season_title', $season_id );
 	$description     = get_field( 'description', $season_id );
-	$start_date      = get_field( 'start_date', $season_id );   // Y-m-d
-	$end_date        = get_field( 'end_date', $season_id );     // Y-m-d
 	$year            = get_field( 'year', $season_id );
 	$timeline_status = get_field( 'timeline_status', $season_id ); // Past | Current | Future
-	$handbook        = get_field( 'handbook', $season_id );     // link field → array
-	$featured_image  = get_field( 'featured_image', $season_id ); // image ID
+	$handbook        = get_field( 'handbook', $season_id );        // link field → array
+	$featured_image  = get_post_thumbnail_id( $season_id );
+
+	// Dates (sub-fields of 'Dates' group — directly queryable via get_field)
+	$start_date = get_field( 'start_date', $season_id ); // Y-m-d
+	$end_date   = get_field( 'end_date', $season_id );   // Y-m-d
+
+	// Season flags (sub-fields of 'customize_data' group — directly queryable)
+	$results_enabled = get_field( 'results_enabled', $season_id );
 
 	// Sport taxonomy terms
 	$sports = get_the_terms( $season_id, 'sport' );
@@ -44,7 +55,7 @@ while ( have_posts() ) :
 	// -------------------------------------------------------------------------
 	// COACHES — read coach_roster repeater stored on the season post
 	// -------------------------------------------------------------------------
-	$coaches = [];
+	$coaches      = [];
 	$coach_roster = get_field( 'coach_roster', $season_id );
 
 	if ( $coach_roster ) {
@@ -67,13 +78,14 @@ while ( have_posts() ) :
 	}
 
 	// -------------------------------------------------------------------------
-	// MEETS — query all meets linked to this season, ordered by date ascending
+	// MEETS — query tribe_events where season = this post, ordered by start date
+	// TEC stores date in _EventStartDate postmeta (format: Y-m-d H:i:s)
 	// -------------------------------------------------------------------------
 	$meets_query = new WP_Query( [
-		'post_type'      => 'athletic_meet',
+		'post_type'      => 'tribe_events',
 		'posts_per_page' => -1,
 		'post_status'    => 'publish',
-		'meta_key'       => 'date',
+		'meta_key'       => '_EventStartDate',
 		'orderby'        => 'meta_value',
 		'order'          => 'ASC',
 		'meta_query'     => [
@@ -88,15 +100,23 @@ while ( have_posts() ) :
 	$meets = [];
 	if ( $meets_query->have_posts() ) {
 		foreach ( $meets_query->posts as $meet ) {
-			$meet_date   = get_field( 'date', $meet->ID );
-			$meet_status = get_field( 'status', $meet->ID );
+
+			// TEC date — _EventStartDate is "Y-m-d H:i:s"
+			$raw_date  = get_post_meta( $meet->ID, '_EventStartDate', true );
+			$meet_date = $raw_date ? date( 'Y-m-d', strtotime( $raw_date ) ) : '';
+
+			// Venue via TEC
+			$venue_id    = get_post_meta( $meet->ID, '_EventVenueID', true );
+			$venue_city  = $venue_id ? get_post_meta( $venue_id, '_VenueCity', true ) : '';
+			$venue_state = $venue_id ? get_post_meta( $venue_id, '_VenueStateProvince', true ) : '';
+
 			$meets[] = [
-				'meet_id'    => $meet->ID,
-				'meet_name'  => get_field( 'meet_name', $meet->ID ) ?: get_the_title( $meet->ID ),
-				'meet_date'  => $meet_date ? date_i18n( 'F j, Y', strtotime( $meet_date ) ) : '',
-				'city'       => get_field( 'city', $meet->ID ),
-				'state'      => get_field( 'state', $meet->ID ),
-				'status'     => $meet_status,
+				'meet_id'        => $meet->ID,
+				'meet_name'      => get_the_title( $meet->ID ),
+				'meet_date'      => $meet_date,
+				'date_display'   => $meet_date ? date_i18n( 'F j, Y', strtotime( $meet_date ) ) : '',
+				'city'           => $venue_city,
+				'state'          => $venue_state,
 				'results_status' => get_field( 'results_status', $meet->ID ),
 			];
 		}
@@ -104,7 +124,7 @@ while ( have_posts() ) :
 	wp_reset_postdata();
 
 	// -------------------------------------------------------------------------
-	// ATHLETE ROSTER — query enrollments for this season
+	// ATHLETE ROSTER — queried from Enrollment where season = this post
 	// -------------------------------------------------------------------------
 	$enrollment_query = new WP_Query( [
 		'post_type'      => 'enrollment',
@@ -136,7 +156,6 @@ while ( have_posts() ) :
 				'participation_type' => get_field( 'participation_type', $enrollment->ID ),
 			];
 		}
-		// Sort roster alphabetically by last name
 		usort( $athletes, function( $a, $b ) {
 			return strcmp( $a['name'], $b['name'] );
 		} );
@@ -243,7 +262,8 @@ while ( have_posts() ) :
 
 
 	<?php // ----------------------------------------------------------------- ?>
-	<?php // SECTION 3: MEETS                                                   ?>    <?php // ----------------------------------------------------------------- ?>
+	<?php // SECTION 3: MEETS                                                   ?>
+	<?php // ----------------------------------------------------------------- ?>
 	<section class="tb-season-meets">
 
 		<h2>Meet Schedule</h2>
@@ -257,7 +277,6 @@ while ( have_posts() ) :
 						<th>Meet</th>
 						<th>Date</th>
 						<th>Location</th>
-						<th>Status</th>
 						<th>Results</th>
 					</tr>
 				</thead>
@@ -269,15 +288,14 @@ while ( have_posts() ) :
 								<?php echo esc_html( $meet['meet_name'] ); ?>
 							</a>
 						</td>
-						<td><?php echo esc_html( $meet['meet_date'] ?: '—' ); ?></td>
+						<td><?php echo esc_html( $meet['date_display'] ?: '—' ); ?></td>
 						<td>
 							<?php
 							$loc = array_filter( [ $meet['city'], $meet['state'] ] );
 							echo esc_html( $loc ? implode( ', ', $loc ) : '—' );
 							?>
 						</td>
-						<td><?php echo esc_html( $meet['status'] ?: '—' ); ?></td>
-						<td><?php echo esc_html( $meet['results_status'] ?: '—' ); ?></td>
+						<td><?php echo esc_html( $meet['results_status'] ?: 'Future' ); ?></td>
 					</tr>
 					<?php endforeach; ?>
 				</tbody>
@@ -314,7 +332,7 @@ while ( have_posts() ) :
 							</a>
 						</td>
 						<td><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></td>
-						<td><?php echo esc_html( $athlete['participation_type'] ?: '—' ); ?></td>
+						<td><?php echo esc_html( $athlete['participation_type'] ?: 'Athlete' ); ?></td>
 					</tr>
 					<?php endforeach; ?>
 				</tbody>
