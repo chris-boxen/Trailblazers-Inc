@@ -143,3 +143,30 @@ Sport is hierarchical. When querying by exact term (not including children), alw
 'include_children' => false
 ```
 in `tax_query` to avoid unintended matches on child terms.
+
+## WP Ultimate CSV Importer — ACF import constraints
+
+### Post Object fields inside ACF Group wrappers
+WP Ultimate CSV Importer does not reliably resolve ACF Post Object (and
+Relationship) fields when those fields are nested inside an ACF Group field.
+Resolution by post title works correctly for top-level fields only.
+
+**Rule:** Any CPT whose post object fields will be populated via CSV import must
+have those fields at the top level of the field group — not inside a Group wrapper.
+
+**Affected field groups (confirmed top-level, import-safe):**
+- `group_tb_enrollment.json` — season, family, athlete, application are top-level
+- `group_tb_athletic_result.json` — no Group wrappers
+- `group_tb_athletic_record.json` — no Group wrappers
+
+**Groups used for UI only (no post object fields inside):**
+- `group_tb_athletic_season.json` — `customize_data` group contains only
+  True/False and Textarea fields (safe); `Dates` group contains only date
+  and number fields (safe)
+
+### Post Object field resolution
+WP Ultimate CSV Importer resolves ACF Post Object fields by **post title**.
+Supply the exact `post_title` value of the referenced post in the CSV column.
+Resolution is case-sensitive and must match exactly.
+
+Post IDs are not required for standard post object field imports.

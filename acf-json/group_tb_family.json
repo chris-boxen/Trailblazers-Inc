@@ -66,6 +66,39 @@
             "append": ""
         },
         {
+            "key": "field_tb_family_status",
+            "label": "Family Status",
+            "name": "family_status",
+            "aria-label": "",
+            "type": "select",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "Active": "Active",
+                "Inactive": "Inactive",
+                "Alumni": "Alumni",
+                "Archived": "Archived",
+                "Banned\/Do Not Contact": "Banned\/Do Not Contact",
+                "Lead\/Prospect": "Lead\/Prospect"
+            },
+            "default_value": false,
+            "return_format": "value",
+            "multiple": 0,
+            "allow_null": 0,
+            "allow_in_bindings": 0,
+            "ui": 1,
+            "ajax": 0,
+            "placeholder": "",
+            "create_options": 0,
+            "save_options": 0
+        },
+        {
             "key": "field_tb_parents_guardians",
             "label": "Parents \/ Guardians",
             "name": "parents_guardians",
@@ -242,39 +275,6 @@
             ]
         },
         {
-            "key": "field_tb_family_status",
-            "label": "Family Status",
-            "name": "family_status",
-            "aria-label": "",
-            "type": "select",
-            "instructions": "",
-            "required": 0,
-            "conditional_logic": 0,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "choices": {
-                "Active": "Active",
-                "Inactive": "Inactive",
-                "Alumni": "Alumni",
-                "Archived": "Archived",
-                "Banned\/Do Not Contact": "Banned\/Do Not Contact",
-                "Lead\/Prospect": "Lead\/Prospect"
-            },
-            "default_value": false,
-            "return_format": "value",
-            "multiple": 0,
-            "allow_null": 0,
-            "allow_in_bindings": 0,
-            "ui": 1,
-            "ajax": 0,
-            "placeholder": "",
-            "create_options": 0,
-            "save_options": 0
-        },
-        {
             "key": "field_tb_street_address",
             "label": "Street Address",
             "name": "street_address",
@@ -435,5 +435,5 @@
     "description": "",
     "show_in_rest": 1,
     "display_title": "",
-    "modified": 1774792626
+    "modified": 1774835719
 }

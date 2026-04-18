@@ -1,5 +1,51 @@
 # CHANGELOG
 
+## 2026-04
+
+### Completed data population — Families, Athletes, Applications, Enrollments
+Successfully imported via WP Ultimate CSV Importer:
+- Families (90 records, including 14 new T&F-only families)
+- Athletes (145 records, active + alumni)
+- Applications (2024 XC and 2025 XC)
+- Enrollments (2025 XC: 142 records; 2026 TF: 56 records)
+
+Venues imported via WordPress XML importer.
+TEC Events (meets) imported via TEC's native CSV importer.
+
+---
+
+### Discovered: WP Ultimate CSV Importer does not reliably resolve ACF Post Object
+fields nested inside ACF Group wrappers
+
+**Finding:** During enrollment import, ACF Post Object fields (season, family,
+athlete, application) failed to resolve when those fields were nested inside an
+ACF Group field. The same fields resolved correctly when moved to the top level
+of the field group.
+
+**Confirmed behavior:** The importer resolves post object relationships by post
+title. This works correctly for top-level post object fields. Inside a Group
+wrapper, resolution is unreliable — some fields may resolve, others silently fail.
+
+**Resolution:** Removed the Group wrapper from the Enrollment field group's
+Connections section. The four post object fields (season, family, athlete,
+application) are now top-level fields. The Group was UI-only and had no
+functional purpose.
+
+**Rule going forward:** Do not nest ACF Post Object fields inside Group fields
+on any CPT where CSV import will be used. This applies to Athletic Result and
+Athletic Record field groups, which will be imported next. Confirmed: neither
+uses Group wrappers.
+
+**ACF JSON affected:** `group_tb_enrollment.json` — committed to repo.
+
+---
+
+### Renamed ACF field: `event` → `athletic_event` on Athletic Result
+The post object field linking Athletic Result to Athletic Event was renamed from
+`event` to `athletic_event` to eliminate naming ambiguity with TEC's `tribe_events`
+post type. Updated in `group_tb_athletic_result.json`. All templates updated
+accordingly (`meta_query` key changed from `'event'` to `'athletic_event'`).
+
 ## 2026-03 (TEC integration + schema restructure)
 
 ### Integrated The Events Calendar Pro — retired athletic_meet CPT
