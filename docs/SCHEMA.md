@@ -35,7 +35,7 @@ Sport taxonomy is registered on the following CPTs:
 
 Coach is registered with sport to allow direct sport-based querying (e.g. on
 `taxonomy-sport.php`). A coach's role and bio for a specific season are stored in
-the `coach_roster` repeater on the Athletic Season post — not on the Coach post itself.
+the `coach_roster` repeater on Athletic Season post — not on the Coach post itself.
 
 ## Source-of-truth rules
 - Family link is owned by Athlete
@@ -48,6 +48,7 @@ the `coach_roster` repeater on the Athletic Season post — not on the Coach pos
 - Coach role per season is owned by Athletic Season (via `coach_roster` repeater)
 - Current participation type (for filtering) is a denormalized snapshot on Athlete —
   source of truth for any given season is Enrollment (see below)
+- User → Family relationship is bidirectional (see User field group section below)
 
 ## Athlete fields of note
 - `first_name` — text
@@ -143,6 +144,73 @@ Sport is hierarchical. When querying by exact term (not including children), alw
 'include_children' => false
 ```
 in `tax_query` to avoid unintended matches on child terms.
+
+## Special schema watchout: User → Family relationship
+
+The User ↔ Family relationship is intentionally bidirectional and maintained on
+both sides. Each direction serves a distinct purpose.
+
+### Family.account_user (group_tb_family.json)
+- **Type:** ACF User field, return format: ID
+- **Direction:** Family → User
+- **Role:** The authoritative link. Identifies which WP user account belongs to
+  this household. Used to locate a family from the current user:
+  ```php
+  // Standard pattern — locate family from logged-in user
+  $families = get_posts([
+      'post_type'  => 'family',
+      'meta_key'   => 'account_user',
+      'meta_value' => get_current_user_id(),
+  ]);
+  ```
+- **Set by:** Registration hook (new family) or manual admin assignment.
+
+### User.family (group_tb_user.json)
+- **Type:** ACF Post Object field, post type: family, return format: ID
+- **Direction:** User → Family
+- **Role:** Reverse reference. Provides a direct, GPPA-friendly path from the
+  current user to their Family post without a meta query. Required for
+  GravityForms Populate Anything chains that start at the current user and
+  need to read Family post fields.
+  ```php
+  // Direct lookup — no meta query needed
+  $family_id = get_field( 'family', 'user_' . get_current_user_id() );
+  ```
+- **Set by:** Same operation that sets `account_user` on the Family post.
+  Both sides must be populated together.
+
+### User.family_id (group_tb_user.json)
+- **Type:** ACF Text field
+- **Role:** Scalar TB identifier (e.g. `TB-66281`). Provides a simple string
+  anchor for GPPA filter matching without requiring post object traversal.
+  Also useful as a human-readable identifier in admin views and debug output.
+- **Set by:** Same linkage pass as `User.family` and `Family.account_user`.
+- **Not the primary key for lookups** — use `User.family` (post object) for
+  any query that needs to read Family post fields.
+
+### Field key naming rationale
+ACF field keys must be globally unique across the entire installation. The user
+field group uses the `_user_` infix in its keys (`field_tb_user_family`,
+`field_tb_user_family_id`) to avoid collisions with identically-named fields on
+CPTs (`field_tb_family` on Application, `field_tb_family_id` on Family/Athlete).
+The field `name` values (`family`, `family_id`) are intentionally the same as their
+CPT counterparts — they live in `wp_usermeta`, not `wp_postmeta`, so there is no
+storage collision.
+
+### Linkage rule
+All three fields must be populated atomically:
+1. `Family.account_user` = WP user ID
+2. `User.family` = Family post ID
+3. `User.family_id` = Family TB identifier string
+
+This happens during the user import linkage pass and during the New Family
+registration hook. Never set one without setting all three.
+
+### admin-facing notes
+- `User.family` is `allow_null: 1` — admin users and coaches do not have a
+  Family post and must not be forced to select one.
+- The user field group appears on all user profile screens (`user_form == all`).
+  On non-parent accounts, both fields will simply be empty.
 
 ## WP Ultimate CSV Importer — ACF import constraints
 
