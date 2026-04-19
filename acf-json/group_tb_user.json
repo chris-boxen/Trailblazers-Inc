@@ -62,12 +62,15 @@
     ],
     "menu_order": 0,
     "position": "normal",
-    "style": "default",
+    "style": "seamless",
     "label_placement": "top",
     "instruction_placement": "label",
     "hide_on_screen": "",
     "active": true,
     "description": "Fields attached to WP user accounts. Provides a direct link from the user to their Family post, and a scalar family_id for GPPA matching. The authoritative relationship is account_user on the Family post — these fields are the reverse reference.",
     "show_in_rest": 1,
-    "modified": 1745020800
+    "display_title": "",
+    "allow_ai_access": false,
+    "ai_description": "",
+    "modified": 1776549007
 }
