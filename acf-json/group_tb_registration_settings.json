@@ -1,0 +1,391 @@
+{
+    "key": "group_tb_registration_settings",
+    "title": "Registration Settings",
+    "fields": [
+        {
+            "key": "field_tb_reg_tab_season",
+            "label": "Season & Status",
+            "name": "",
+            "aria-label": "",
+            "type": "tab",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "placement": "top",
+            "endpoint": 0,
+            "selected": 0
+        },
+        {
+            "key": "field_tb_reg_active_season",
+            "label": "Active Season",
+            "name": "reg_active_season",
+            "aria-label": "",
+            "type": "post_object",
+            "instructions": "The current registration season. Saving this field also updates the tb_active_season_id site option used by GravityForms hooks.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "athletic_season"
+            ],
+            "taxonomy": [],
+            "return_format": "object",
+            "multiple": 0,
+            "allow_null": 1,
+            "allow_in_bindings": 0,
+            "ui": 1,
+            "ajax": 0,
+            "filters": [
+                "search"
+            ],
+            "bidirectional_target": []
+        },
+        {
+            "key": "field_tb_reg_status",
+            "label": "Registration Status",
+            "name": "reg_status",
+            "aria-label": "",
+            "type": "select",
+            "instructions": "Manual override. 'Coming Soon' and 'Closed' trump all date logic. Set to 'Open' to let open\/close dates control button state automatically.",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "coming_soon": "Coming Soon",
+                "open": "Open",
+                "closed": "Closed"
+            },
+            "default_value": "coming_soon",
+            "return_format": "value",
+            "multiple": 0,
+            "allow_null": 0,
+            "allow_in_bindings": 0,
+            "ui": 1,
+            "ajax": 0,
+            "placeholder": "",
+            "create_options": 0,
+            "save_options": 0
+        },
+        {
+            "key": "field_tb_reg_returning_open",
+            "label": "Returning Family Registration Opens",
+            "name": "reg_returning_open",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "Date and time returning family registration button activates. Only used when Status is set to Open.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_tb_reg_status",
+                        "operator": "!=",
+                        "value": "closed"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "F j, Y g:i a",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 0,
+            "default_to_current_date": 0,
+            "allow_in_bindings": 1
+        },
+        {
+            "key": "field_tb_reg_new_family_open",
+            "label": "New Family Registration Opens",
+            "name": "reg_new_family_open",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "Date and time new family registration button activates. Typically 2–3 weeks after returning family open date. Only used when Status is set to Open.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_tb_reg_status",
+                        "operator": "!=",
+                        "value": "closed"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "F j, Y g:i a",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 0,
+            "default_to_current_date": 0,
+            "allow_in_bindings": 1
+        },
+        {
+            "key": "field_tb_reg_close",
+            "label": "Registration Closes",
+            "name": "reg_close",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "Date and time both registration buttons deactivate. Only used when Status is set to Open.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_tb_reg_status",
+                        "operator": "!=",
+                        "value": "closed"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "F j, Y g:i a",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 0,
+            "default_to_current_date": 0,
+            "allow_in_bindings": 1
+        },
+        {
+            "key": "field_tb_reg_tab_forms",
+            "label": "Form IDs",
+            "name": "",
+            "aria-label": "",
+            "type": "tab",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "placement": "top",
+            "endpoint": 0,
+            "selected": 0
+        },
+        {
+            "key": "field_tb_reg_new_family_form_id",
+            "label": "New Family Form ID",
+            "name": "reg_new_family_form_id",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "GravityForms form ID for the New Family registration form. Leave blank until the form is built.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": 1,
+            "max": "",
+            "placeholder": "",
+            "step": 1,
+            "prepend": "GF #",
+            "append": ""
+        },
+        {
+            "key": "field_tb_reg_returning_form_id",
+            "label": "Returning Family Form ID",
+            "name": "reg_returning_family_form_id",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "GravityForms form ID for the Returning Family registration form. Leave blank until the form is built.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": 1,
+            "max": "",
+            "placeholder": "",
+            "step": 1,
+            "prepend": "GF #",
+            "append": ""
+        },
+        {
+            "key": "field_tb_reg_physicals_form_id",
+            "label": "Submit Physicals Form ID",
+            "name": "reg_physicals_form_id",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "GravityForms form ID for the Submit Physicals form. Leave blank until the form is built.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": 1,
+            "max": "",
+            "placeholder": "",
+            "step": 1,
+            "prepend": "GF #",
+            "append": ""
+        },
+        {
+            "key": "field_tb_reg_tab_messaging",
+            "label": "Messaging",
+            "name": "",
+            "aria-label": "",
+            "type": "tab",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "placement": "top",
+            "endpoint": 0,
+            "selected": 0
+        },
+        {
+            "key": "field_tb_reg_coming_soon_msg",
+            "label": "Coming Soon Message",
+            "name": "reg_coming_soon_message",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Displayed on the registration hub page and all registration form pages when Status is set to Coming Soon.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "tabs": "all",
+            "toolbar": "basic",
+            "media_upload": 0,
+            "delay": 0
+        },
+        {
+            "key": "field_tb_reg_closed_msg",
+            "label": "Closed Message",
+            "name": "reg_closed_message",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Displayed on the registration hub page and all registration form pages when Status is set to Closed, or after the registration close date has passed.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "tabs": "all",
+            "toolbar": "basic",
+            "media_upload": 0,
+            "delay": 0
+        },
+        {
+            "key": "field_tb_reg_new_confirm",
+            "label": "New Family Confirmation Text",
+            "name": "reg_new_family_confirmation",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Rendered by [tb_reg_confirmation type=\"new_family\"] on the confirmation page.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 0,
+            "delay": 0
+        },
+        {
+            "key": "field_tb_reg_ret_confirm",
+            "label": "Returning Family Confirmation Text",
+            "name": "reg_returning_family_confirmation",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Rendered by [tb_reg_confirmation type=\"returning_family\"] on the confirmation page.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 0,
+            "delay": 0
+        },
+        {
+            "key": "field_tb_reg_phys_confirm",
+            "label": "Physicals Confirmation Text",
+            "name": "reg_physicals_confirmation",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Rendered by [tb_reg_confirmation type=\"physicals\"] on the confirmation page.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 0,
+            "delay": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "registration-settings"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Centralized registration configuration. Update each season: active season, form IDs, open\/close dates, and messaging.",
+    "show_in_rest": 0,
+    "display_title": "",
+    "allow_ai_access": false,
+    "ai_description": "",
+    "modified": 1776733853
+}

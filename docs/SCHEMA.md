@@ -1,216 +1,184 @@
 # SCHEMA
 
-## Schema principles
-1. `acf-json` is the schema source of truth.
-2. Use clear field ownership.
-3. Distinguish display fields from normalized/queryable fields.
-4. Do not duplicate relationships without a strong reason.
-5. Be cautious about renaming or deleting fields once content exists.
+## Field group conventions
 
-## ACF defaults
-- Post Object return format: ID
-- User return format: ID
-- Image return format: ID
-- Link return format: Array
-- Repeater layout: Block
-- One field group per CPT by default
+### Key naming
+ACF field keys follow the pattern `field_tb_{name}`. Keys must be globally unique
+across the entire installation. When a field name collision is possible (e.g., a field
+named `family` exists on both a CPT and a user profile), the key uses an infix to
+disambiguate (e.g., `field_tb_user_family` vs `field_tb_family`).
 
-## Field naming conventions
-- Use snake_case slugs
-- Use `_status` for process state fields
-- Use `_date` for dates
-- Use `_requested` for request flags
-- Use `_notes` for admin/freeform notes
+### Field name conventions
+- snake_case throughout
+- Prefix `tb_` is used on field keys, not field names
+- Field names are the ACF `name` attribute — used in `get_field()` calls
 
-## Taxonomy registration
-Sport taxonomy is registered on the following CPTs:
-- Athletic Season
-- Athletic Meet
-- Athletic Event
-- Athletic Result
-- Athletic Record
-- Enrollment
-- Athlete
-- Coach
+---
 
-Coach is registered with sport to allow direct sport-based querying (e.g. on
-`taxonomy-sport.php`). A coach's role and bio for a specific season are stored in
-the `coach_roster` repeater on Athletic Season post — not on the Coach post itself.
+## Options pages
 
-## Source-of-truth rules
-- Family link is owned by Athlete
-- Season participation is owned by Enrollment
-- Submission status is owned by Application
-- Physical validity/history is owned by Athletic Physical
-- Performance data is owned by Athletic Result
-- Achievement layer is owned by Athletic Record
-- Coach sport association is owned by the Coach post (via sport taxonomy)
-- Coach role per season is owned by Athletic Season (via `coach_roster` repeater)
-- Current participation type (for filtering) is a denormalized snapshot on Athlete —
-  source of truth for any given season is Enrollment (see below)
-- User → Family relationship is bidirectional (see User field group section below)
+### Trailblazers Settings (`trailblazers-settings`)
+Top-level admin menu. Redirects to first child (Registration Settings). No fields
+of its own. JSON: `options_page_trailblazers-settings.json`.
 
-## Athlete fields of note
-- `first_name` — text
-- `last_name` — text
-- `preferred_name` — text
-- `gender` — select (M / F)
-- `dob` — date picker
-- `graduation_year` — number
-- `account_status` — select (Active / Inactive / Alumni / Archived)
-- `athletic_net_id` — text (external ID reference)
-- `participation_type` — select (Athlete / Sibling Runner) — denormalized, see below
-- `family` — post object → Family (source of truth for family link)
+### Registration Settings (`registration-settings`)
+Sub-page under Trailblazers Settings. Houses the centralized registration
+configuration used by the `[tb_reg_hub]`, `[tb_reg_form]`, and
+`[tb_reg_confirmation]` shortcodes. JSON: `options_page_registration-settings.json`.
 
-These fields support filtering and data attributes on `archive-athlete.php` and
-`taxonomy-sport.php`.
+**Field group:** `group_tb_registration_settings.json`
+**Location rule:** `options_page == registration-settings`
 
-## Athlete.account_status vs Athlete.participation_type
+#### Tab: Season & Status
 
-These two fields answer different questions and must not be conflated.
+| Field label | Field name | Type | Notes |
+|---|---|---|---|
+| Active Season | `reg_active_season` | Post Object → `athletic_season` | Single, returns object. Saving this field also writes `tb_active_season_id` site option via `acf/save_post` hook in `registration-helpers.php`. |
+| Registration Status | `reg_status` | Select | `coming_soon` / `open` / `closed`. Default: `coming_soon`. Manual override — always trumps date logic. |
+| Returning Family Registration Opens | `reg_returning_open` | Date Time Picker | Return format `Y-m-d H:i:s`. Shown when `reg_status != closed`. |
+| New Family Registration Opens | `reg_new_family_open` | Date Time Picker | Return format `Y-m-d H:i:s`. Shown when `reg_status != closed`. Typically 2–3 weeks after `reg_returning_open`. |
+| Registration Closes | `reg_close` | Date Time Picker | Return format `Y-m-d H:i:s`. Shown when `reg_status != closed`. Applies to both family types. |
 
-**`account_status`** — What is this person's current relationship with the organization?
-- Choices: Active / Inactive / Alumni / Archived
-- Represents a lifecycle state — is this person still engaged, graduated out, or
-  retained only for historical data?
-- Set manually by an admin. Not touched by the registration hook.
-- Alumni belongs here, not in participation_type. An alumnus is not enrolling in a
-  season; they have no meaningful participation_type for current purposes.
+#### Tab: Form IDs
 
-**`participation_type`** on Athlete — What kind of participant were they most recently?
-- Choices: Athlete / Sibling Runner
-- A denormalized convenience snapshot for archive filtering (see below).
-- Set by the enrollment creation hook. Updated each time a new enrollment is created.
-- Do not use this field to infer lifecycle status.
+| Field label | Field name | Type | Notes |
+|---|---|---|---|
+| New Family Form ID | `reg_new_family_form_id` | Number | GF form ID. Left blank until forms are built. |
+| Returning Family Form ID | `reg_returning_family_form_id` | Number | GF form ID. Left blank until forms are built. |
+| Submit Physicals Form ID | `reg_physicals_form_id` | Number | GF form ID. Left blank until forms are built. |
 
-## Special schema watchout: participation_type (Athlete vs Enrollment)
+#### Tab: Messaging
 
-`participation_type` exists on both the Enrollment CPT and the Athlete CPT.
-These serve different purposes and must not be confused.
+| Field label | Field name | Type | Notes |
+|---|---|---|---|
+| Coming Soon Message | `reg_coming_soon_message` | Wysiwyg | Shown on hub + form pages when status is `coming_soon`. |
+| Closed Message | `reg_closed_message` | Wysiwyg | Shown on hub + form pages when status is `closed` or after close date. |
+| New Family Confirmation Text | `reg_new_family_confirmation` | Wysiwyg | Rendered by `[tb_reg_confirmation type="new_family"]`. |
+| Returning Family Confirmation Text | `reg_returning_family_confirmation` | Wysiwyg | Rendered by `[tb_reg_confirmation type="returning_family"]`. |
+| Physicals Confirmation Text | `reg_physicals_confirmation` | Wysiwyg | Rendered by `[tb_reg_confirmation type="physicals"]`. |
 
-### Enrollment.participation_type
-- **Type:** Select (Athlete | Sibling Runner)
-- **Role:** Source of truth for what a person was in a specific season
-- **Set by:** Enrollment creation hook at form submission time
-- **Never overwrite manually** without also reviewing the Athlete convenience field
+#### Button state logic
+When `reg_status` is `open`, each registration button is evaluated independently:
 
-### Athlete.participation_type
-- **Type:** Select (Athlete | Sibling Runner)
-- **Role:** Denormalized convenience field for archive filtering and data-attribute output
-- **Set by:** Enrollment creation hook — mirrors the most recent Enrollment value
-- **Not the source of truth** — use Enrollment if season-specific accuracy is needed
+| Condition | Result |
+|---|---|
+| `reg_status = coming_soon` | Both buttons disabled; coming soon message shown |
+| `reg_status = closed` | Both buttons disabled; closed message shown |
+| Now < `reg_returning_open` | Both buttons pending; open date shown beneath each |
+| Now ≥ `reg_returning_open`, but < `reg_new_family_open` | Returning enabled; New pending |
+| Now ≥ `reg_new_family_open`, and < `reg_close` | Both enabled; close date shown |
+| Now ≥ `reg_close` | Both disabled; "Registration is closed." shown |
 
-### Why this denormalization is intentional
-The athlete archive and sport taxonomy templates filter by participation type using
-`data-participation-type` attributes. Querying Enrollment for every athlete in an
-archive loop is expensive and architecturally awkward. The Athlete field provides a
-direct, fast, template-friendly value.
+#### `tb_active_season_id` sync
+The `acf/save_post` hook in `inc/registration-helpers.php` (priority 20) reads
+`reg_active_season` from the options page on every save and writes the season post
+ID to the `tb_active_season_id` site option. All existing `gform_field_value` hooks
+that read `get_option('tb_active_season_id')` continue to work without modification.
 
-### Transition behavior
-When a Sibling Runner enrolls as a full Athlete in a future season, the enrollment
-hook updates `Athlete.participation_type` to `Athlete`. Historical Enrollment records
-remain unchanged — they still correctly reflect `Sibling Runner` for prior seasons.
+---
 
-### Empty field handling rule
-Athlete posts created manually or via CSV import may have no `participation_type`
-value set. Templates and JS filters must treat an empty value as `Athlete`. Do not
-treat empty as a third state or filter it out.
-```php
-// Correct pattern in templates:
-$participation_type = get_field( 'participation_type', $athlete_id ) ?: 'Athlete';
-```
-```js
-// Correct pattern in JS filter:
-const type = row.dataset.participationType || 'athlete';
-```
+## CPT field groups
 
-## Special schema watchout: Athletic Result
-Athletic Result should distinguish between:
-- exact display label from the meet (`event_name`)
-- canonical event structure (`event`)
-- display-ready result value (`result_display`)
-- normalized sortable/queryable values (`result_time_seconds`, `result_distance_meters`,
-  `result_height_meters`, `result_points`)
+### group_tb_athlete.json
+Attached to `athlete` CPT.
 
-## Special schema watchout: Coach
-Coach identity and sport association live on the Coach post.
-Coach role, bio override, and image override per season live in the `coach_roster`
-repeater on Athletic Season.
-Do not move role data onto the Coach post — it is intentionally season/sport-specific.
+Notable fields:
+- `participation_type` — Select (Athlete / Sibling Runner, allow null). Denormalized
+  convenience field for archive filtering. Source of truth for season-specific type
+  remains Enrollment. Updated by enrollment creation hook.
+- `account_status` — Select. Lifecycle state (Active / Inactive / Alumni / etc.).
+  Distinct from `participation_type`. Alumni belongs here, not in participation_type.
 
-## Special schema watchout: Sport taxonomy
-Sport is hierarchical. When querying by exact term (not including children), always use:
-```php
-'include_children' => false
-```
-in `tax_query` to avoid unintended matches on child terms.
+---
 
-## Special schema watchout: User → Family relationship
+### group_tb_application.json
+Attached to `application` CPT.
 
-The User ↔ Family relationship is intentionally bidirectional and maintained on
-both sides. Each direction serves a distinct purpose.
+Notable fields:
+- `payment_amount` — Number (step 0.01, prepend $). Set by hook from GF order total
+  at submission. Reflects combined registration fee plus optional processing
+  contribution donation.
+- `digital_signature` — Text. Parent types full legal name on waiver page.
+- `submission_date` — Date. Defaults to today at submission.
 
-### Family.account_user (group_tb_family.json)
-- **Type:** ACF User field, return format: ID
-- **Direction:** Family → User
-- **Role:** The authoritative link. Identifies which WP user account belongs to
-  this household. Used to locate a family from the current user:
-  ```php
-  // Standard pattern — locate family from logged-in user
-  $families = get_posts([
-      'post_type'  => 'family',
-      'meta_key'   => 'account_user',
-      'meta_value' => get_current_user_id(),
-  ]);
-  ```
-- **Set by:** Registration hook (new family) or manual admin assignment.
+---
 
-### User.family (group_tb_user.json)
-- **Type:** ACF Post Object field, post type: family, return format: ID
-- **Direction:** User → Family
-- **Role:** Reverse reference. Provides a direct, GPPA-friendly path from the
-  current user to their Family post without a meta query. Required for
-  GravityForms Populate Anything chains that start at the current user and
-  need to read Family post fields.
-  ```php
-  // Direct lookup — no meta query needed
-  $family_id = get_field( 'family', 'user_' . get_current_user_id() );
-  ```
-- **Set by:** Same operation that sets `account_user` on the Family post.
-  Both sides must be populated together.
+### group_tb_athletic_season.json
+Attached to `athletic_season` CPT.
 
-### User.family_id (group_tb_user.json)
-- **Type:** ACF Text field
-- **Role:** Scalar TB identifier (e.g. `TB-66281`). Provides a simple string
-  anchor for GPPA filter matching without requiring post object traversal.
-  Also useful as a human-readable identifier in admin views and debug output.
-- **Set by:** Same linkage pass as `User.family` and `Family.account_user`.
-- **Not the primary key for lookups** — use `User.family` (post object) for
-  any query that needs to read Family post fields.
+Notable fields:
+- `handbook` — Link field. URL used by `gform_field_value` hook to populate the
+  handbook URL hidden field on registration forms.
+- `customize_data` group — contains per-season feature flags:
+  - `calendar_show_meets` — True/False. Controls public meet calendar surfacing.
+  - `calendar_show_practices` — True/False. Controls practice calendar surfacing.
+  - `results_enabled` — True/False. Controls results display in templates.
+  - `link_milesplit` — True/False. Controls Milesplit link rendering on athlete pages.
+  - `link_athletic_net` — True/False. Controls AthleticNet link rendering.
+  - `results_unavailable_message` — Textarea. Fallback when `results_enabled` is false.
+- `Dates` group — registration and season date fields.
 
-### Field key naming rationale
-ACF field keys must be globally unique across the entire installation. The user
-field group uses the `_user_` infix in its keys (`field_tb_user_family`,
-`field_tb_user_family_id`) to avoid collisions with identically-named fields on
-CPTs (`field_tb_family` on Application, `field_tb_family_id` on Family/Athlete).
-The field `name` values (`family`, `family_id`) are intentionally the same as their
-CPT counterparts — they live in `wp_usermeta`, not `wp_postmeta`, so there is no
-storage collision.
+**Naming note:** `results_enabled` was chosen over `track_results` to avoid the
+ambiguity of "track-and-field results" vs. "record/monitor results."
 
-### Linkage rule
-All three fields must be populated atomically:
+---
+
+### group_tb_athletic_meet.json
+Attached to `tribe_events` (TEC). File key retained as `group_tb_athletic_meet`
+for historical continuity.
+
+Fields:
+- `season` — Post Object → `athletic_season`
+- `results_status` — Select (Future / Pending / Available). Gates per-meet results
+  display in `tribe/events/single-event.php`.
+
+---
+
+### group_tb_athletic_result.json
+Attached to `athletic_result` CPT.
+
+Notable fields:
+- `meet` — Post Object → `tribe_events` (not `athletic_meet`, which is retired)
+- `athletic_event` — Post Object → `athletic_event` (renamed from `event`)
+- `result_display` — Text. Human-readable result string.
+- `result_time_seconds` — Number. Normalized for time-based events.
+- `result_distance_meters` — Number. Normalized for distance events.
+- `result_height_meters` — Number. Normalized for height events.
+- `result_points` — Number. For points-based events.
+
+---
+
+### group_tb_enrollment.json
+Attached to `enrollment` CPT.
+
+**Critical constraint:** Post Object fields (`season`, `family`, `athlete`,
+`application`) are at the TOP LEVEL of this field group — not inside any Group
+wrapper. WP Ultimate CSV Importer does not reliably resolve post object
+relationships when fields are nested inside a Group wrapper.
+
+---
+
+## User field group
+
+### group_tb_user.json
+Attached to all WP user profiles.
+
+Fields:
+- `family` — Post Object → `family`. Direct reference from user to their Family post.
+  Provides a GPPA-friendly lookup path without a meta query.
+- `family_id` — Text. Scalar TB identifier (e.g. `TB-66281`).
+
+**Linkage rule:** All three of these must be populated atomically:
 1. `Family.account_user` = WP user ID
 2. `User.family` = Family post ID
 3. `User.family_id` = Family TB identifier string
 
-This happens during the user import linkage pass and during the New Family
-registration hook. Never set one without setting all three.
+**Key naming note:** User field keys use the `_user_` infix (`field_tb_user_family`,
+`field_tb_user_family_id`) to avoid collisions with identically-named CPT fields.
+Field `name` values are intentionally the same as CPT counterparts — they live in
+`wp_usermeta`, not `wp_postmeta`, so there is no storage collision.
 
-### admin-facing notes
-- `User.family` is `allow_null: 1` — admin users and coaches do not have a
-  Family post and must not be forced to select one.
-- The user field group appears on all user profile screens (`user_form == all`).
-  On non-parent accounts, both fields will simply be empty.
+---
 
 ## WP Ultimate CSV Importer — ACF import constraints
 
@@ -222,19 +190,8 @@ Resolution by post title works correctly for top-level fields only.
 **Rule:** Any CPT whose post object fields will be populated via CSV import must
 have those fields at the top level of the field group — not inside a Group wrapper.
 
-**Affected field groups (confirmed top-level, import-safe):**
-- `group_tb_enrollment.json` — season, family, athlete, application are top-level
-- `group_tb_athletic_result.json` — no Group wrappers
-- `group_tb_athletic_record.json` — no Group wrappers
-
-**Groups used for UI only (no post object fields inside):**
-- `group_tb_athletic_season.json` — `customize_data` group contains only
-  True/False and Textarea fields (safe); `Dates` group contains only date
-  and number fields (safe)
-
-### Post Object field resolution
-WP Ultimate CSV Importer resolves ACF Post Object fields by **post title**.
-Supply the exact `post_title` value of the referenced post in the CSV column.
-Resolution is case-sensitive and must match exactly.
-
-Post IDs are not required for standard post object field imports.
+### ACF options page JSON
+Options page JSON files cannot be hand-crafted and synced via ACF's Sync UI.
+ACF Sync only handles field groups. Options pages must be created in the ACF admin
+UI (ACF → Options Pages → Add New). ACF auto-generates their JSON after creation.
+Field groups targeting options pages sync normally.

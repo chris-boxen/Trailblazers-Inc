@@ -2,118 +2,78 @@
 
 ## 2026-04
 
-### Completed data population — Families, Athletes, Applications, Enrollments
-Successfully imported via WP Ultimate CSV Importer:
-- Families (90 records, including 14 new T&F-only families)
-- Athletes (145 records, active + alumni)
-- Applications (2024 XC and 2025 XC)
-- Enrollments (2025 XC: 142 records; 2026 TF: 56 records)
+### Built centralized registration infrastructure
 
-Venues imported via WordPress XML importer.
-TEC Events (meets) imported via TEC's native CSV importer.
+Replaced the previous pattern of duplicating a full section of WP pages each
+season (Registration XC 2025 → New Families, Returning Families, Confirmation,
+Submit Physicals) with a permanent, shortcode-driven system backed by a centralized
+ACF options page.
 
----
+**Problem solved:** Season changeover previously required duplicating 4+ pages and
+manually updating form embeds, confirmation text, and dates throughout. The new
+system requires only updating the options page and building new GF forms.
 
-### Discovered: WP Ultimate CSV Importer does not reliably resolve ACF Post Object
-fields nested inside ACF Group wrappers
+**What was built:**
 
-**Finding:** During enrollment import, ACF Post Object fields (season, family,
-athlete, application) failed to resolve when those fields were nested inside an
-ACF Group field. The same fields resolved correctly when moved to the top level
-of the field group.
+ACF options pages (created via ACF UI, JSON auto-captured):
+- `options_page_trailblazers-settings.json` — top-level TB Settings parent menu
+- `options_page_registration-settings.json` — Registration Settings sub-page
 
-**Confirmed behavior:** The importer resolves post object relationships by post
-title. This works correctly for top-level post object fields. Inside a Group
-wrapper, resolution is unreliable — some fields may resolve, others silently fail.
+ACF field group:
+- `group_tb_registration_settings.json` — 16 fields across three tabs:
+  - **Season & Status:** `reg_active_season` (Post Object → athletic_season),
+    `reg_status` (Select: coming_soon / open / closed),
+    `reg_returning_open` (DateTime), `reg_new_family_open` (DateTime),
+    `reg_close` (DateTime)
+  - **Form IDs:** `reg_new_family_form_id`, `reg_returning_family_form_id`,
+    `reg_physicals_form_id` (Number fields, blank until forms are built)
+  - **Messaging:** `reg_coming_soon_message`, `reg_closed_message`,
+    `reg_new_family_confirmation`, `reg_returning_family_confirmation`,
+    `reg_physicals_confirmation` (Wysiwyg fields)
 
-**Resolution:** Removed the Group wrapper from the Enrollment field group's
-Connections section. The four post object fields (season, family, athlete,
-application) are now top-level fields. The Group was UI-only and had no
-functional purpose.
+New file `inc/registration-helpers.php` (loaded via `functions.php`):
+- `acf/save_post` sync hook — writes `tb_active_season_id` site option whenever
+  `reg_active_season` is saved on the options page. Keeps existing
+  `gform_field_value` hooks working without changes.
+- `tb_reg_button_state()` helper — returns `enabled` / `pending` / `closed`
+  based on open/close datetimes vs. current time
+- `tb_reg_date_label()` helper — returns human-readable sub-label for each state
+- `[tb_reg_hub]` shortcode — hub page with two date-driven buttons
+- `[tb_reg_form type="..."]` shortcode — renders GF form or status message
+- `[tb_reg_confirmation type="..."]` shortcode — renders WYSIWYG confirmation content
 
-**Rule going forward:** Do not nest ACF Post Object fields inside Group fields
-on any CPT where CSV import will be used. This applies to Athletic Result and
-Athletic Record field groups, which will be imported next. Confirmed: neither
-uses Group wrappers.
+Five permanent WP pages created (never to be duplicated or renamed):
+- `/registration/` — `[tb_reg_hub]`
+- `/registration/returning-families/` — `[tb_reg_form type="returning_family"]`
+- `/registration/new-families/` — `[tb_reg_form type="new_family"]`
+- `/registration/confirmation/` — structure pending Q12 decision
+- `/registration/submit-physicals/` — `[tb_reg_form type="physicals"]`
 
-**ACF JSON affected:** `group_tb_enrollment.json` — committed to repo.
+**Button state logic:** When `reg_status` is `open`, each button is evaluated
+independently against its own open datetime and the shared close datetime.
+Returning families can open 2–3 weeks before new families. The manual
+`reg_status` override (coming_soon / closed) always trumps date logic.
 
----
+**Date field conditional logic:** The three datetime fields show whenever
+`reg_status != closed`. This allows setting open dates while still in
+coming_soon state, which is the normal pre-season setup flow. Fields are
+hidden only when closed, since dates are irrelevant post-season.
 
-### Renamed ACF field: `event` → `athletic_event` on Athletic Result
-The post object field linking Athletic Result to Athletic Event was renamed from
-`event` to `athletic_event` to eliminate naming ambiguity with TEC's `tribe_events`
-post type. Updated in `group_tb_athletic_result.json`. All templates updated
-accordingly (`meta_query` key changed from `'event'` to `'athletic_event'`).
+**`tb_active_season_id` note:** The existing site option and all hooks that
+read it are unchanged. The sync hook in `registration-helpers.php` simply
+keeps it in sync automatically whenever the options page is saved. Confirmed
+working: saving the options page with 2026 XC selected auto-populated the
+`tb_active_season_id` option correctly.
 
-## 2026-03 (TEC integration + schema restructure)
+**Implementation note — ACF options page JSON:** ACF options page JSON files
+cannot be reliably hand-crafted and dropped into `acf-json/` for sync. ACF's
+Sync UI handles field groups only. Options pages must be created in the ACF
+admin UI (ACF → Options Pages → Add New), after which ACF auto-generates their
+JSON. Field groups targeting options pages sync normally.
 
-### Integrated The Events Calendar Pro — retired athletic_meet CPT
-The Events Calendar Pro (TEC) is now part of the project stack. After architectural
-review, `athletic_meet` has been retired as a custom CPT. `tribe_events` now serves
-as the single anchor post for all meet data.
-
-**Rationale:** Maintaining a parallel `athletic_meet` post alongside a TEC event for
-every XC meet added admin overhead without architectural benefit. A single `tribe_events`
-post per meet is cleaner — TEC handles public calendar display natively, and ACF fields
-on `tribe_events` handle the internal data layer.
-
-**What changed:**
-- `post_type_tb_athletic_meet` — deleted from ACF, JSON retired to archive
-- `group_tb_athletic_meet` — deleted from ACF, JSON retired to archive
-- `single-athletic_meet.php` — moved to `_archived-templates/`
-- `archive-athletic_meet.php` — moved to `_archived-templates/`
-- New ACF field group `group_tb_tec_event` created on `tribe_events`:
-  - `season` — Post Object → `athletic_season`
-  - `results_status` — Select (Future / Pending / Available)
-- `group_tb_athletic_result` — `meet` field target changed from `athletic_meet`
-  to `tribe_events`
-- TEC event slug configured as `/event/`
-- `tribe_venue` adopted for venue management
-- TEC archive (`/event/`) to be redirected to a custom query page via
-  `template_redirect` hook in `inc/cpt-hooks.php`
-- Single meet display to be built as TEC theme override:
-  `tribe/events/single-event.php`
-
-**Non-calendar meets (T&F / SportsYou coaches):**
-All `tribe_events` meet posts are published regardless of public calendar visibility.
-The `calendar_show_meets` season flag controls whether meets surface on the public
-schedule. Published status is required for ACF post object queries to resolve.
-
-**Two concepts named "event" — critical distinction:**
-- `athletic_event` — canonical event *definition* (5K, 100m, Long Jump). Unchanged.
-- `tribe_events` — a meet *instance* (specific date, location, season). Replaces `athletic_meet`.
-This distinction must be maintained in all code comments and documentation.
-
----
-
-### Added per-season feature flags to Athletic Season CPT
-New True/False fields added to `group_tb_athletic_season`:
-
-| Field | Purpose |
-|---|---|
-| `calendar_show_meets` | Whether upcoming meets publish to TEC public calendar |
-| `calendar_show_practices` | Whether practices publish to TEC public calendar |
-| `results_enabled` | Whether results are surfaced in templates (display control only) |
-| `link_milesplit` | Whether Milesplit athlete links are rendered |
-| `link_athletic_net` | Whether AthleticNet athlete links are rendered |
-
-New Textarea field: `results_unavailable_message` — shown in templates when
-`results_enabled = false`. Falls back to a generic message if blank.
-
-Flags control display only. They do not prevent data entry. An admin can flip
-`results_enabled` at any time to start or stop surfacing results for a season.
-
-**Naming note:** The field was intentionally named `results_enabled` rather than
-`track_results` to avoid semantic ambiguity with "track and field results."
-
----
-
-### Resolved: `results_enabled` naming
-Confirmed `results_enabled` as the canonical field name. `track_results` was
-rejected because in a track and field context it reads as a noun phrase
-("track-and-field results") rather than the intended verb phrase ("record/monitor
-results"). Documented in SCHEMA.md.
+**Open:** Confirmation page structure (Q12). Form IDs remain blank until GF
+forms are built. CSS for `.tb-reg-btn`, `.tb-reg-btn--disabled`,
+`.tb-reg-hub__date` deferred to front-end build.
 
 ---
 
@@ -158,3 +118,31 @@ Documented in SCHEMA.md.
 ### Determined build sequence for registration system
 Data population must precede form build; form build must precede hook code (hooks
 require real GF field IDs). Parked GravityForms work pending data population thread.
+
+### Added per-season feature flags to Athletic Season CPT
+New True/False fields added to `group_tb_athletic_season`:
+
+| Field | Purpose |
+|---|---|
+| `calendar_show_meets` | Whether upcoming meets publish to TEC public calendar |
+| `calendar_show_practices` | Whether practices publish to TEC public calendar |
+| `results_enabled` | Whether results are surfaced in templates (display control only) |
+| `link_milesplit` | Whether Milesplit athlete links are rendered |
+| `link_athletic_net` | Whether AthleticNet athlete links are rendered |
+
+New Textarea field: `results_unavailable_message` — shown in templates when
+`results_enabled = false`. Falls back to a generic message if blank.
+
+Flags control display only. They do not prevent data entry. An admin can flip
+`results_enabled` at any time to start or stop surfacing results for a season.
+
+**Naming note:** The field was intentionally named `results_enabled` rather than
+`track_results` to avoid semantic ambiguity with "track and field results."
+
+---
+
+### Resolved: `results_enabled` naming
+Confirmed `results_enabled` as the canonical field name. `track_results` was
+rejected because in a track and field context it reads as a noun phrase
+("track-and-field results") rather than the intended verb phrase ("record/monitor
+results"). Documented in SCHEMA.md.

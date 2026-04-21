@@ -11,6 +11,7 @@ remain to be imported. After that, the GravityForms registration build begins.
 - ACF Group wrapper removed from Enrollment post object fields (season, family,
   athlete, application) — required for WP Ultimate CSV Importer to resolve
   post object relationships correctly. See SCHEMA.md and CHANGELOG.md.
+- Registration infrastructure complete. See CHANGELOG.md 2026-04.
 
 ## Completed — Data Population
 The following have been successfully imported:
@@ -102,6 +103,10 @@ The following have been successfully imported:
 - ACF Post Object fields used in CSV imports must NOT be nested inside ACF Group
   fields. WP Ultimate CSV Importer does not reliably resolve post object
   relationships when the field is inside a Group wrapper.
+- Registration system uses a centralized ACF options page (`registration-settings`).
+  Permanent WP pages consume shortcodes. No seasonal page duplication. Season
+  changeover requires updating only the options page + building new GF forms.
+  See CHANGELOG.md 2026-04.
 
 ## Template Status
 ### Active PHP templates
@@ -129,7 +134,34 @@ The following have been successfully imported:
   for historical reasons)
 - `group_tb_enrollment.json` — post object fields (season, family, athlete,
   application) are TOP-LEVEL, not inside any Group wrapper
+- `group_tb_registration_settings.json` — ACF options page field group;
+  location: `options_page == registration-settings`
+
+## ACF Options Pages
+- `options_page_trailblazers-settings.json` — top-level TB Settings parent menu
+- `options_page_registration-settings.json` — Registration Settings sub-page
+
+## inc/ File Inventory
+- `inc/divi.php` — Divi child theme helpers
+- `inc/enqueue.php` — script/style enqueuing (stub)
+- `inc/cpt-hooks.php` — CPT/taxonomy admin hooks
+- `inc/query-mods.php` — pre_get_posts modifications
+- `inc/acf-helpers.php` — ACF utility functions
+- `inc/gravity-helpers.php` — GravityForms/GravityPerks hooks
+- `inc/registration-helpers.php` — registration options page sync + shortcodes
 
 ## GravityForms Registration — Design Status
 Designed. Field map in `docs/FORM-FIELD-MAP.md`. Build begins after data population
 is complete.
+
+## Registration Infrastructure — Build Status
+Complete as of 2026-04-20. See CHANGELOG.md 2026-04 for full record.
+- ✅ ACF options pages created (Trailblazers Settings + Registration Settings sub-page)
+- ✅ ACF field group `group_tb_registration_settings` built and synced (16 fields)
+- ✅ `inc/registration-helpers.php` created and loaded via `functions.php`
+- ✅ Five permanent WP registration pages created with shortcodes
+- ✅ System verified: coming soon state rendering correctly on all pages
+- ✅ `tb_active_season_id` sync hook confirmed working (2026 XC auto-populated)
+- ⬜ GF form IDs — to be populated after forms are built
+- ⬜ Confirmation page structure — open question (see OPEN-QUESTIONS.md Q12)
+- ⬜ CSS styling for `.tb-reg-btn` and `.tb-reg-btn--disabled` — deferred to front-end build
