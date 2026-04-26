@@ -7,11 +7,13 @@ As of 2026-04-20. Full record in CHANGELOG.md 2026-04.
 - ✅ ACF field group `group_tb_registration_settings` (16 fields, synced)
 - ✅ `inc/registration-helpers.php` — sync hook + 3 shortcodes
 - ✅ `functions.php` updated with new require line
-- ✅ Five permanent WP registration pages created:
+- ✅ Seven permanent WP registration pages created:
   - `/registration/` — `[tb_reg_hub]`
   - `/registration/returning-families/` — `[tb_reg_form type="returning_family"]`
   - `/registration/new-families/` — `[tb_reg_form type="new_family"]`
-  - `/registration/confirmation/` — pending open question Q12
+- `/registration/confirmation/` — parent container (permanent)
+  - `/registration/confirmation/new-family/` — `[tb_reg_confirmation type="new_family"]`
+  - `/registration/confirmation/returning-family/` — `[tb_reg_confirmation type="returning_family"]`
   - `/registration/submit-physicals/` — `[tb_reg_form type="physicals"]`
 
 ---
@@ -126,4 +128,3 @@ the forms/hooks work.
 - GravityForms build blocked on data population
 - Hook code blocked on GravityForms build (need real field IDs)
 - Final decision on event metadata storage on results vs Athletic Event (Q7)
-- Confirmation page build blocked on Q12 decision

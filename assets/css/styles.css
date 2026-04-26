@@ -38,3 +38,10 @@ body.admin-bar { --myscreentop: 32px; }
   height: 100%;
   object-fit: cover;
 }
+
+/* Layout */
+#main-content { background-color: #f2f2f2; }
+#main-content .container:before { display: none; }
+@media (max-width:700px) {
+  #main-content .container { width: 100%; padding: 0 16px; }
+}

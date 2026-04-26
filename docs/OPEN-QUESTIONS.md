@@ -146,26 +146,12 @@ forward is low-friction.
 ---
 
 ## 12. Registration confirmation page structure
-### Question
-Should there be separate confirmation pages per registration type, or a single
-shared confirmation page?
-
-### Why it matters
-GravityForms confirmation can redirect to a URL. If using redirect-to-page
-confirmation, the page structure needs to be decided before configuring GF
-confirmations when building the forms.
-
-### Options
-**Option A — Separate pages per type:**
+### Status: RESOLVED
+### Decision
+Option A — separate pages per type. Two permanent child pages created under
+`/registration/confirmation/`:
 - `/registration/confirmation/new-family/` — `[tb_reg_confirmation type="new_family"]`
 - `/registration/confirmation/returning-family/` — `[tb_reg_confirmation type="returning_family"]`
-- Simple, unambiguous. Each GF form redirects to its own page.
 
-**Option B — Single shared page with query parameter:**
-- `/registration/confirmation/?type=new_family`
-- Single page, shortcode reads `$_GET['type']` to select the right confirmation text
-- Fewer pages, slightly more logic in the shortcode
-
-### Current lean
-Unresolved. Decide before building GF forms (needed for confirmation redirect config).
-Option A is simpler and more consistent with the existing permanent-pages pattern.
+Each GF form confirmation is configured as a redirect to its dedicated URL.
+Consistent with the permanent-pages pattern. No query parameter logic needed.

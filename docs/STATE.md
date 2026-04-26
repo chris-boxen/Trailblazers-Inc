@@ -163,5 +163,5 @@ Complete as of 2026-04-20. See CHANGELOG.md 2026-04 for full record.
 - ✅ System verified: coming soon state rendering correctly on all pages
 - ✅ `tb_active_season_id` sync hook confirmed working (2026 XC auto-populated)
 - ⬜ GF form IDs — to be populated after forms are built
-- ⬜ Confirmation page structure — open question (see OPEN-QUESTIONS.md Q12)
+- ✅ Confirmation page structure — Option A, two child pages created (Q12 resolved)
 - ⬜ CSS styling for `.tb-reg-btn` and `.tb-reg-btn--disabled` — deferred to front-end build
