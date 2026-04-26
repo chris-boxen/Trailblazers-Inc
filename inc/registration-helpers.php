@@ -4,14 +4,24 @@
  * Registration system: season sync hook and shortcodes.
  *
  * Shortcodes:
+ *   [tb_reg_router]
+ *       Entry point at /registration/ — detects user state and routes:
+ *       not logged in → create account / log in prompt
+ *       logged in, no Family post → redirect to /registration/new-families/
+ *       logged in, Family post, no active-season Enrollment → redirect to /registration/returning-families/
+ *       logged in, Family post + active-season Enrollment → already-registered message
+ *
  *   [tb_reg_hub]
- *       Hub page: two buttons with date-driven state and open/close sub-labels.
+ *       Legacy hub: two buttons with date-driven state and open/close sub-labels.
+ *       Kept for backwards compatibility. /registration/ now uses [tb_reg_router].
  *
  *   [tb_reg_form type="new_family"]
  *   [tb_reg_form type="returning_family"]
  *   [tb_reg_form type="physicals"]
  *       Renders the GF form for the given registration type, or a status
  *       message if registration is closed/coming soon or the form ID is unset.
+ *       Includes user-state guards — redirects to /registration/ if the user
+ *       does not belong on this form (wrong type or not logged in).
  *
  *   [tb_reg_confirmation type="new_family"]
  *   [tb_reg_confirmation type="returning_family"]
@@ -39,7 +49,19 @@ add_action( 'acf/save_post', function( $post_id ) {
 
 
 // ---------------------------------------------------------------------------
-// 2. Helper: resolve date-driven button state
+// 2. login_redirect filter — send non-admin users to /registration/ after login
+// ---------------------------------------------------------------------------
+
+add_filter( 'login_redirect', function( $redirect_to, $request, $user ) {
+    if ( isset( $user->roles ) && ! in_array( 'administrator', $user->roles ) ) {
+        return home_url( '/registration/' );
+    }
+    return $redirect_to;
+}, 10, 3 );
+
+
+// ---------------------------------------------------------------------------
+// 3. Helper: resolve date-driven button state
 // ---------------------------------------------------------------------------
 
 /**
@@ -77,9 +99,93 @@ function tb_reg_date_label( $state, $open, $close ) {
     return '';
 }
 
+/**
+ * Helper: get the Family post ID for a given WP user ID.
+ * Returns the post ID (int) or 0 if no Family post is found.
+ *
+ * @param int $user_id
+ * @return int
+ */
+function tb_get_family_post_id( $user_id ) {
+    $families = get_posts( [
+        'post_type'      => 'family',
+        'posts_per_page' => 1,
+        'meta_key'       => 'account_user',
+        'meta_value'     => $user_id,
+        'fields'         => 'ids',
+    ] );
+    return ! empty( $families ) ? (int) $families[0] : 0;
+}
+
 
 // ---------------------------------------------------------------------------
-// 3. Shortcode: [tb_reg_hub]
+// 4. Shortcode: [tb_reg_router]
+// ---------------------------------------------------------------------------
+
+add_shortcode( 'tb_reg_router', function() {
+
+    // Not logged in — show create account / log in prompt
+    if ( ! is_user_logged_in() ) {
+        ob_start(); ?>
+        <div class="tb-reg-router">
+            <p>To register your family you will need a Trailblazers account.</p>
+            <p>
+                <a class="tb-reg-btn" href="<?= esc_url( wp_registration_url() ) ?>">
+                    Create an Account
+                </a>
+                <a class="tb-reg-btn tb-reg-btn--secondary"
+                   href="<?= esc_url( wp_login_url( home_url( '/registration/' ) ) ) ?>">
+                    Log In
+                </a>
+            </p>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    $user_id   = get_current_user_id();
+    $family_id = tb_get_family_post_id( $user_id );
+
+    // No Family post — route to New Family form
+    if ( ! $family_id ) {
+        wp_redirect( home_url( '/registration/new-families/' ) );
+        exit;
+    }
+
+    // Check for an active-season Enrollment
+    $active_season_id = (int) get_option( 'tb_active_season_id' );
+    $enrolled         = false;
+
+    if ( $active_season_id ) {
+        $enrollments = get_posts( [
+            'post_type'      => 'enrollment',
+            'posts_per_page' => 1,
+            'meta_query'     => [
+                [ 'key' => 'family', 'value' => $family_id ],
+                [ 'key' => 'season', 'value' => $active_season_id ],
+            ],
+            'fields' => 'ids',
+        ] );
+        $enrolled = ! empty( $enrollments );
+    }
+
+    // Already enrolled — show confirmation / already-registered message
+    if ( $enrolled ) {
+        $msg = get_field( 'reg_returning_family_confirmation', 'option' );
+        return $msg
+            ? wpautop( $msg )
+            : '<p>Your family is already registered for this season. '
+              . 'Please contact us if you have questions.</p>';
+    }
+
+    // Has Family post, not yet enrolled — route to Returning Family form
+    wp_redirect( home_url( '/registration/returning-families/' ) );
+    exit;
+} );
+
+
+// ---------------------------------------------------------------------------
+// 5. Shortcode: [tb_reg_hub]
 // ---------------------------------------------------------------------------
 
 add_shortcode( 'tb_reg_hub', function() {
@@ -143,7 +249,7 @@ add_shortcode( 'tb_reg_hub', function() {
 
 
 // ---------------------------------------------------------------------------
-// 4. Shortcode: [tb_reg_form type="..."]
+// 6. Shortcode: [tb_reg_form type="..."]
 // ---------------------------------------------------------------------------
 
 add_shortcode( 'tb_reg_form', function( $atts ) {
@@ -160,6 +266,29 @@ add_shortcode( 'tb_reg_form', function( $atts ) {
         $msg = get_field( 'reg_coming_soon_message', 'option' );
         return $msg ? wpautop( $msg ) : '<p>Registration is not yet open.</p>';
     }
+
+    // ---- User-state guards ----
+    if ( ! is_user_logged_in() ) {
+        wp_redirect( home_url( '/registration/' ) );
+        exit;
+    }
+
+    $user_id    = get_current_user_id();
+    $family_id  = tb_get_family_post_id( $user_id );
+    $has_family = (bool) $family_id;
+
+    if ( $atts['type'] === 'new_family' && $has_family ) {
+        // Returning user landed on new-family page — send to hub for routing
+        wp_redirect( home_url( '/registration/' ) );
+        exit;
+    }
+
+    if ( $atts['type'] === 'returning_family' && ! $has_family ) {
+        // New user landed on returning-family page — send to hub for routing
+        wp_redirect( home_url( '/registration/' ) );
+        exit;
+    }
+    // ---- End guards ----
 
     $field_map = [
         'new_family'       => 'reg_new_family_form_id',
@@ -178,7 +307,7 @@ add_shortcode( 'tb_reg_form', function( $atts ) {
 
 
 // ---------------------------------------------------------------------------
-// 5. Shortcode: [tb_reg_confirmation type="..."]
+// 7. Shortcode: [tb_reg_confirmation type="..."]
 // ---------------------------------------------------------------------------
 
 add_shortcode( 'tb_reg_confirmation', function( $atts ) {

@@ -1,5 +1,5 @@
 # Trailblazers — GravityForms Field Map
-**Version:** 2.1
+**Version:** 2.3
 **Season:** 2026 XC
 **Status:** Ready to build
 
@@ -11,276 +11,302 @@
 |---|---|
 | **GF Type** | Gravity Forms field type |
 | **Maps to** | CPT → ACF field name |
-| **How set** | `user` = entered by submitter / `hidden` = invisible field / `hook` = set programmatically, not in form / `pre-pop` = pre-populated via GP Populate Anything |
+| **How set** | `user` = entered by submitter / `hidden` = invisible field / `hook` = set programmatically / `pre-pop` = GPPA pre-populated / `read-only` = GPPA pre-populated, non-editable |
 | **Notes** | Conditional logic, GravityPerks dependencies, or implementation warnings |
 
 ---
 
 ## Registration Entry Point
 
-A standard WordPress page (not a form) with two buttons or links:
+`/registration/` uses `[tb_reg_router]` shortcode. Detects user state and routes:
 
-- **New Family Registration** → links to the New Family form page
-- **Returning Family Registration** → links to the Returning Family form page
+| User state | Result |
+|---|---|
+| Not logged in | Shows Create Account + Log In buttons |
+| Logged in, no Family post | Redirects to `/registration/new-families/` |
+| Logged in, Family post, no active-season Enrollment | Redirects to `/registration/returning-families/` |
+| Logged in, Family post, active-season Enrollment exists | Shows already-registered message from options |
 
-Both destination forms require login. If a user is not logged in, GF's login requirement redirects to the WP login page before the form is displayed.
+Each child page is protected by user-state guards in the `[tb_reg_form]` shortcode handler (`inc/registration-helpers.php`). Logged-out users and users on the wrong form type are redirected to `/registration/`.
 
 ---
 
-## Form 1: 2026 Registration — New Family
+## Form 1: 2026 Registration — New Family (ID 101)
 
-**Hook fires:** `gform_after_submission` for this form ID
+**Hook fires:** `gform_after_submission` for form ID 101
 **Creates:** Family post, Application post, Athlete posts (new), Enrollment posts
 
 ---
 
 ### Page 1 — Family Contact Info
 
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| Family Name | Text | `family` → `family_display_name` | user | e.g. "The Smiths" / "The Anderson Academy". Required. |
-| *(Season ID)* | Hidden | `application` → `season` | hidden | `gform_field_value` reads `get_option('tb_active_season_id')`. Never visible to user. |
-| *(Current User ID)* | Hidden | `family` → `account_user` | hidden | `gform_field_value` reads `get_current_user_id()`. Hook uses this to link Family to WP User. |
+| Family Name | Text | `family` → `family_display_name` | user | Required. |
+| *(Season ID)* | Hidden | `application` → `season` | hidden | `gform_field_value` reads `get_option('tb_active_season_id')`. |
+| *(Current User ID)* | Hidden | `family` → `account_user` | hidden | `gform_field_value` reads `get_current_user_id()`. |
 | **— Address —** | Section | | | |
 | Street Address | Text | `family` → `street_address` | user | Required. |
 | City | Text | `family` → `city` | user | Required. |
-| State | Select | `family` → `state` | user | Required. Two-letter abbreviations. Default: SC. |
+| State | Select | `family` → `state` | user | Default: SC. |
 | **— Primary Contact —** | Section | | | |
 | First Name | Text | `family` → `parents_guardians[0].guardian_first_name` | user | Required. |
 | Last Name | Text | `family` → `parents_guardians[0].guardian_last_name` | user | Required. |
-| Relationship | Select | `family` → `parents_guardians[0].guardian_relationship` | user | Choices: Father / Mother / Stepfather / Stepmother / Legal Guardian / Other. Required. |
-| Email | Email | `family` → `parents_guardians[0].guardian_email` | user | Required. Should match WP account email. |
+| Relationship | Select | `family` → `parents_guardians[0].guardian_relationship` | user | Required. |
+| Email | Email | `family` → `parents_guardians[0].guardian_email` | user | Required. |
 | Phone | Phone | `family` → `parents_guardians[0].guardian_phone` | user | Required. |
-| Receive Email Notifications? | Radio | `family` → `parents_guardians[0].guardian_notifications` | user | Yes / No. Required. |
-| **— Secondary Contact (Optional) —** | Section | | | Fields are optional |
+| **— Secondary Contact (Optional) —** | Section | | | |
 | First Name | Text | `family` → `parents_guardians[1].guardian_first_name` | user | Optional. |
 | Last Name | Text | `family` → `parents_guardians[1].guardian_last_name` | user | Optional. |
-| Relationship | Select | `family` → `parents_guardians[1].guardian_relationship` | user | Same choices as primary. Optional. |
+| Relationship | Select | `family` → `parents_guardians[1].guardian_relationship` | user | Optional. |
 | Email | Email | `family` → `parents_guardians[1].guardian_email` | user | Optional. |
 | Phone | Phone | `family` → `parents_guardians[1].guardian_phone` | user | Optional. |
-| Receive Email Notifications? | Radio | `family` → `parents_guardians[1].guardian_notifications` | user | Yes / No. Optional. |
+| Receive Email Notifications? | Radio | `family` → `parents_guardians[1].guardian_notifications` | user | Yes/No. Optional. Secondary contact only. |
+
+> **Primary contact notifications:** Not collected on the form. Hook always sets `guardian_notifications = "Yes"` for the primary contact.
 
 ---
 
 ### Page 2 — Athletes
 
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| *(Instructional HTML)* | HTML | — | — | "Register each athlete below. Sibling Runners (grades 1–6) should also be registered here." |
-| Register Athletes | GP Nested Form | See nested form map below | user | Nested form: "2026 Register Athlete". Min: 1. No enforced max. |
+| *(Instructions HTML)* | HTML | — | — | Instructions for registering athletes and sibling runners. |
+| Register Athletes | GP Nested Form | See nested form map below | user | Nested: Register New Athlete (Form 100). Min: 1. |
 
 ---
 
 ### Page 3 — Handbook
 
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| *(Season Handbook URL)* | Hidden | *(internal)* | hidden | `gform_field_value` reads `get_field('handbook', $season_id)['url']` from the active season post. Provides the URL for the HTML block below. Use `https://trailblazers.team` as placeholder until handbook is published. |
-| *(Handbook HTML block)* | HTML | — | — | "Please review the 2026 XC Handbook before continuing." Displays a button/link using the URL from the hidden field above via merge tag: `<a href="{Field ID:value}" target="_blank">View the 2026 XC Handbook</a>` |
-| I have read the handbook | Checkbox | *(internal — gate only)* | user | Single checkbox. Required. Label: "I have read and agree to the policies outlined in the 2026 XC Handbook." |
-
-> **Implementation note:** The handbook URL hidden field is populated via `gform_field_value`. The HTML block uses a GF merge tag `{FIELD_ID:value}` to inject the URL into the anchor href. When the handbook is not yet published, the placeholder URL should point to the team homepage or a "coming soon" page — not a broken link.
+| *(Season Handbook URL)* | Hidden | *(internal)* | hidden | `gform_field_value` reads `handbook` field from active season post. Placeholder: `https://trailblazers.team` until handbook is published. |
+| *(Handbook HTML)* | HTML | — | — | Button linking to handbook URL via merge tag. |
+| Handbook Acknowledgment | Checkbox | *(gate only)* | user | Required. Single checkbox. |
 
 ---
 
 ### Page 4 — Waiver & Signature
 
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| *(Waiver HTML)* | HTML | — | — | Static waiver copy (see Waiver Text section below). No field. |
-| Digital Signature | Text | `application` → `digital_signature` | user | Required. Parent types their full legal name. |
-| Today's Date | Date | `application` → `submission_date` | user | Defaults to today. Required. |
+| *(Waiver HTML)* | HTML | — | — | Static waiver copy. |
+| Digital Signature | Text | `application` → `digital_signature` | user | Required. Parent types full legal name. |
+| Today's Date | Date | `application` → `submission_date` | user | Defaults to today. |
 
 ---
 
 ### Page 5 — Payment
 
-All fees for the 2026 XC season. Registration and singlet fees calculated from athlete count. Processing contribution is optional but required to make an explicit choice.
-
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| **— Registration Fee —** | Section | | | |
-| *(Fee summary HTML)* | HTML | — | — | "The 2026 XC registration fee is $75 per athlete. A team singlet ($35) is required for all new athletes." |
-| Athlete Count | Number | *(calculation only)* | calculated | `enableCalculation: true`. Formula: `{NESTED_FIELD_ID:count}`. Not stored on any CPT. Displayed for transparency. |
-| Registration Subtotal | Number | *(display only)* | calculated | `enableCalculation: true`. Formula: `{ATHLETE_COUNT_FIELD_ID} * 75`. Display only — feeds the product field below. |
-| **— Singlet Fee —** | Section | | | |
-| *(Singlet HTML)* | HTML | — | — | "All new athletes are required to purchase a team singlet ($35). Returning runners with a valid singlet from a prior season are not required to purchase a new one." |
-| Singlet Count | Number | *(calculation only)* | calculated | `enableCalculation: true`. Formula: same as Athlete Count — `{NESTED_FIELD_ID:count}`. All new athletes require a singlet. Displayed for transparency. |
-| Singlet Subtotal | Number | *(display only)* | calculated | `enableCalculation: true`. Formula: `{SINGLET_COUNT_FIELD_ID} * 35`. Display only. |
-| **— Total —** | Section | | | |
-| Registration Total | Product | *(feeds order total)* | calculated | GF Product field. `enableCalculation: true`. Formula: `({ATHLETE_COUNT_FIELD_ID} * 75) + ({SINGLET_COUNT_FIELD_ID} * 35)`. This is the amount Stripe charges before the optional contribution. |
-| **— Optional: Help Cover Processing Costs —** | Section | | | |
-| Processing Contribution | Product (Radio Buttons) | *(feeds order total)* | user | GF Product field, Radio Buttons display. No pre-selected default. Choices: "No thanks" $0.00 / "Help a little" $3.00 / "Cover processing" $5.00 / "Pay it forward" $10.00. Required (explicit choice). GF Total sums this with Registration Total automatically. |
-| **— Order Summary —** | Section | | | |
-| Order Total | Total | `application` → `payment_amount` | calculated | GF Total field. Sums all product fields. Hook writes this value to Application at submission. |
-| Payment Method | Radio | `application` → `payment_method` | user | Choices: Credit Card / Check / Cash. Required. |
-| Credit Card | Stripe Credit Card | — | user | Conditional: visible only if Payment Method = Credit Card. Stripe charges the Order Total. |
-
-> **Hook note:** `payment_amount` is written from `$entry['payment_amount']` (GF Order Total). `payment_status` defaults to `Not Received`. Stripe submissions update to `Paid` via Stripe confirmation hook. Check/Cash remain `Not Received` — updated manually by admin.
-
-> **Singlet note:** Because all new athletes are required to purchase a singlet, the Singlet Count equals the Athlete Count for the New Family form. The two separate fields are kept for clarity and to make the math transparent to the parent.
+| *(Fee summary HTML)* | HTML | — | — | $75/athlete, $35/singlet for new athletes. |
+| Athlete Count | Number (calc) | *(display only)* | calculated | `{Register Athletes:23:count}` |
+| Registration Subtotal | Number (calc) | *(display only)* | calculated | `{Athlete Count:36} * 75` |
+| *(Singlet HTML)* | HTML | — | — | Singlet policy for new athletes. |
+| Singlet Count | Number (calc) | *(display only)* | calculated | `{Register Athletes:23:count}` — all new athletes require a singlet. |
+| Singlet Subtotal | Number (calc) | *(display only)* | calculated | `{Singlet Count:40} * 35` |
+| Registration Total | Product (calc) | *(feeds order total)* | calculated | `({Register Athletes:23:count} * 75) + ({Register Athletes:23:count} * 35)` |
+| Processing Contribution | Product (Radio) | *(feeds order total)* | user | No thanks $0 / Help a little $3 / Cover processing $5 / Pay it forward $10. Required. |
+| Order Total | Total | `application` → `payment_amount` | calculated | GF Total field. Hook writes to Application. |
+| Payment Method | Radio | `application` → `payment_method` | user | Credit Card / Check/Cash. Required. |
+| Credit Card | Stripe | — | user | Conditional: visible if Payment Method = Credit Card. |
 
 ---
 
-## Form 2: 2026 Registration — Returning Family
+## Form 2: 2026 Registration — Returning Family (ID 102)
 
-**Hook fires:** `gform_after_submission` for this form ID
-**Updates:** Family post (contact fields + address)
+**Hook fires:** `gform_after_submission` for form ID 102
+**Updates:** Family post (address + secondary contact only — display name is NOT overwritten)
 **Creates:** Application post, new Athlete posts (if any), Enrollment posts for all registered athletes
-
-**Key difference from New Family:** Family post is located at hook time via `account_user = get_current_user_id()`. No Family post is created.
 
 ---
 
 ### Page 1 — Family Contact Info
 
-All fields pre-populated via GP Populate Anything reading from the existing Family post.
+All fields pre-populated via GPPA. Field 60 (hidden) anchors all GPPA queries by resolving the current user's Family post ID.
 
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| Family Name | Text | `family` → `family_display_name` | pre-pop | Editable. Hook updates if changed. Required. |
-| *(Season ID)* | Hidden | `application` → `season` | hidden | Same as New Family. |
-| *(Current User ID)* | Hidden | `family` → `account_user` | hidden | Hook uses this to locate existing Family post. Not for creation. |
-| **— Address —** | Section | | | Pre-populated from existing Family post |
-| Street Address | Text | `family` → `street_address` | pre-pop | Editable. Required. |
-| City | Text | `family` → `city` | pre-pop | Editable. Required. |
-| State | Select | `family` → `state` | pre-pop | Editable. Required. |
-| **— Primary Contact —** | Section | | | Pre-populated from `parents_guardians[0]` |
-| First Name | Text | `family` → `parents_guardians[0].guardian_first_name` | pre-pop | Editable. Required. |
-| Last Name | Text | `family` → `parents_guardians[0].guardian_last_name` | pre-pop | Editable. Required. |
-| Relationship | Select | `family` → `parents_guardians[0].guardian_relationship` | pre-pop | Editable. Required. |
-| Email | Email | `family` → `parents_guardians[0].guardian_email` | pre-pop | Editable. Required. |
-| Phone | Phone | `family` → `parents_guardians[0].guardian_phone` | pre-pop | Editable. Required. |
-| Receive Email Notifications? | Radio | `family` → `parents_guardians[0].guardian_notifications` | pre-pop | Editable. Required. |
-| **— Secondary Contact (Optional) —** | Section | | | Pre-populated from `parents_guardians[1]` if exists |
-| First Name | Text | `family` → `parents_guardians[1].guardian_first_name` | pre-pop | Editable. Optional. |
-| Last Name | Text | `family` → `parents_guardians[1].guardian_last_name` | pre-pop | Editable. Optional. |
-| Relationship | Select | `family` → `parents_guardians[1].guardian_relationship` | pre-pop | Editable. Optional. |
-| Email | Email | `family` → `parents_guardians[1].guardian_email` | pre-pop | Editable. Optional. |
-| Phone | Phone | `family` → `parents_guardians[1].guardian_phone` | pre-pop | Editable. Optional. |
-| Receive Email Notifications? | Radio | `family` → `parents_guardians[1].guardian_notifications` | pre-pop | Editable. Optional. |
+| *(Family Post ID)* | Hidden (Field 60) | *(GPPA anchor)* | GPPA | Queries family post where `meta_account_user = current_user:ID`. Referenced by all other GPPA fields on this form and by the returning athlete nested form. Never visible to user. |
+| Family Name | Text | `family` → `family_display_name` | **read-only** | Pre-populated. **GW Read Only required.** Hook does NOT update `family_display_name` from this field. |
+| *(Season ID)* | Hidden | `application` → `season` | hidden | `gform_field_value` reads `get_option('tb_active_season_id')`. |
+| *(Current User ID)* | Hidden | `family` → `account_user` | hidden | Used by hook to locate Family post. |
+| **— Address —** | Section | | | Pre-populated, editable. Hook updates on submission. |
+| Street Address | Text | `family` → `street_address` | pre-pop | Editable. |
+| City | Text | `family` → `city` | pre-pop | Editable. |
+| State | Select | `family` → `state` | pre-pop | Editable. |
+| **— Primary Contact —** | Section | | | Pre-populated, editable. |
+| First Name | Text | `family` → `parents_guardians[0].guardian_first_name` | pre-pop | Editable. |
+| Last Name | Text | `family` → `parents_guardians[0].guardian_last_name` | pre-pop | Editable. |
+| Relationship | Select | `family` → `parents_guardians[0].guardian_relationship` | pre-pop | Editable. |
+| Email | Email | `family` → `parents_guardians[0].guardian_email` | pre-pop | Editable. |
+| Phone | Phone | `family` → `parents_guardians[0].guardian_phone` | pre-pop | Editable. |
+| **— Secondary Contact (Optional) —** | Section | | | Pre-populated from `parents_guardians[1]` if exists. |
+| First Name | Text | `family` → `parents_guardians[1].guardian_first_name` | pre-pop | Optional. |
+| Last Name | Text | `family` → `parents_guardians[1].guardian_last_name` | pre-pop | Optional. |
+| Relationship | Select | `family` → `parents_guardians[1].guardian_relationship` | pre-pop | Optional. |
+| Email | Email | `family` → `parents_guardians[1].guardian_email` | pre-pop | Optional. |
+| Phone | Phone | `family` → `parents_guardians[1].guardian_phone` | pre-pop | Optional. |
+| Receive Email Notifications? | Radio | `family` → `parents_guardians[1].guardian_notifications` | pre-pop | Yes/No. Optional. Secondary contact only. |
+
+> **Primary contact notifications:** Not collected on the form. Hook always sets `guardian_notifications = "Yes"` for the primary contact.
 
 ---
 
 ### Page 2 — Athletes
 
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
 | **— Returning Athletes —** | Section | | | |
-| *(Instructional HTML)* | HTML | — | — | "Select each athlete from your family who is registering for 2026 XC." |
-| Select Returning Athletes | Checkboxes | *(internal — athlete post IDs)* | user | GP Populate Anything populates choices from Athlete CPT posts where `family = current family post ID`. Each checked athlete = one Enrollment created by hook. Values are athlete post IDs. |
-| Returning Athletes Registering | Number | *(payment calculation)* | user | Parent enters the count of returning athletes they checked above. Used on Page 5 for fee calculation. Required if any returning athletes are selected. |
+| *(Instructions HTML)* | HTML | — | — | Explains that identity fields are pre-filled and grade + eligibility must be confirmed each season. |
+| Register Returning Athletes | GP Nested Form | See nested form map below | user | Nested: Register Returning Athlete (Form 103). Min: 0. |
 | **— New Athletes (Optional) —** | Section | | | |
-| *(Instructional HTML)* | HTML | — | — | "Adding a new athlete to your family? Register them below." |
-| Register New Athletes | GP Nested Form | See nested form map below | user | Same nested form as New Family. Min: 0 — new athletes are optional for returning families. |
-
-> **Hook behavior:** For each checked returning athlete ID, hook creates one Enrollment post (no new Athlete post). For each new athlete nested entry, hook creates one Athlete post then one Enrollment post.
-
-> **Note on returning athlete count field:** A manual count field is used because GF calculation formulas cannot count checked checkbox values. The hook should cross-check this count against the actual number of athlete IDs submitted as a data integrity guard.
+| *(Instructions HTML)* | HTML | — | — | Instructions for adding a new athlete. |
+| Register New Athletes | GP Nested Form | See nested form map below | user | Nested: Register New Athlete (Form 100). Min: 0. |
 
 ---
 
 ### Page 3 — Handbook
 
-Identical to New Family form. Same fields, same `gform_field_value` population, same handbook placeholder logic.
+Identical in structure to New Family Page 3.
 
 ---
 
 ### Page 4 — Waiver & Signature
 
-Identical to New Family form. Same waiver HTML, same Digital Signature field, same Date field.
+Identical in structure to New Family Page 4.
 
 ---
 
 ### Page 5 — Payment
 
-Similar to New Family, but accounts for the mix of returning athletes (no singlet required) and new athletes (singlet required).
-
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| **— Registration Fee —** | Section | | | |
-| *(Fee summary HTML)* | HTML | — | — | "The 2026 XC registration fee is $75 per athlete. New athletes are required to purchase a team singlet ($35). Returning athletes with a valid singlet are not required to purchase a new one." |
-| New Athletes | Number | *(calculation only)* | calculated | `enableCalculation: true`. Formula: `{NESTED_FIELD_ID:count}`. Count of new athletes from nested form. |
-| Total Athletes | Number | *(calculation only)* | calculated | `enableCalculation: true`. Formula: `{RETURNING_COUNT_FIELD_ID} + {NEW_ATHLETES_FIELD_ID}`. Sum of returning + new. |
-| Registration Subtotal | Number | *(display only)* | calculated | Formula: `{TOTAL_ATHLETES_FIELD_ID} * 75`. |
-| **— Singlet Fee —** | Section | | | |
-| *(Singlet HTML)* | HTML | — | — | "New athletes require a team singlet ($35). Returning athletes who need a replacement singlet may request one below." |
-| Required Singlets (New Athletes) | Number | *(calculation only)* | calculated | Formula: `{NEW_ATHLETES_FIELD_ID}`. Mirrors new athlete count — all new athletes require a singlet. |
-| Additional Singlets (Returning Athletes) | Number | `enrollment` → (admin follow-up) | user | Parent enters the number of returning athletes who need a new/replacement singlet. Default: 0. Min: 0. |
-| Singlet Subtotal | Number | *(display only)* | calculated | Formula: `({REQUIRED_SINGLETS_FIELD_ID} + {ADDITIONAL_SINGLETS_FIELD_ID}) * 35`. |
-| **— Total —** | Section | | | |
-| Registration Total | Product | *(feeds order total)* | calculated | GF Product. `enableCalculation: true`. Formula: `({TOTAL_ATHLETES_FIELD_ID} * 75) + (({REQUIRED_SINGLETS_FIELD_ID} + {ADDITIONAL_SINGLETS_FIELD_ID}) * 35)`. |
-| **— Optional: Help Cover Processing Costs —** | Section | | | |
-| Processing Contribution | Product (Radio Buttons) | *(feeds order total)* | user | Identical to New Family. No pre-selected default. Choices: "No thanks" $0.00 / "Help a little" $3.00 / "Cover processing" $5.00 / "Pay it forward" $10.00. Required. |
-| **— Order Summary —** | Section | | | |
-| Order Total | Total | `application` → `payment_amount` | calculated | GF Total field. Sums all product fields. Hook writes to Application. |
-| Payment Method | Radio | `application` → `payment_method` | user | Choices: Credit Card / Check / Cash. Required. |
-| Credit Card | Stripe Credit Card | — | user | Conditional: visible only if Payment Method = Credit Card. |
+| *(Fee summary HTML)* | HTML | — | — | Fee explanation for mixed new/returning families. |
+| Returning Athletes | Number (calc) | *(display only)* | calculated | `{Register Returning Athletes:24:count}` |
+| New Athletes | Number (calc) | *(display only)* | calculated | `{Register New Athletes:27:count}` |
+| Total Athletes | Number (calc) | *(display only)* | calculated | `{Returning Athletes:40} + {New Athletes:41}` |
+| Registration Subtotal | Number (calc) | *(display only)* | calculated | `{Total Athletes:42} * 75` |
+| *(Singlet HTML)* | HTML | — | — | Singlet policy explanation. |
+| Required Singlets (New Athletes) | Number (calc) | *(display only)* | calculated | `{Register New Athletes:27:count}` |
+| Additional Singlets (Returning) | Number (manual) | *(payment calc)* | user | Default 0. Parent enters count of returning athletes who selected a new singlet. |
+| Singlet Subtotal | Number (calc) | *(display only)* | calculated | `({Required Singlets:46} + {Additional Singlets:47}) * 35` |
+| Registration Total | Product (calc) | *(feeds order total)* | calculated | `({Total Athletes:42} * 75) + (({Required Singlets:46} + {Additional Singlets:47}) * 35)` |
+| Processing Contribution | Product (Radio) | *(feeds order total)* | user | Identical to New Family. |
+| Order Total | Total | `application` → `payment_amount` | calculated | Hook writes to Application. |
+| Payment Method | Radio | `application` → `payment_method` | user | Credit Card / Check/Cash. |
+| Credit Card | Stripe | — | user | Conditional: visible if Payment Method = Credit Card. |
 
 ---
 
-## Nested Form: 2026 Register Athlete
+## Nested Form: Register New Athlete (Form 100)
 
-**Used by:** Both New Family (Page 2) and Returning Family (Page 2, new athletes only)
-**Creates (via parent form hook):** One Athlete post per entry + one Enrollment post per entry
+**Used by:** New Family Page 2 (all athletes)
+**Also used by:** Returning Family Page 2 (new athletes only)
+**Permanent / reusable** — no season-specific content.
 
-| Field Label | GF Type | Maps to | How set | Notes |
+| Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| Participation Type | Radio | `enrollment` → `participation_type` AND `athlete` → `participation_type` | user | **Drives all conditional logic below.** Choices: Athlete / Sibling Runner. Required. |
+| Participation Type | Radio | `enrollment` → `participation_type` | user | Athlete / Sibling Runner. Drives all conditional logic. |
 | **— Identity —** | Section | | | |
 | First Name | Text | `athlete` → `first_name` | user | Required. |
 | Last Name | Text | `athlete` → `last_name` | user | Required. |
 | Preferred Name / Nickname | Text | `athlete` → `preferred_name` | user | Optional. |
-| Gender | Radio | `athlete` → `gender` | user | Choices: Male / Female. Required. |
+| Gender | Radio | `athlete` → `gender` | user | Male / Female. |
 | Date of Birth | Date | `athlete` → `dob` | user | Required. |
-| Grade | Select | `enrollment` → `grade` | user | Full range 1–12. Required. |
-| **— Eligibility — Athlete Block —** | Section | | | Conditional: visible if Participation Type = Athlete |
-| Residency | Checkbox | `enrollment` → `eligibility_confirmed` | user | Single checkbox. Required if Athlete. Label: "We reside in York County, SC or a neighboring county." |
-| Homeschooled | Checkbox | `enrollment` → `eligibility_confirmed` | user | Single checkbox. Required if Athlete. Label: "{First Name} is homeschooled per SC Law, is schooled at home through SC Virtual Schools, or homeschooled per NC Law for those residing in Mecklenburg County." Uses GP merge tag for athlete first name. |
-| Academic Eligibility | Checkbox | `enrollment` → `eligibility_confirmed` | user | Single checkbox. Required if Athlete. Label: "{First Name} maintained a minimum 2.5 GPA in the previous semester and is academically eligible to participate." |
-| Running Commitment | Checkbox | `enrollment` → `eligibility_confirmed` | user | Single checkbox. Required if Athlete. Label: "We commit to three or more days of running per week, at least two of those days with the team. We understand this is for the safety of our athletes." |
-| Policy Compliance | Checkbox | `enrollment` → `eligibility_confirmed` | user | Single checkbox. Required if Athlete. Label: "WE HAVE READ AND AGREE TO THE POLICIES OUTLINED IN THE HANDBOOK." Include links to Eligibility, Code of Conduct, and Dress & Appearance Guidelines pages when available. |
-| **— Eligibility — Sibling Runner Block —** | Section | | | Conditional: visible if Participation Type = Sibling Runner |
-| Parent Supervision Acknowledgment | Checkbox | `enrollment` → `eligibility_confirmed` | user | Single checkbox. Required if Sibling Runner. Label: "I understand {First Name} is to be under my supervision at all times and that coaches are not responsible for the ultimate safety of my youth runner." |
-| Policy Compliance | Checkbox | `enrollment` → `eligibility_confirmed` | user | Single checkbox. Required if Sibling Runner. Lighter copy than Athlete version. |
+| Grade | Select | `enrollment` → `grade` | user | 1st–12th. Required. |
+| **— Eligibility — Athlete —** | Section | | | Conditional: Participation Type = Athlete |
+| Residency | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Athlete. |
+| Homeschooled | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Athlete. |
+| Academic Eligibility | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Athlete. |
+| Running Commitment | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Athlete. |
+| Policy Compliance | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Athlete. |
+| **— Eligibility — Sibling Runner —** | Section | | | Conditional: Participation Type = Sibling Runner |
+| Parent Supervision Acknowledgment | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Sibling Runner. |
+| Policy Compliance (Sibling Runner) | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Sibling Runner. |
 | **— Uniform —** | Section | | | |
-| Requesting New Singlet? | Radio | `enrollment` → `singlet_requested` | user | Yes / No. **Default: Yes.** Required. New athletes are required to purchase a singlet — default Yes reflects this. Exceptions (e.g. borrowing a sibling's singlet) can be handled by the parent selecting No. Add instructional copy: "New athletes are required to purchase a team singlet ($35). Select No only if you have received prior approval for an exception." |
-| Singlet Sizing Group | Select | `enrollment` → `singlet_sizing_group` | user | Conditional: visible if Singlet Requested = Yes. Choices: Youth / Men's / Women's. |
-| Singlet Size | Select | `enrollment` → `singlet_size` | user | Conditional: visible if Singlet Requested = Yes. Choices: Youth S / Youth M / Youth L / Youth XL / Men's S / Men's M / Men's L / Men's XL / Women's S / Women's M / Women's L / Women's XL. |
+| Requesting New Singlet? | Radio | `enrollment` → `singlet_requested` | user | **Default: Yes.** New athletes are required to purchase a singlet. |
+| Singlet Sizing Group | Select | `enrollment` → `singlet_sizing_group` | user | Conditional: visible if Singlet Requested = Yes. |
+| Singlet Size | Select | `enrollment` → `singlet_size` | user | Conditional: visible if Singlet Requested = Yes. |
 
-> **Shorts note:** Shorts are not sold through registration for XC. The `shorts_requested`, `shorts_sizing_group`, and `shorts_size` fields exist on the Enrollment CPT but are not collected on this form. Those fields may be used in future seasons or for other sports.
+> **Shorts note:** Shorts are not sold through registration for XC. `shorts_requested`, `shorts_sizing_group`, and `shorts_size` fields exist on the Enrollment CPT but are not collected here.
 
 ---
 
-## Waiver Text (Page 4 — both forms)
+## Nested Form: Register Returning Athlete (Form 103)
 
-The following HTML is placed in the static HTML field on Page 4:
+**Used by:** Returning Family Page 2 (returning athletes only)
+**Permanent / reusable** — no season-specific content. Built once, reused every season.
+
+Field 1 (Family Post ID) is a hidden GPPA anchor that self-resolves via `family post where meta_account_user = current_user:ID`. The nested form is self-contained and does not require a reference to any parent form field.
+
+| Field | GF Type | Maps to | How set | Notes |
+|---|---|---|---|---|
+| *(Family Post ID)* | Hidden (Field 1) | *(GPPA anchor)* | GPPA | Queries family post where `meta_account_user = current_user:ID` → returns post ID. Anchors Field 2 athlete selector. |
+| Select Athlete | Select (Field 2) | `enrollment` → `athlete` | user | GPPA choices: Athlete posts where `meta_family = gf_field:1` AND `meta_account_status = Active`. Label = `post_title`, value = post ID. |
+| **— Athlete Identity —** | Section | | | Fields 4–7 are read-only, GPPA-populated from selected Athlete post. |
+| First Name | Text | *(display only)* | **read-only** | GPPA values: Athlete post where `ID = gf_field:2` → `meta_first_name`. GW Read Only required. |
+| Last Name | Text | *(display only)* | **read-only** | GPPA values → `meta_last_name`. |
+| Gender | Radio | *(display only)* | **read-only** | GPPA values → `meta_gender`. |
+| Date of Birth | Date | *(display only)* | **read-only** | GPPA values → `meta_dob`. |
+| Grade | Select | `enrollment` → `grade` | user | Required. Entered fresh each season. 1st–12th. |
+| Participation Type | Radio | `enrollment` → `participation_type` | user | Athlete / Sibling Runner. May change season to season (sibling runner can become full athlete). |
+| **— Eligibility — Athlete —** | Section | | | Conditional: Participation Type = Athlete |
+| Residency | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
+| Homeschooled | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
+| Academic Eligibility | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
+| Running Commitment | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
+| Policy Compliance | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
+| **— Eligibility — Sibling Runner —** | Section | | | Conditional: Participation Type = Sibling Runner |
+| Parent Supervision Acknowledgment | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
+| Policy Compliance (Sibling Runner) | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
+| **— Uniform —** | Section | | | |
+| Requesting New Singlet? | Radio | `enrollment` → `singlet_requested` | user | **Default: No.** Returning athletes already have a singlet. Yes only if requesting a replacement. |
+| Singlet Sizing Group | Select | `enrollment` → `singlet_sizing_group` | user | Conditional: visible if Singlet Requested = Yes. |
+| Singlet Size | Select | `enrollment` → `singlet_size` | user | Conditional: visible if Singlet Requested = Yes. |
+
+---
+
+## Waiver Text (Page 4 — both parent forms)
 
 ```html
-<p>As a parent or legal guardian of the above named student-athlete(s). I give permission for his/her participation in athletic events and the physical evaluation for that participation. I understand that this is simply a screening evaluation and not a substitute for regular health care. I also grant permission for treatment deemed necessary for a condition arising during participation of these events, including medical or surgical treatment that is recommended by a medical doctor. I grant permission to nurses, trainers and coaches as well as physicians or those under their direction who are part of athletic injury prevention and treatment, to have access to necessary medical information. I know that the risk of injury to my child/ward comes with participation in sports and during travel to and from play and practice. I have had the opportunity to understand the risk of injury during participation in sports through meetings, written information or by some other means. My signature indicates that to the best of my knowledge, my answers to the above questions are complete and correct. I understand that the data acquired during these evaluations may be used for research purposes.</p>
+<p>As a parent or legal guardian of the above named student-athlete(s). I give
+permission for his/her participation in athletic events and the physical evaluation
+for that participation. I understand that this is simply a screening evaluation and
+not a substitute for regular health care. I also grant permission for treatment
+deemed necessary for a condition arising during participation of these events,
+including medical or surgical treatment that is recommended by a medical doctor.
+I grant permission to nurses, trainers and coaches as well as physicians or those
+under their direction who are part of athletic injury prevention and treatment, to
+have access to necessary medical information. I know that the risk of injury to my
+child/ward comes with participation in sports and during travel to and from play
+and practice. I have had the opportunity to understand the risk of injury during
+participation in sports through meetings, written information or by some other
+means. My signature indicates that to the best of my knowledge, my answers to the
+above questions are complete and correct. I understand that the data acquired
+during these evaluations may be used for research purposes.</p>
 ```
-
-> **Note:** Review this text before going live to confirm it is still accurate for 2026 XC. It is carried forward verbatim from the 2025 registration form.
 
 ---
 
 ## Hook-Set Fields — Not in Any Form
 
-These fields are written programmatically at submission time and never appear as form fields.
-
 | CPT | Field | Value set by hook |
 |---|---|---|
 | `family` | `account_user` | `get_current_user_id()` |
 | `family` | `family_status` | `Active` |
-| `application` | `payment_amount` | `$entry['payment_amount']` — GF Order Total |
-| `application` | `gravity_form_entry_id` | `$entry['id']` — audit trail to source entry |
+| `family` | `family_display_name` | Set by New Family hook only. **NOT updated by Returning Family hook.** |
+| `family` | `parents_guardians[0].guardian_notifications` | Always `"Yes"` — not collected in form |
+| `application` | `payment_amount` | `$entry['payment_amount']` |
+| `application` | `gravity_form_entry_id` | `$entry['id']` |
 | `application` | `family` | ID of created or located Family post |
 | `application` | `season` | Value from hidden Season ID field |
-| `application` | `submission_date` | `date('Y-m-d')` at time of submission |
+| `application` | `submission_date` | `date('Y-m-d')` at submission |
 | `application` | `submitted_by` | `get_current_user_id()` |
-| `application` | `new_returning` | `New` (New Family form) or `Returning` (Returning Family form) |
+| `application` | `new_returning` | `New` (Form 101) or `Returning` (Form 102) |
 | `application` | `application_status` | `Completed` |
-| `application` | `payment_status` | `Not Received` (default); updated to `Paid` on Stripe confirmation |
+| `application` | `payment_status` | `Not Received` (default); `Paid` on Stripe confirmation |
 | `athlete` | `family` | ID of created or located Family post |
 | `athlete` | `account_status` | `Active` |
 | `athlete` | `participation_type` | From nested form `participation_type` field |
@@ -288,30 +314,18 @@ These fields are written programmatically at submission time and never appear as
 | `enrollment` | `family` | ID of created or located Family post |
 | `enrollment` | `season` | Value from hidden Season ID field |
 | `enrollment` | `athlete` | ID of created or located Athlete post |
-| `enrollment` | `new_returning` | `New Athlete` (new entry) or `Returning Athlete` (from returning athlete checkbox) |
-| `enrollment` | `eligibility_confirmed` | `true` if all required eligibility checkboxes were checked |
+| `enrollment` | `new_returning` | `New Athlete` or `Returning Athlete` |
+| `enrollment` | `eligibility_confirmed` | `true` if all required eligibility checkboxes checked |
 | `enrollment` | `physical_status` | `Not Received` |
-| `enrollment` | `singlet_status` | `Not Needed` if singlet_requested = No; `Ordered` if singlet_requested = Yes |
-
----
-
-## Sibling Runner Eligibility Text
-
-For reference when building the eligibility section of the nested form:
-
-**Grade range:** 1–6 (per v1.7 convention; confirm with program director if this has changed).
-
-**Instructional HTML to display above Sibling Runner eligibility checkboxes:**
-> "Youth runners must be in grades 1–6 and accompanied by their parents at all times during practice. They may run only under their parent's supervision."
-
-**Parent Supervision checkbox label:**
-> "I understand [First Name] is to be under my supervision at all times and that coaches are not responsible for the ultimate safety of my youth runner."
+| `enrollment` | `singlet_status` | `Not Needed` if singlet_requested = No; `Ordered` if Yes |
 
 ---
 
 ## Open Items
 
-- [ ] **Returning Family athlete count field:** The "Returning Athletes Registering" number field on Page 2 requires the parent to manually count their checked athletes. Minor UX friction. Future improvement: use GP Populate Anything or JS to auto-populate from checked values.
-- [ ] **Stripe confirmation hook:** Confirm which GF Stripe add-on hook updates `payment_status` to `Paid` — likely `gform_stripe_fulfillment` or `gform_stripe_after_payment_intent_succeeded`. Wire in `inc/gravity-helpers.php`.
-- [ ] **Handbook URL:** Active season post `handbook` field is a placeholder until the 2026 XC handbook is published. Update the season post before opening registration.
-- [ ] **Policy Compliance links:** The Athlete eligibility "Policy Compliance" checkbox references Eligibility, Code of Conduct, and Dress & Appearance Guidelines pages. Confirm these URLs are current before go-live.
+- [ ] **Stripe confirmation hook:** Confirm which hook updates `payment_status` to `Paid` — likely `gform_stripe_fulfillment` or `gform_stripe_after_payment_intent_succeeded`. Wire in `inc/gravity-helpers.php`.
+- [ ] **Handbook URL:** Active season post `handbook` field is a placeholder. Update before opening registration.
+- [ ] **Policy Compliance links:** Athlete eligibility checkbox references Eligibility, Code of Conduct, and Dress & Appearance Guidelines pages. Confirm URLs are current before go-live.
+- [ ] **GW Read Only dependency:** Field 1 (Family Name) on Returning Family form and identity fields on Register Returning Athlete nested form require GW Read Only (GravityPerks) to enforce non-editability. Confirm plugin is installed and active.
+- [ ] **Confirmation page structure (Open Question 12):** Q12 is still unresolved. Current GF confirmations redirect to `/registration/confirmation/?type=paid` and `/registration/confirmation/?type=offline`. Update once Q12 is decided.
+- [ ] **Additional Singlets (Returning):** The manual count field on RF Page 5 (Field 47) asks the parent to enter how many returning athletes selected a new singlet. This is minor UX friction — the parent must mentally count. Future improvement: derive this count from the nested form entries.
