@@ -124,6 +124,16 @@ function tb_get_family_post_id( $user_id ) {
 
 add_shortcode( 'tb_reg_router', function() {
 
+    // Administrators bypass routing so they can edit and test pages freely
+    if ( current_user_can( 'manage_options' ) ) {
+        return '<p class="tb-reg-admin-notice"><em>Registration router — admin bypass active. '
+             . 'Non-admin users are routed based on their account state: '
+             . 'not logged in → create account prompt; '
+             . 'no Family post → New Family form; '
+             . 'Family post + no active enrollment → Returning Family form; '
+             . 'already enrolled → confirmation message.</em></p>';
+    }
+
     // Not logged in — show create account / log in prompt
     if ( ! is_user_logged_in() ) {
         ob_start(); ?>
@@ -267,26 +277,28 @@ add_shortcode( 'tb_reg_form', function( $atts ) {
         return $msg ? wpautop( $msg ) : '<p>Registration is not yet open.</p>';
     }
 
-    // ---- User-state guards ----
-    if ( ! is_user_logged_in() ) {
-        wp_redirect( home_url( '/registration/' ) );
-        exit;
-    }
+    // ---- User-state guards (skipped for administrators) ----
+    if ( ! current_user_can( 'manage_options' ) ) {
 
-    $user_id    = get_current_user_id();
-    $family_id  = tb_get_family_post_id( $user_id );
-    $has_family = (bool) $family_id;
+        if ( ! is_user_logged_in() ) {
+            wp_redirect( home_url( '/registration/' ) );
+            exit;
+        }
 
-    if ( $atts['type'] === 'new_family' && $has_family ) {
-        // Returning user landed on new-family page — send to hub for routing
-        wp_redirect( home_url( '/registration/' ) );
-        exit;
-    }
+        $user_id    = get_current_user_id();
+        $family_id  = tb_get_family_post_id( $user_id );
+        $has_family = (bool) $family_id;
 
-    if ( $atts['type'] === 'returning_family' && ! $has_family ) {
-        // New user landed on returning-family page — send to hub for routing
-        wp_redirect( home_url( '/registration/' ) );
-        exit;
+        if ( $atts['type'] === 'new_family' && $has_family ) {
+            wp_redirect( home_url( '/registration/' ) );
+            exit;
+        }
+
+        if ( $atts['type'] === 'returning_family' && ! $has_family ) {
+            wp_redirect( home_url( '/registration/' ) );
+            exit;
+        }
+
     }
     // ---- End guards ----
 
