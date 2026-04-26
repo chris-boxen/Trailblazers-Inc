@@ -1,8 +1,10 @@
 # STATE
 
 ## Current Objective
-Data population is substantially complete. Athletic Results and Athletic Records
-remain to be imported. After that, the GravityForms registration build begins.
+2026 XC registration forms are built and imported. Current focus is getting
+registration working end-to-end before the May 1 deadline: complete post-import
+GPPA/Stripe configuration, write the `gravity-helpers.php` submission hook,
+and test both the New Family and Returning Family flows.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -12,6 +14,8 @@ remain to be imported. After that, the GravityForms registration build begins.
   athlete, application) — required for WP Ultimate CSV Importer to resolve
   post object relationships correctly. See SCHEMA.md and CHANGELOG.md.
 - Registration infrastructure complete. See CHANGELOG.md 2026-04.
+- 2026 XC registration forms built and imported. See CHANGELOG.md 2026-04 and
+  FORM-FIELD-MAP.md v2.3.
 
 ## Completed — Data Population
 The following have been successfully imported:
@@ -26,7 +30,7 @@ The following have been successfully imported:
 8. ✅ Applications (2024 XC and 2025 XC)
 9. ✅ Enrollments (2025 XC and 2026 TF)
 
-## Remaining — Data Population
+## Remaining — Data Population (deferred, not blocking registration)
 10. ⬜ Athletic Results
 11. ⬜ Athletic Records
 
@@ -147,21 +151,51 @@ The following have been successfully imported:
 - `inc/cpt-hooks.php` — CPT/taxonomy admin hooks
 - `inc/query-mods.php` — pre_get_posts modifications
 - `inc/acf-helpers.php` — ACF utility functions
-- `inc/gravity-helpers.php` — GravityForms/GravityPerks hooks
-- `inc/registration-helpers.php` — registration options page sync + shortcodes
+- `inc/gravity-helpers.php` — GravityForms/GravityPerks hooks (submission hook pending)
+- `inc/registration-helpers.php` — registration sync hook, `tb_get_family_post_id()`
+  helper, `[tb_reg_router]`, `[tb_reg_hub]`, `[tb_reg_form]` (with user-state guards),
+  `[tb_reg_confirmation]`, `login_redirect` filter
 
-## GravityForms Registration — Design Status
-Designed. Field map in `docs/FORM-FIELD-MAP.md`. Build begins after data population
-is complete.
+## GravityForms Registration — Build Status
+As of 2026-04-26. Full field spec in `docs/FORM-FIELD-MAP.md` v2.3.
+
+### Forms (imported — GF assigns IDs on import, enter in Registration Settings)
+- ✅ Register New Athlete — nested form, permanent/reusable (Form 100 in build script)
+- ✅ Register Returning Athlete — nested form, permanent/reusable (Form 103 in build script)
+- ✅ 2026 Registration — New Family — 5-page, requireLogin
+- ✅ 2026 Registration — Returning Family — 5-page, requireLogin, full GPPA config
+
+### Post-import manual configuration required
+- ⬜ Enter GF form IDs in TB Settings → Registration Settings options page
+- ⬜ Configure Stripe feed on both parent forms
+- ⬜ Verify GPPA on Returning Family Page 1 (16 fields anchored by Field 60)
+- ⬜ Verify GPPA on Register Returning Athlete (athlete selector + identity fields)
+- ⬜ Configure GW Read Only on Family Name (RF Field 1) and identity fields
+  in Register Returning Athlete nested form
+- ⬜ Update handbook URL on active season post before opening registration
+
+### Registration flow (inc/registration-helpers.php)
+- ✅ `login_redirect` filter — non-admin users → `/registration/` after login
+- ✅ `[tb_reg_router]` — user-state routing on `/registration/`
+- ✅ `[tb_reg_form]` guards — wrong-type and logged-out redirects
+- ⬜ Replace `[tb_reg_hub]` with `[tb_reg_router]` on `/registration/` page in WP admin
+
+### Hooks (inc/gravity-helpers.php)
+- ⬜ `gform_after_submission` — New Family: create Family, Application, Athletes,
+  Enrollments from form entry
+- ⬜ `gform_after_submission` — Returning Family: update Family, create Application,
+  new Athletes (if any), Enrollments for all registered athletes
+- ⬜ Stripe confirmation hook — update `payment_status` to `Paid` on Application
 
 ## Registration Infrastructure — Build Status
 Complete as of 2026-04-20. See CHANGELOG.md 2026-04 for full record.
 - ✅ ACF options pages created (Trailblazers Settings + Registration Settings sub-page)
 - ✅ ACF field group `group_tb_registration_settings` built and synced (16 fields)
 - ✅ `inc/registration-helpers.php` created and loaded via `functions.php`
-- ✅ Five permanent WP registration pages created with shortcodes
+- ✅ Seven permanent WP registration pages created with shortcodes
 - ✅ System verified: coming soon state rendering correctly on all pages
 - ✅ `tb_active_season_id` sync hook confirmed working (2026 XC auto-populated)
-- ⬜ GF form IDs — to be populated after forms are built
+- ⬜ GF form IDs — to be populated in Registration Settings after forms are imported
 - ✅ Confirmation page structure — Option A, two child pages created (Q12 resolved)
-- ⬜ CSS styling for `.tb-reg-btn` and `.tb-reg-btn--disabled` — deferred to front-end build
+- ⬜ CSS styling for `.tb-reg-btn`, `.tb-reg-btn--disabled`, `.tb-reg-hub__date`,
+  `.tb-reg-router` — deferred to front-end build

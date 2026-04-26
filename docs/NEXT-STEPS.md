@@ -5,28 +5,108 @@ As of 2026-04-20. Full record in CHANGELOG.md 2026-04.
 
 - ✅ ACF options pages: Trailblazers Settings (parent) + Registration Settings (sub-page)
 - ✅ ACF field group `group_tb_registration_settings` (16 fields, synced)
-- ✅ `inc/registration-helpers.php` — sync hook + 3 shortcodes
+- ✅ `inc/registration-helpers.php` — sync hook + shortcodes
 - ✅ `functions.php` updated with new require line
 - ✅ Seven permanent WP registration pages created:
-  - `/registration/` — `[tb_reg_hub]`
+  - `/registration/` — `[tb_reg_router]` (was `[tb_reg_hub]` — update in WP admin)
   - `/registration/returning-families/` — `[tb_reg_form type="returning_family"]`
   - `/registration/new-families/` — `[tb_reg_form type="new_family"]`
-- `/registration/confirmation/` — parent container (permanent)
+  - `/registration/confirmation/` — parent container (permanent)
   - `/registration/confirmation/new-family/` — `[tb_reg_confirmation type="new_family"]`
   - `/registration/confirmation/returning-family/` — `[tb_reg_confirmation type="returning_family"]`
   - `/registration/submit-physicals/` — `[tb_reg_form type="physicals"]`
 
+## Completed — GravityForms Registration Build
+As of 2026-04-26. Full field spec in `docs/FORM-FIELD-MAP.md` v2.3.
+
+- ✅ Register New Athlete nested form (permanent/reusable, no year in name)
+- ✅ Register Returning Athlete nested form (permanent/reusable, new)
+- ✅ 2026 Registration — New Family (5-page, requireLogin)
+- ✅ 2026 Registration — Returning Family (5-page, requireLogin, full GPPA config)
+- ✅ `inc/registration-helpers.php` updated: `login_redirect` filter,
+  `tb_get_family_post_id()` helper, `[tb_reg_router]` shortcode,
+  user-state guards on `[tb_reg_form]`
+- ✅ `docs/FORM-FIELD-MAP.md` v2.3 committed
+
 ---
 
-## Now — Schema / Template Updates
-These were blocked on ACF schema changes. Confirm all schema changes are committed,
-then work through this list.
+## Now — Complete Registration Before May 1
+
+### 1. WP Admin — update /registration/ page shortcode
+Replace `[tb_reg_hub]` with `[tb_reg_router]` on the `/registration/` page.
+
+### 2. WP Admin — enter GF form IDs in Registration Settings
+TB Settings → Registration Settings → Form IDs tab. Enter the IDs GF assigned
+to the three registration forms on import (New Family, Returning Family, Physicals).
+
+### 3. GF Admin — post-import GPPA configuration
+GPPA rules cannot be reliably exported/imported. Configure manually:
+
+**Returning Family form — Page 1 (Field 60 anchor):**
+- Field 60 (Family Post ID, hidden): GPPA values → Post type: family,
+  filter: `meta_account_user = current_user:ID`, return: `ID`
+- All 16 contact/address fields: GPPA values → filter: `ID = gf_field:60`,
+  each returning its respective ACF meta key
+
+**Register Returning Athlete nested form:**
+- Field 1 (Family Post ID, hidden): same GPPA query as RF Field 60
+- Field 2 (Select Athlete): GPPA choices → Post type: athlete,
+  filter: `meta_family = gf_field:1` AND `meta_account_status = Active`,
+  label: `post_title`, value: `ID`
+- Fields 4–7 (identity, read-only): GPPA values → filter: `ID = gf_field:2`,
+  returning `meta_first_name`, `meta_last_name`, `meta_gender`, `meta_dob`
+
+### 4. GF Admin — configure GW Read Only
+- Returning Family Field 1 (Family Name): enable GW Read Only
+- Register Returning Athlete Fields 4–7 (name, DOB, gender): enable GW Read Only
+
+### 5. GF Admin — configure Stripe feed
+On both New Family and Returning Family forms: GF Settings → Stripe → Add New Feed.
+Map the Registration Total product field as the payment amount.
+
+### 6. Write submission hook — inc/gravity-helpers.php
+Write `gform_after_submission` hooks for both parent forms. See FORM-FIELD-MAP.md
+Hook-Set Fields table for the full list of what each hook must create/update.
+
+**New Family hook must:**
+- Create Family post (account_user, family_display_name, address, parents_guardians)
+- Create Application post (season, family, payment fields, signature, new_returning=New)
+- For each nested athlete entry: create Athlete post, then create Enrollment post
+
+**Returning Family hook must:**
+- Locate existing Family post via account_user
+- Update Family post (address, secondary contact only — do NOT overwrite family_display_name)
+- Create Application post (season, family, payment fields, signature, new_returning=Returning)
+- For each returning nested athlete entry: create Enrollment post (no new Athlete post)
+- For each new nested athlete entry: create Athlete post, then create Enrollment post
+- Primary contact guardian_notifications always set to "Yes" (not in form)
+
+**Stripe confirmation hook:**
+- Wire hook (likely `gform_stripe_fulfillment`) to update Application
+  `payment_status` → `Paid` on successful charge
+
+### 7. Test end-to-end
+- New Family: full submission → confirm Family, Application, Athlete,
+  Enrollment posts created with correct field values
+- Returning Family: full submission → confirm Family updated (not recreated),
+  Application created, Enrollments created for returning and new athletes
+- Login redirect → confirm non-admin users land at `/registration/`
+- User-state routing → confirm new user hits New Family, returning user hits
+  Returning Family, already-enrolled user sees message
+
+### 8. Active season post — update handbook URL
+Add the 2026 XC handbook URL to the `handbook` field on the 2026 XC Athletic
+Season post before opening registration. The form currently shows a placeholder.
+
+---
+
+## Deferred — Schema / Template Updates
+Not blocking registration. Return to these after May 1.
 
 ### Templates to update
 - `single-athlete.php`
   - Add per-season `results_enabled` flag check with `results_unavailable_message` fallback
   - Add Milesplit / AthleticNet external ID links when season flags + IDs are present
-  - No post_type query changes needed (queries Enrollment and Result, not Meet directly)
 
 - `single-athletic_event.php`
   - Add per-season `results_enabled` flag check
@@ -56,48 +136,14 @@ then work through this list.
 
 ---
 
-## Now — Data Population
-After schema changes and template updates are committed, populate with live data.
-
-**Import tool:** WP Ultimate CSV Importer (Smackcoders)
-
-**Import order:**
-1. Sport taxonomy terms — `01-sport-taxonomy.csv`
-2. Athletic Seasons — `02-athletic-seasons.csv`
-3. Athletic Events — `03-athletic-events.csv`
-4. TEC Venues — `04a-tec-venues.csv`
-5. TEC Events (meets) — `04b-tec-events.csv`
-6. Families (+ parents_guardians repeater rows) — `05-families.csv`
-7. Athletes (including `participation_type` and `account_status`) — `06-athletes.csv`
-8. Enrollments (linking Athlete + Family + Season) — `07-enrollments.csv`
-9. Athletic Results (meet column references tribe_events titles) — `08-athletic-results.csv`
-10. Athletic Records — `09-athletic-records.csv`
-
----
-
-## Next — GravityForms Build (after data is populated)
-Field map is complete in `docs/FORM-FIELD-MAP.md`. Do not start until live data exists.
-
-**Resolve first:**
-- Open question Q12 (confirmation page structure) before configuring GF confirmations
-
-**Build order:**
-1. Build `Nested: 2026 Register Athlete` form first
-2. Build `2026 Registration — New Family` form
-3. Build `2026 Registration — Returning Family` form
-
-**After forms are built:**
-- Record all GF form IDs
-- Enter form IDs in **TB Settings → Registration** options page
-- Write hooks in `inc/gravity-helpers.php` against real field IDs
-- Test New Family submission end-to-end
-- Test Returning Family submission end-to-end
+## Deferred — Data Population
+- ⬜ Athletic Results — `08-athletic-results.csv`
+- ⬜ Athletic Records — `09-athletic-records.csv`
 
 ---
 
 ## Parked — JS Filtering (ready to build, not urgent)
-Data attributes are wired on all archive templates. Can be built independently of
-the forms/hooks work.
+Data attributes are wired on all archive templates. Can be built independently.
 
 - Add filter controls + JS to `archive-athlete.php`
 - Add filter controls + JS to `archive-athletic_record.php`
@@ -107,6 +153,8 @@ the forms/hooks work.
 ---
 
 ## Later
+- CSS styling for `.tb-reg-btn`, `.tb-reg-btn--disabled`, `.tb-reg-hub__date`,
+  `.tb-reg-router` — scoped to front-end build
 - Add coach → season backreference on `single-coach.php`
 - Revisit payment abstraction if workflow becomes more complex
 - Add stronger review workflows for physicals and approvals
@@ -117,14 +165,5 @@ the forms/hooks work.
   Athletic Physical CPTs (see OPEN-QUESTIONS.md Q3)
 - Decide whether TEC `tribe_events_cat` needs sport sub-categories for calendar
   filtering (see OPEN-QUESTIONS.md Q10)
-- CSS styling for `.tb-reg-hub`, `.tb-reg-btn`, `.tb-reg-btn--disabled`,
-  `.tb-reg-hub__date` — scoped to front-end build
-
----
-
-## Blocked / Waiting
-- All template updates blocked on ACF schema changes being committed first
-- Data population blocked on template updates
-- GravityForms build blocked on data population
-- Hook code blocked on GravityForms build (need real field IDs)
-- Final decision on event metadata storage on results vs Athletic Event (Q7)
+- Additional Singlets (Returning) manual count field on RF Page 5 — future
+  improvement: derive from nested form entries rather than manual input
