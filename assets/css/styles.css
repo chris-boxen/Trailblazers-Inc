@@ -45,3 +45,273 @@ body.admin-bar { --myscreentop: 32px; }
 @media (max-width:700px) {
   #main-content .container { width: 100%; padding: 0 16px; }
 }
+
+/* 
+** -----------------------------------------------------------------------
+** Gravity Forms
+** -----------------------------------------------------------------------
+*/
+
+.gform_required_legend { display: none; }
+
+.gform-theme--api, 
+.gform-theme--foundation,
+.gform-theme--framework .gform-field-label,
+.gform_wrapper.gform-theme.gform-them--orbital,
+.gform_wrapper.gform-theme.gform-them--orbital .gform-body,
+.gform_wrapper.gform-theme .trailblazers {
+  
+  /* Progress Bar */
+  --gf-field-pg-prog-bar-bg-color-gray: var(--secondary-color);
+  
+  /* Steps */
+  --gf-field-pg-steps-number-bg-color-complete: var(--tb-green);
+  --gf-field-pg-steps-number-border-color-complete: var(--tb-green);
+  --gf-field-pg-steps-step-gap: 6px;
+  
+  --gf-field-pg-steps-number-bg-color-active: var(--secondary-color);
+  --gf-field-pg-steps-number-border-color-active: var(--secondary-color);
+  --gf-field-pg-steps-number-color-active: white;
+  
+  /* Input Spacing */
+  --gf-form-gap-x: 0.5rem;
+  --gf-form-gap-y: 1rem;
+  
+  --gf-field-gap-x: 1rem;
+  --gf-field-gap-y: 1rem;
+  
+  /* Label */
+  --gf-ctrl-label-color-primary: #999;
+  --gf-ctrl-label-font-family-primary: var(--heading-font);
+  --gf-ctrl-label-font-size-primary: 1.5rem;
+  --gf-ctrl-label-font-style-primary: normal;
+  --gf-ctrl-label-font-weight-primary: 700;
+  --gf-ctrl-label-letter-spacing-primary: 0;
+  --gf-ctrl-label-line-height-primary: 1em;
+  --gf-label-space-primary: 0.5rem;
+  --gf-label-choice-field-space-primary: 0;
+  
+  
+  /* Description */
+  --gf-ctrl-desc-font-family: var(--body-font);
+  --gf-ctrl-desc-color: var(--body-color);
+  --gf-ctrl-desc-font-size: 1rem;
+  --gf-ctrl-desc-font-style: normal;
+  --gf-ctrl-desc-font-weight: 400;
+  --gf-ctrl-desc-letter-spacing: 0;
+  --gf-ctrl-desc-line-height: 1.5rem;
+  --gf-desc-space: 0.5rem;
+  
+  /* Input Styles */
+  --gf-ctrl-size: 3rem;
+  --gf-ctrl-padding-x: 0.75rem;
+  --gf-ctrl-select-padding-x: 0.75rem;
+  --gf-ctrl-padding-y: 0;
+  /* Text */
+  --gf-ctrl-color: #777;
+  --gf-ctrl-font-family: var(--body-font);
+  --gf-ctrl-font-size: 1rem;
+  --gf-ctrl-font-style: normal;
+  --gf-ctrl-font-weight: 400;
+  --gf-ctrl-letter-spacing: 0;
+  --gf-ctrl-line-height: 3rem;
+  /* Date */
+  --gf-field-date-width: 33%;
+  
+  /* BG */
+  --gf-ctrl-bg-color: rgba(0,0,0, 0.04);
+  --gf-ctrl-bg-color-hover: rgba(0,0,0, 0.08);
+  --gf-ctrl-bg-color-focus: rgba(0,0,0, 0.08);
+  /* Border */
+  --gf-ctrl-border-width: 1px;
+  --gf-ctrl-border-style: solid;
+  --gf-ctrl-radius: 0.25rem;
+  --gf-ctrl-border-color: rgba(0,0,0, 0.1);
+  --gf-ctrl-border-color-hover: rgba(0,0,0, 0.2);
+  --gf-ctrl-border-color-focus: rgba(0,0,0, 0.2);
+  /* Shadow */
+  --gf-ctrl-shadow: none;
+  --gf-ctrl-shadow-hover: none;
+  --gf-ctrl-shadow-focus: none;
+  
+  /* Choices (Radio/Checkbox) */
+  --gf-ctrl-label-color-secondary: #777;
+  --gf-ctrl-label-font-family-secondary: var(--body-font);
+  --gf-ctrl-label-font-size-secondary: XXX;
+  --gf-ctrl-label-font-style-secondary: normal;
+  --gf-ctrl-label-font-weight-secondary: normal;
+  --gf-ctrl-label-letter-spacing-secondary: 0;
+  --gf-ctrl-label-line-height-secondary: 1rem;
+  --gf-ctrl-choice-size: 1rem!important;
+  --gf-ctrl-radio-check-size: 1rem!important;
+  --gf-ctrl-radio-check-radius: 50%;
+  --gf-ctrl-checkbox-check-radius: var(0.125rem);
+  --gf-ctrl-choice-check-color: var(--secondary-color);
+  --gf-ctrl-accent-color: var(--secondary-color);
+  
+  
+  /* Section */
+  --gf-field-section-border-width: 1px;
+  --gf-field-section-border-style: solid;
+  --gf-field-section-border-color: rgba(0,0,0, 0.1);
+  --gf-field-section-padding-y-end: 1rem;
+}
+.gfield--type-radio .gfield_label {
+  margin-bottom: 1rem;
+}
+.gform-theme--framework .gfield--type-section {
+  margin-top: 2rem;
+}
+.gform_wrapper.gform-theme .trailblazers {
+  /* Footer */
+  --gf-form-footer-gap: 0.5rem;
+  --gf-form-footer-margin-y-start: 2rem;
+  
+  /* Button */
+  --gf-ctrl-btn-font-family: var(--heading-font);
+  --gf-ctrl-btn-font-size: 1rem;
+  --gf-ctrl-btn-font-style: normal;
+  --gf-ctrl-btn-font-weight: 700;
+  --gf-ctrl-btn-letter-spacing: 0;
+  --gf-ctrl-btn-line-height: 1em;
+  --gf-ctrl-btn-size: 2rem;
+  --gf-ctrl-btn-color-primary: white;
+  --gf-ctrl-btn-opacity: 1;
+  --gf-ctrl-btn-padding-y: 0;
+  --gf-ctrl-btn-padding-x: 1rem;
+  --gf-ctrl-btn-text-decoration: none;
+  --gf-ctrl-btn-text-transform: none;
+  
+  /* BG */
+  --gf-ctrl-btn-bg-color-primary: var(--secondary-color)!important;
+  /* Border */
+  --gf-ctrl-btn-radius: 0.25rem;
+  --gf-ctrl-btn-border-color-primary: var(--secondary-color);
+  --gf-ctrl-btn-border-style-primary: solid;
+  --gf-ctrl-btn-border-width-primary: 0;
+  --gf-ctrl-btn-shadow: none;
+  /* Hover */
+  --gf-ctrl-btn-bg-color-hover-primary: #777;
+  --gf-ctrl-btn-border-color-hover-primary: #777;
+  --gf-ctrl-btn-color-hover-primary: white;
+  --gf-ctrl-btn-shadow-hover: none;
+  /* Focus */
+  --gf-ctrl-btn-bg-color-focus-primary: var(--secondary-color);
+  --gf-ctrl-btn-border-color-focus-primary: var(--secondary-color);
+  --gf-ctrl-btn-color-focus-primary: whate;
+  --gf-ctrl-btn-shadow-focus: none;
+  
+  /* Secondary Btn */
+  --gf-ctrl-btn-color-secondary: white;
+  --gf-ctrl-btn-bg-color-secondary: #ccc;
+  --gf-ctrl-btn-border-color-secondary: #ccc;
+  --gf-ctrl-btn-border-width-secondary: 0;
+  /* Hover */
+  --gf-ctrl-btn-bg-color-hover-secondary: #999;
+  --gf-ctrl-btn-border-color-hover-secondary: #999;
+  --gf-ctrl-btn-color-hover-primary: white;
+}
+.gform_wrapper.gform-theme .trailblazers .gform_page_footer { 
+  padding-top: 2rem;
+  
+  --gf-ctrl-btn-font-size: 1.25rem;
+  --gf-ctrl-btn-size: 3rem;
+  --gf-ctrl-btn-padding-x: 1.5rem;
+}
+
+.gform_wrapper .gform_fields input::placeholder,
+.gform_wrapper .gform_fields textarea::placeholder {
+  color: rgb(0 0 0 / 0.4);
+}
+
+.gfield--type-survey.gfield--type-choice .gfield_label_before_complex {
+  margin-bottom: 0.5rem;
+}
+
+.gfield--type-survey.gfield--type-choice .ginput_container_radio { margin-top: 1rem; }
+
+@media (min-width: 640px) {
+  .gform_wrapper .gform_fields .gfield.gf_list_inline .gfield_checkbox, 
+  .gform_wrapper .gform_fields .gfield.gf_list_inline .gfield_radio {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+  .gform_wrapper .gform_fields .gfield.gf_list_inline .gfield_checkbox .gchoice, 
+  .gform_wrapper .gform_fields .gfield.gf_list_inline .gfield_radio .gchoice {
+    display: flex;
+    align-items: center;
+    padding-block-end: 0;
+    padding-inline-end: 1rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Nested Form */
+.entry-content table.gpnf-nested-entries:not(.variations) { border: 1px solid #999; }
+.gpnf-nested-entries th { background: rgba(0, 0, 0, .2); }
+.entry-content thead th, 
+.entry-content tr th { color: #111; }
+
+/* GP Modal */
+.tingle-modal .gpnf-modal-header {
+  background: var(--tb-green)!important;
+  font-family: var(--heading-font);
+  margin-bottom: 1rem;
+}
+.tingle-modal .tingle-modal-box__footer .tingle-btn--default { background-color: #ccc; }
+.tingle-modal .tingle-modal-box__footer .tingle-btn--default:hover { background-color: #777; }
+.tingle-modal .tingle-modal-box__footer .tingle-btn--primary { background-color: var(--secondary-color); }
+.tingle-modal .tingle-modal-box__footer .tingle-btn--primary:hover { background-color: #777; }
+
+/* Advanced Address */
+.gfield--type-address input[type=text] {
+  font-size: 1rem;
+  color: var(--gf-ctrl-color);
+  background-color: var(--gf-ctrl-bg-color);
+  border: 1px solid var(--gf-ctrl-border-color);
+  padding: 0.75rem;
+}
+
+/* Date Picker */
+.gform-theme--framework.ui-datepicker {
+  background-color: white;
+}
+
+/* Calculation Field */
+.gform_wrapper.gform-theme .trailblazers .gfield_calculation {
+  --gf-ctrl-color: #333;
+}
+
+/* HTML Field */
+.gform_wrapper.gform-theme .trailblazers .gfield--type-html {
+  font-family: inherit;
+  font-weight: 400;
+}
+
+/* Hide Spinner on EOY Party Registration */
+#gform_18.trailblazers .gform-loader { display: none; }
+
+/* MERCH */
+.gform_wrapper.gform-theme .trailblazers.merch .gf_page_steps { gap: 8px; }
+.gform_wrapper.gform-theme .trailblazers.merch .gf_page_steps a.gwmpn-page-link  { 
+  line-height: 2em;
+  height: 2em;
+  border: 1px solid rgba(0,0,0, 0.1);
+  border-radius: 1em;
+  background: rgba(0,0,0, 0.05);
+  padding: 0 1em;
+  transition: 0.3s all ease-in-out;
+}
+.gform_wrapper.gform-theme .trailblazers.merch .gf_page_steps a.gwmpn-page-link:hover {
+  border-color: var(--tb-green);
+  background: var(--tb-green);
+  --gf-local-color: white;
+}
+.gform_wrapper.gform-theme .trailblazers.merch .gf_page_steps a.gwmpn-page-link:hover .gf_step_label {
+  --gf-local-color: white;
+}
+.gform_wrapper.gform-theme .trailblazers.merch .gf_page_steps .gf_step_number { display: none; }
