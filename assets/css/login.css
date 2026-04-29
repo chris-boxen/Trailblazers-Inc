@@ -1,0 +1,109 @@
+/* 
+** -----------------------------------------------------------------------
+** Login
+** -----------------------------------------------------------------------
+*/
+/* Font Stack */
+--body-font: Roboto, helvetica, sans-serif;
+--heading-font: 'Roboto Slab', helvetica, sans-serif;
+
+/* Colors */
+--light-green: #A0C30F;
+--medium-green: #306935;
+--dark-green: #253D1B;
+--tb-orange: #F68C22;
+--tb-amber: #D34F27;
+
+--tb-green: var(--medium-green);
+--secondary-color: var(--tb-orange);
+--body-color: #777;
+
+body.login {
+	background: #f2f2f2;
+}
+
+body.login #login {
+  width: 400px;
+  max-width: 90%;
+  padding: 5vw 0;
+}
+
+#login h1 a, 
+.login h1 a {
+  width: 100%;
+  max-width: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  height: 120px;
+}
+
+#login .message {
+	border: none;
+	background: none;
+	padding: 0;
+	box-shadow: 0 0 0;
+	font-size: 1rem;
+	text-align: center;
+	color: var(--tb-green);
+}
+
+#login hr {
+  border: none;
+  width: 100%;
+  height: 1px;
+  background: rgb(0 0 0 / 0.1);
+  margin: 1rem 0;
+}
+
+#login h2 {}
+
+#login form {
+	background: white;
+	border-color: #ccc;
+	border-radius: 0.25rem;
+	padding: 1rem 2rem;
+}
+
+#login form label { 
+	font-size: 18px;
+	font-family: var(--heading-font); 
+	font-weight: bold;
+	color: var(--tb-green);
+}
+
+#login input {
+	background: rgba(0,0,0, 0.03);
+	border-color: #999;
+	transition: 0.3s all ease-in-out;
+}
+#login input:focus {
+	box-shadow: none;
+	border-color: black;
+	background: rgba(0,0,0, 0.06);	
+}
+
+#login #reg_passmail { font-size: var(--step--2); }
+
+#login form .button-primary,
+#login form .button-primary.button-large {
+	font-size: 1rem;
+	line-height: 1rem;
+	padding: 0.5rem 1rem;
+	background: var(--secondary-color);
+	border-color: transparent;
+	transition: 0.3s all ease-in-out;
+}
+.wp-core-ui .button-primary:hover {
+  background: var(--sea);
+  border-color: transparent;
+}
+
+#login #nav,
+#login #backtoblog {
+  text-align: center;
+}
+
+.login #nav { font-size: 1rem; color: var(--tb-green); }
+.login #nav a { color: var(--light-green); }

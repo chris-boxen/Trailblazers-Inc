@@ -1,9 +1,11 @@
 html, body {
-	--my-sans: myriad-variable, sans-serif;
-	--my-serif: minion-3-caption, serif;
-	--et_global_heading_font: var(--my-sans);
-	--et_global_body_font: var(--my-sans);
     --myscreentop: 0;
+    
+    /* Font Stack */
+    --body-font: Roboto, helvetica, sans-serif;
+    --heading-font: 'Roboto Slab', helvetica, sans-serif;
+    --et_global_heading_font: var(--heading-font);
+    --et_global_body_font: var(--body-font);
     
     /* Colors */
     --light-green: #A0C30F;
@@ -15,8 +17,6 @@ html, body {
     --tb-green: var(--medium-green);
     --secondary-color: var(--tb-orange);
     --body-color: #777;
-  
-  .myserif { font-family: var(--my-serif); }
 }
 body.admin-bar { --myscreentop: 32px; }
 @media (max-width: 484px) { body.admin-bar { --myscreentop: 46px; } }
@@ -159,6 +159,7 @@ body.admin-bar { --myscreentop: 32px; }
   --gf-ctrl-checkbox-check-radius: var(0.125rem);
   --gf-ctrl-choice-check-color: var(--secondary-color);
   --gf-ctrl-accent-color: var(--secondary-color);
+  --gf-ctrl-choice-check-color-disabled: var(--secondary-color);
   
   
   /* Section */
