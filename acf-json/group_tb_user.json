@@ -56,7 +56,7 @@
             {
                 "param": "user_form",
                 "operator": "==",
-                "value": "all"
+                "value": "edit"
             }
         ]
     ],
@@ -72,5 +72,5 @@
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1776549007
+    "modified": 1777503412
 }
