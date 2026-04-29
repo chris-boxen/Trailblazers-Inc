@@ -20,6 +20,13 @@
 
 add_action( 'login_enqueue_scripts', function() {
 	wp_enqueue_style( 'tb-login', get_stylesheet_directory_uri() . '/assets/css/login.css' );
+
+	// On the registration page only, hide the username field — it's auto-generated
+	if ( isset( $_GET['action'] ) && $_GET['action'] === 'register' ) {
+		wp_add_inline_style( 'tb-login',
+			'#registerform > p:first-child { display: none !important; }'
+		);
+	}
 } );
 
 
@@ -75,20 +82,11 @@ add_action( 'register_form', function() { ?>
 				   required />
 		</label>
 	</p>
-	<style>
-		/* Hide the username field — auto-generated from name */
-		.login .register #user_login,
-		.login .register label[for="user_login"] {
-			display: none !important;
-		}
-		/* Move name fields above email */
-		#register_form > p:first-of-type { order: -1; }
-	</style>
 	<script>
 		// Move name fields above the email field on DOMContentLoaded
 		document.addEventListener( 'DOMContentLoaded', function() {
-			var form     = document.getElementById( 'registerform' );
-			var email    = document.querySelector( '#registerform p:has(#user_email)' );
+			var form      = document.getElementById( 'registerform' );
+			var email     = document.querySelector( '#registerform p:has(#user_email)' );
 			var firstName = document.querySelector( '#registerform p:has(#first_name)' );
 			var lastName  = document.querySelector( '#registerform p:has(#last_name)' );
 			if ( form && email && firstName && lastName ) {
