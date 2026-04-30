@@ -57,6 +57,48 @@ body.admin-bar { --myscreentop: 32px; }
   #main-content .container { width: 100%; padding: 0 16px; }
 }
 
+/* Buttons */
+a.button, a.tb-reg-btn {
+  display: inline-block;
+  text-decoration: none;
+  color: white!important;
+  background: var(--secondary-color);
+  padding: 0.5em 1em;
+  border-radius: 0.25em;
+  font-family: var(--heading-font);
+  font-weight: 700;
+}
+a.button:hover, a.tb-reg-btn:hover { background: #333; }
+
+
+/* 
+** -----------------------------------------------------------------------
+** Nav
+** -----------------------------------------------------------------------
+*/
+.et_pb_menu--without-logo .et_pb_menu__menu>nav>ul>li {
+    margin: 0;
+}
+.et_pb_menu--without-logo .et_pb_menu__menu>nav>ul>li>a {
+    padding: 0;
+    line-height: 2rem;
+}
+
+.et_pb_menu--with-logo .et_pb_menu__menu li.button a,
+.et-db #et-boc .et-l .et_pb_menu_0_tb_header.et_pb_menu .button a {
+  color: white !important;
+  background: var(--tb-green);
+  border-radius: 0.25rem;
+  padding: 0 1rem !important;
+  height: 2rem;
+  line-height: 2rem;
+}
+ .et_pb_menu--with-logo .et_pb_menu__menu li.button a:hover {
+  opacity: 1;
+  color: white !important;
+  background: var(--secondary-color);
+ }
+
 /* 
 ** -----------------------------------------------------------------------
 ** Gravity Forms
