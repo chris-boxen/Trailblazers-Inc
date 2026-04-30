@@ -126,12 +126,45 @@ add_shortcode( 'tb_reg_router', function() {
 
     // Administrators bypass routing so they can edit and test pages freely
     if ( current_user_can( 'manage_options' ) ) {
-        return '<p class="tb-reg-admin-notice"><em>Registration router — admin bypass active. '
-             . 'Non-admin users are routed based on their account state: '
-             . 'not logged in → create account prompt; '
-             . 'no Family post → New Family form; '
-             . 'Family post + no active enrollment → Returning Family form; '
-             . 'already enrolled → confirmation message.</em></p>';
+        ob_start(); ?>
+        <div class="tb-reg-router">
+            <p class="tb-reg-admin-notice"><em>Registration router — admin bypass active. Non-admin users are routed based on their account state and registration open/close dates.</em></p>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    // Check manual status override first
+    $status = get_field( 'reg_status', 'option' );
+
+    if ( $status === 'closed' ) {
+        $msg = get_field( 'reg_closed_message', 'option' );
+        return $msg ? wpautop( $msg ) : '<p>Registration is closed.</p>';
+    }
+
+    if ( $status === 'coming_soon' ) {
+        $msg = get_field( 'reg_coming_soon_message', 'option' );
+        return $msg ? wpautop( $msg ) : '<p>Registration is not yet open.</p>';
+    }
+
+    // Check date-driven state — use the earlier of the two open dates
+    // to determine whether registration has opened at all yet
+    $close       = get_field( 'reg_close', 'option' );
+    $ret_open    = get_field( 'reg_returning_open', 'option' );
+    $new_open    = get_field( 'reg_new_family_open', 'option' );
+    $ret_state   = tb_reg_button_state( $ret_open, $close );
+    $new_state   = tb_reg_button_state( $new_open, $close );
+
+    // If both are pending or closed, show the appropriate message
+    $any_open = ( $ret_state === 'enabled' || $new_state === 'enabled' );
+
+    if ( ! $any_open ) {
+        if ( $ret_state === 'closed' && $new_state === 'closed' ) {
+            $msg = get_field( 'reg_closed_message', 'option' );
+            return $msg ? wpautop( $msg ) : '<p>Registration is closed.</p>';
+        }
+        $msg = get_field( 'reg_coming_soon_message', 'option' );
+        return $msg ? wpautop( $msg ) : '<p>Registration is not yet open.</p>';
     }
 
     // Not logged in — show create account / log in prompt
