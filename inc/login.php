@@ -24,7 +24,8 @@ add_action( 'login_enqueue_scripts', function() {
 	// On the registration page only, hide the username field — it's auto-generated
 	if ( isset( $_GET['action'] ) && $_GET['action'] === 'register' ) {
 		wp_add_inline_style( 'tb-login',
-			'#registerform > p:first-child { display: none !important; }'
+			'#registerform > p:first-child { display: none !important; }
+			 #registerform p.submit { display: block !important; }'
 		);
 	}
 } );
@@ -83,16 +84,35 @@ add_action( 'register_form', function() { ?>
 		</label>
 	</p>
 	<script>
-		// Move name fields above the email field on DOMContentLoaded
 		document.addEventListener( 'DOMContentLoaded', function() {
 			var form      = document.getElementById( 'registerform' );
+			var userLogin = document.getElementById( 'user_login' );
 			var email     = document.querySelector( '#registerform p:has(#user_email)' );
 			var firstName = document.querySelector( '#registerform p:has(#first_name)' );
 			var lastName  = document.querySelector( '#registerform p:has(#last_name)' );
+
+			// Move name fields above email
 			if ( form && email && firstName && lastName ) {
 				form.insertBefore( firstName, email );
 				form.insertBefore( lastName,  email );
 			}
+
+			// Auto-populate the hidden username field from first + last name
+			// so WP's own validation passes. Server-side pre_user_login
+			// handles deduplication with a numeric suffix if needed.
+			function generateUsername() {
+				var first = document.getElementById( 'first_name' ).value.trim();
+				var last  = document.getElementById( 'last_name' ).value.trim();
+				if ( first && last && userLogin ) {
+					var base = ( first.charAt(0) + last ).toLowerCase().replace( /[^a-z0-9]/g, '' );
+					userLogin.value = base;
+				}
+			}
+
+			var firstInput = document.getElementById( 'first_name' );
+			var lastInput  = document.getElementById( 'last_name' );
+			if ( firstInput ) firstInput.addEventListener( 'input', generateUsername );
+			if ( lastInput )  lastInput.addEventListener( 'input', generateUsername );
 		} );
 	</script>
 <?php } );
