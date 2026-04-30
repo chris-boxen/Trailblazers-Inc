@@ -3,20 +3,18 @@
 ** Login
 ** -----------------------------------------------------------------------
 */
-/* Font Stack */
---body-font: Roboto, helvetica, sans-serif;
---heading-font: 'Roboto Slab', helvetica, sans-serif;
-
-/* Colors */
---light-green: #A0C30F;
---medium-green: #306935;
---dark-green: #253D1B;
---tb-orange: #F68C22;
---tb-amber: #D34F27;
-
---tb-green: var(--medium-green);
---secondary-color: var(--tb-orange);
---body-color: #777;
+:root {
+	--body-font: Roboto, helvetica, sans-serif;
+	--heading-font: 'Roboto Slab', helvetica, sans-serif;
+	--light-green: #A0C30F;
+	--medium-green: #306935;
+	--dark-green: #253D1B;
+	--tb-orange: #F68C22;
+	--tb-amber: #D34F27;
+	--tb-green: #306935;
+	--secondary-color: #F68C22;
+	--body-color: #777;
+}
 
 body.login {
 	background: #f2f2f2;
