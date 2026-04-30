@@ -104,7 +104,7 @@ add_action( 'register_form', function() { ?>
 				var first = document.getElementById( 'first_name' ).value.trim();
 				var last  = document.getElementById( 'last_name' ).value.trim();
 				if ( first && last && userLogin ) {
-					var base = ( first.charAt(0) + last ).toLowerCase().replace( /[^a-z0-9]/g, '' );
+					var base = ( first + last ).toLowerCase().replace( /[^a-z0-9]/g, '' );
 					userLogin.value = base;
 				}
 			}
@@ -150,7 +150,7 @@ add_filter( 'pre_user_login', function( $user_login ) {
 	if ( empty( $first ) || empty( $last ) ) return $user_login;
 
 	// Build base: first initial + last name, lowercase, no spaces/special chars
-	$base     = strtolower( substr( $first, 0, 1 ) . $last );
+	$base     = strtolower( $first . $last );
 	$base     = preg_replace( '/[^a-z0-9]/', '', $base );
 	$username = $base;
 	$suffix   = 2;
