@@ -161,15 +161,13 @@ function tb_returning_athlete_eligibility_confirmed( $nested_entry ) {
     $participation_type = rgar( $nested_entry, '9' );
 
     if ( $participation_type === 'Sibling Runner' ) {
-        return ! empty( $nested_entry['17.1'] )
-            && ! empty( $nested_entry['18.1'] );
+        return ! empty( $nested_entry['17.1'] );
     }
 
     // Athlete
     return ! empty( $nested_entry['11.1'] )
         && ! empty( $nested_entry['13.1'] )
-        && ! empty( $nested_entry['14.1'] )
-        && ! empty( $nested_entry['15.1'] );
+        && ! empty( $nested_entry['14.1'] );
 }
 
 
@@ -653,6 +651,13 @@ function tb_handle_returning_family( $entry, $form ) {
         if ( ! $athlete_id ) {
             continue;
         }
+        
+        // IDs group — read existing family_id from Family post and copy to new Athlete.
+        $existing_ids = get_field( 'ids', $family_id );
+        update_field( 'field_69c9da2cbac29', [
+            'family_id'    => $existing_ids['family_id'] ?? '',
+            'milesplit_id' => $existing_ids['milesplit_id'] ?? '',
+        ], $athlete_id );
 
         tb_create_enrollment_post( [
             'athlete_id'            => $athlete_id,

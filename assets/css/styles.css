@@ -436,3 +436,6 @@ a.button:hover { background: #333; }
   --gf-local-color: white;
 }
 .gform_wrapper.gform-theme .trailblazers.merch .gf_page_steps .gf_step_number { display: none; }
+
+/* Read-Only Fields */
+input[readonly="readonly"] { pointer-events: none; }
