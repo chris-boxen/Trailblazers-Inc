@@ -58,7 +58,7 @@ body.admin-bar { --myscreentop: 32px; }
 }
 
 /* Buttons */
-a.button, a.tb-reg-btn {
+a.button {
   display: inline-block;
   text-decoration: none;
   color: white!important;
@@ -68,7 +68,7 @@ a.button, a.tb-reg-btn {
   font-family: var(--heading-font);
   font-weight: 700;
 }
-a.button:hover, a.tb-reg-btn:hover { background: #333; }
+a.button:hover { background: #333; }
 
 
 /* 
@@ -97,6 +97,70 @@ a.button:hover, a.tb-reg-btn:hover { background: #333; }
   opacity: 1;
   color: white !important;
   background: var(--secondary-color);
+ }
+ 
+/* 
+ ** -----------------------------------------------------------------------
+ ** Registration Shortcodes
+ ** -----------------------------------------------------------------------
+ */
+ 
+ .tb-reg-router {
+   text-align: center;
+   padding: 2rem 0;
+ }
+ 
+ .tb-reg-btn {
+   display: inline-block;
+   background: var(--tb-green);
+   color: white !important;
+   font-family: var(--heading-font);
+   font-weight: 700;
+   font-size: 1rem;
+   padding: 0.75rem 2rem;
+   border-radius: 0.25rem;
+   text-decoration: none;
+   margin: 0.5rem;
+   transition: background 0.2s ease;
+ }
+ 
+ .tb-reg-btn:hover {
+   background: var(--secondary-color);
+   color: white !important;
+ }
+ 
+ .tb-reg-btn--secondary {
+   background: transparent;
+   color: var(--tb-green) !important;
+   border: 2px solid var(--tb-green);
+ }
+ 
+ .tb-reg-btn--secondary:hover {
+   background: var(--tb-green);
+   color: white !important;
+ }
+ 
+ .tb-reg-btn--disabled {
+   background: #ccc;
+   cursor: not-allowed;
+   pointer-events: none;
+ }
+ 
+ .tb-reg-btn--disabled:hover {
+   background: #ccc;
+ }
+ 
+ .tb-reg-hub__date {
+   font-size: 0.85rem;
+   color: #666;
+   margin: 0.25rem 0 1rem;
+   text-align: center;
+ }
+ 
+ .tb-reg-admin-notice {
+   font-size: 0.85rem;
+   color: #666;
+   font-style: italic;
  }
 
 /* 
