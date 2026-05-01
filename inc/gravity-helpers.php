@@ -688,61 +688,40 @@ function tb_handle_returning_family( $entry, $form ) {
 
 
 // =============================================================================
-// SECTION 5 — STRIPE PAYMENT CONFIRMED HOOK (STUB)
+// SECTION 5 — STRIPE PAYMENT CONFIRMED HOOK
 // =============================================================================
-
-add_action( 'gform_stripe_fulfillment', function() {
-    error_log( 'TB: gform_stripe_fulfillment fired' );
-}, 10, 4 );
-
-add_action( 'gform_stripe_after_payment_intent_succeeded', function() {
-    error_log( 'TB: gform_stripe_after_payment_intent_succeeded fired' );
-}, 10, 4 );
 
 /**
  * Update Application payment_status to 'Paid' when Stripe confirms a charge.
- *
- * TODO: Confirm the correct hook. Candidates:
- *   - gform_stripe_fulfillment          (fires when GF Stripe fulfillment runs)
- *   - gform_stripe_after_payment_intent_succeeded
- *
- * Uncomment and test once Stripe is connected on the live site.
- *
- * The hook should locate the Application post by gravity_form_entry_id
- * and update payment_status → 'Paid'.
+ * Fires via gform_post_payment_completed regardless of redirect or webhook path.
  */
-/*
-add_action( 'gform_stripe_fulfillment', 'tb_handle_stripe_payment_confirmed', 10, 4 );
-function tb_handle_stripe_payment_confirmed( $entry, $action, $previous_status, $current_status ) {
-    if ( $current_status !== 'paid' ) {
+add_action( 'gform_post_payment_completed', function( $entry, $action ) {
+    $new_family_form_id       = tb_reg_get_form_id( 'new_family' );
+    $returning_family_form_id = tb_reg_get_form_id( 'returning_family' );
+
+    if ( (int) $entry['form_id'] !== $new_family_form_id
+         && (int) $entry['form_id'] !== $returning_family_form_id ) {
         return;
     }
 
     $entry_id = $entry['id'] ?? 0;
-    if ( ! $entry_id ) {
-        return;
-    }
+    if ( ! $entry_id ) return;
 
-    // Find the Application post for this GF entry.
     $applications = get_posts( [
         'post_type'      => 'application',
         'posts_per_page' => 1,
-        'meta_query'     => [
-            [
-                'key'   => 'gravity_form_entry_id',
-                'value' => $entry_id,
-            ],
-        ],
+        'meta_key'       => 'gravity_form_entry_id',
+        'meta_value'     => $entry_id,
+        'fields'         => 'ids',
     ] );
 
     if ( empty( $applications ) ) {
-        error_log( "TB Registration: Stripe payment confirmed for entry $entry_id but no matching Application post found." );
+        error_log( 'TB Registration: gform_post_payment_completed — no Application post found for entry ID ' . $entry_id );
         return;
     }
 
-    update_field( 'payment_status', 'Paid', $applications[0]->ID );
-}
-*/
+    update_field( 'payment_status', 'Paid', $applications[0] );
+}, 10, 2 );
 
 // =============================================================================
 // SECTION 6 — HANDBOOK POPULATION
