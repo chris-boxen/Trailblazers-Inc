@@ -220,7 +220,7 @@ function tb_create_athlete_post( $nested_entry, $family_id ) {
         'first_name'     => $first_name,
         'last_name'      => $last_name,
         'preferred_name' => rgar( $nested_entry, '5' ),
-        'slug'           => '',
+        'slug'           => sanitize_title( trim( "$first_name $last_name" ) ),
     ], $athlete_id );
 
     // Demographics group — same pattern.
@@ -364,6 +364,7 @@ function tb_handle_registration_submission( $entry, $form ) {
  *
  * New Family form field reference:
  *   1   — Family Name
+ *   52  – Family ID (hidden)
  *   2   — Season ID (hidden)
  *   3   — Current User ID (hidden)
  *   5   — Street Address
@@ -389,6 +390,7 @@ function tb_handle_registration_submission( $entry, $form ) {
  */
 function tb_handle_new_family( $entry, $form ) {
     $family_name = rgar( $entry, '1' );
+    $family_unique_id = rgar( $entry, '52' );
     $season_id   = (int) rgar( $entry, '2' ) ?: (int) get_option( 'tb_active_season_id' );
     $user_id     = (int) rgar( $entry, '3' ) ?: get_current_user_id();
         
@@ -416,26 +418,17 @@ function tb_handle_new_family( $entry, $form ) {
     update_field( 'account_user',        $user_id,                           $family_id );
     update_field( 'family_status',       'Active',                           $family_id );
     update_field( 'family_display_name', $family_name,                       $family_id );
+    update_field( 'family_id',           $family_unique_id,                  $family_id );
     update_field( 'street_address',      rgar( $entry, '5' ),                $family_id );
     update_field( 'city',                rgar( $entry, '6' ),                $family_id );
     update_field( 'state',               rgar( $entry, '7' ),                $family_id );
     update_field( 'zip_code',            rgar( $entry, '51' ),               $family_id );
     update_field( 'parents_guardians',   tb_build_guardians( $entry ),       $family_id );
     
-    // For Check/Cash, entry['payment_amount'] is 0. Read the Total field directly.
-    $payment_amount = (float) ( $entry['payment_amount'] ?? 0 );
-    if ( $payment_amount === 0.0 ) {
-        foreach ( $form['fields'] as $field ) {
-            if ( $field->type === 'total' ) {
-                $payment_amount = (float) rgar( $entry, (string) $field->id );
-                break;
-            }
-        }
-    }
-    update_field( 'payment_amount', $payment_amount, $application_id );
     
     // Set reverse reference on the WP user per SCHEMA.md 3-way linkage rule.
-    update_field( 'family', $family_id, 'user_' . $user_id );
+    update_field( 'family',    $family_id,        'user_' . $user_id );
+    update_field( 'family_id', $family_unique_id, 'user_' . $user_id );
 
     // -------------------------------------------------------------------------
     // 2. Create Application post
@@ -484,6 +477,12 @@ function tb_handle_new_family( $entry, $form ) {
         if ( ! $athlete_id ) {
             continue;
         }
+
+        // IDs group — must write via parent group key; sub-field key writes silently fail.
+        update_field( 'field_69c9da2cbac29', [
+            'family_id'    => $family_unique_id,
+            'milesplit_id' => '',
+        ], $athlete_id );
 
         tb_create_enrollment_post( [
             'athlete_id'            => $athlete_id,
