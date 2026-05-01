@@ -205,12 +205,13 @@ function tb_create_athlete_post( $nested_entry, $family_id ) {
         error_log( 'TB Registration: Failed to create Athlete post — ' . $athlete_id->get_error_message() );
         return false;
     }
-
+    $gender_map = [ 'Male' => 'M', 'Female' => 'F' ];
+    
     update_field( 'first_name',         $first_name,                         $athlete_id );
     update_field( 'last_name',          $last_name,                          $athlete_id );
     update_field( 'preferred_name',     rgar( $nested_entry, '5' ),          $athlete_id );
-    update_field( 'gender',             rgar( $nested_entry, '6' ),          $athlete_id );
-    update_field( 'date_of_birth',      rgar( $nested_entry, '7' ),          $athlete_id );
+    update_field( 'gender',    $gender_map[ rgar( $nested_entry, '6' ) ] ?? '', $athlete_id );
+    update_field( 'dob',       rgar( $nested_entry, '7' ),                      $athlete_id );
     update_field( 'grade',              rgar( $nested_entry, '8' ),          $athlete_id );
     update_field( 'family',             $family_id,                          $athlete_id );
     update_field( 'account_status',     'Active',                            $athlete_id );
