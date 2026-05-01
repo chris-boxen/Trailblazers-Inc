@@ -34,8 +34,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function tb_reg_get_form_id( $type ) {
     $key_map = [
-        'new_family'       => 'reg_new_family_form',
-        'returning_family' => 'reg_returning_family_form',
+        'new_family'       => 'reg_new_family_form_id',
+        'returning_family' => 'reg_returning_family_form_id',
     ];
     if ( ! isset( $key_map[ $type ] ) ) {
         return 0;
