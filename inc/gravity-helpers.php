@@ -207,15 +207,16 @@ function tb_create_athlete_post( $nested_entry, $family_id ) {
     }
     $gender_map = [ 'Male' => 'M', 'Female' => 'F' ];
     
-    update_field( 'first_name',         $first_name,                         $athlete_id );
-    update_field( 'last_name',          $last_name,                          $athlete_id );
-    update_field( 'preferred_name',     rgar( $nested_entry, '5' ),          $athlete_id );
-    update_field( 'gender',    $gender_map[ rgar( $nested_entry, '6' ) ] ?? '', $athlete_id );
-    update_field( 'dob',       rgar( $nested_entry, '7' ),                      $athlete_id );
-    update_field( 'grade',              rgar( $nested_entry, '8' ),          $athlete_id );
-    update_field( 'family',             $family_id,                          $athlete_id );
-    update_field( 'account_status',     'Active',                            $athlete_id );
-    update_field( 'participation_type', rgar( $nested_entry, '1' ) ?: 'Athlete', $athlete_id );
+    // Use field keys for fields inside ACF groups — update_field() by name
+    // fails silently for sub-fields of Group field types.
+    update_field( 'field_tb_first_name',    $first_name,                                   $athlete_id );
+    update_field( 'field_tb_last_name',     $last_name,                                    $athlete_id );
+    update_field( 'field_tb_preferred_name', rgar( $nested_entry, '5' ),                   $athlete_id );
+    update_field( 'field_tb_gender',        $gender_map[ rgar( $nested_entry, '6' ) ] ?? '', $athlete_id );
+    update_field( 'field_tb_dob',           rgar( $nested_entry, '7' ),                    $athlete_id );
+    update_field( 'family',                 $family_id,                                    $athlete_id ); // top-level, name works
+    update_field( 'field_tb_account_status',    'Active',                                  $athlete_id );
+    update_field( 'field_69c91e8b191ff',    rgar( $nested_entry, '1' ) ?: 'Athlete',       $athlete_id ); // participation_type
 
     return $athlete_id;
 }
@@ -265,19 +266,13 @@ function tb_create_enrollment_post( $args ) {
         return false;
     }
 
-    update_field( 'application',           $args['application_id'],                                     $enrollment_id );
-    update_field( 'family',                $args['family_id'],                                          $enrollment_id );
-    update_field( 'season',                $args['season_id'],                                          $enrollment_id );
-    update_field( 'athlete',               $args['athlete_id'],                                         $enrollment_id );
-    update_field( 'new_returning',         $args['new_returning'],                                      $enrollment_id );
-    update_field( 'eligibility_confirmed', $args['eligibility_confirmed'] ? 1 : 0,                      $enrollment_id );
-    update_field( 'physical_status',       'Not Received',                                              $enrollment_id );
-    update_field( 'participation_type',    $args['participation_type'],                                  $enrollment_id );
-    update_field( 'grade',                 $args['grade'],                                               $enrollment_id );
-    update_field( 'singlet_requested',     $args['singlet_requested'] === 'Yes' ? 1 : 0,                $enrollment_id );
-    update_field( 'singlet_sizing_group',  $args['singlet_sizing_group'],                               $enrollment_id );
-    update_field( 'singlet_size',          $args['singlet_size'],                                       $enrollment_id );
-    update_field( 'singlet_status',        ( $args['singlet_requested'] === 'Yes' ) ? 'Ordered' : 'Not Needed', $enrollment_id );
+    update_field( 'field_tb_physical_status',    'Not Received',                                              $enrollment_id ); // inside status group
+    update_field( 'participation_type',           $args['participation_type'],                                  $enrollment_id ); // top-level
+    update_field( 'grade',                        $args['grade'],                                               $enrollment_id ); // top-level
+    update_field( 'field_tb_singlet_requested',   $args['singlet_requested'] === 'Yes' ? 1 : 0,                $enrollment_id ); // inside singlet group
+    update_field( 'field_tb_singlet_sizing_group', $args['singlet_sizing_group'],                              $enrollment_id ); // inside singlet group
+    update_field( 'field_tb_singlet_size',        $args['singlet_size'],                                       $enrollment_id ); // inside singlet group
+    update_field( 'field_tb_singlet_status',      ( $args['singlet_requested'] === 'Yes' ) ? 'Ordered' : 'Not Needed', $enrollment_id ); // inside singlet group
 
     return $enrollment_id;
 }
@@ -381,6 +376,17 @@ function tb_handle_new_family( $entry, $form ) {
     update_field( 'city',                rgar( $entry, '6' ),                $family_id );
     update_field( 'state',               rgar( $entry, '7' ),                $family_id );
     update_field( 'parents_guardians',   tb_build_guardians( $entry ),       $family_id );
+    // For Check/Cash, entry['payment_amount'] is 0. Read the Total field directly.
+    $payment_amount = (float) ( $entry['payment_amount'] ?? 0 );
+    if ( $payment_amount === 0.0 ) {
+        foreach ( $form['fields'] as $field ) {
+            if ( $field->type === 'total' ) {
+                $payment_amount = (float) rgar( $entry, (string) $field->id );
+                break;
+            }
+        }
+    }
+    update_field( 'payment_amount', $payment_amount, $application_id );
     
     // Set reverse reference on the WP user per SCHEMA.md 3-way linkage rule.
     update_field( 'family', $family_id, 'user_' . $user_id );
@@ -540,7 +546,17 @@ function tb_handle_returning_family( $entry, $form ) {
     update_field( 'new_returning',         'Returning',                     $application_id );
     update_field( 'application_status',    'Completed',                     $application_id );
     update_field( 'payment_status',        'Not Received',                  $application_id );
-    update_field( 'payment_amount',        $entry['payment_amount'] ?? 0,   $application_id );
+    // For Check/Cash, entry['payment_amount'] is 0. Read the Total field directly.
+    $payment_amount = (float) ( $entry['payment_amount'] ?? 0 );
+    if ( $payment_amount === 0.0 ) {
+        foreach ( $form['fields'] as $field ) {
+            if ( $field->type === 'total' ) {
+                $payment_amount = (float) rgar( $entry, (string) $field->id );
+                break;
+            }
+        }
+    }
+    update_field( 'payment_amount', $payment_amount, $application_id );
     update_field( 'gravity_form_entry_id', $entry['id'],                    $application_id );
 
     update_field( 'digital_signature',     rgar( $entry, '35' ),            $application_id );
@@ -574,7 +590,6 @@ function tb_handle_returning_family( $entry, $form ) {
             'new_returning'         => 'Returning Athlete',
             'eligibility_confirmed' => tb_returning_athlete_eligibility_confirmed( $nested_entry ),
             'participation_type'    => rgar( $nested_entry, '9' ) ?: 'Athlete',
-            'grade'                 => rgar( $nested_entry, '8' ),
             'singlet_requested'     => rgar( $nested_entry, '20' ),
             'singlet_sizing_group'  => rgar( $nested_entry, '21' ),
             'singlet_size'          => rgar( $nested_entry, '22' ),
