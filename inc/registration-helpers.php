@@ -352,6 +352,25 @@ add_shortcode( 'tb_reg_form', function( $atts ) {
             wp_redirect( home_url( '/registration/' ) );
             exit;
         }
+        
+        if ( $atts['type'] === 'returning_family' && $has_family ) {
+            $active_season_id = (int) get_option( 'tb_active_season_id' );
+            if ( $active_season_id ) {
+                $existing = get_posts( [
+                    'post_type'      => 'enrollment',
+                    'posts_per_page' => 1,
+                    'meta_query'     => [
+                        [ 'key' => 'family', 'value' => $family_id ],
+                        [ 'key' => 'season', 'value' => $active_season_id ],
+                    ],
+                    'fields' => 'ids',
+                ] );
+                if ( ! empty( $existing ) ) {
+                    wp_redirect( home_url( '/registration/' ) );
+                    exit;
+                }
+            }
+        }
 
     }
     // ---- End guards ----
