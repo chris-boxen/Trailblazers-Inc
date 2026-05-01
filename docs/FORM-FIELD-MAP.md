@@ -31,10 +31,10 @@ Each child page is protected by user-state guards in the `[tb_reg_form]` shortco
 
 ---
 
-## Form 1: 2026 Registration — New Family (ID 101)
+## Form 1: 2026 Registration — New Family
 
-**Hook fires:** `gform_after_submission` for form ID 101
-**Creates:** Family post, Application post, Athlete posts (new), Enrollment posts
+**GF Form ID:** Assigned on import — see TB Settings → Registration Settings → Form IDs.
+**Hook fires:** `gform_after_submission` — form ID resolved from Registration Settings at runtime
 
 ---
 
@@ -63,7 +63,7 @@ Each child page is protected by user-state guards in the `[tb_reg_form]` shortco
 | Phone | Phone | `family` → `parents_guardians[1].guardian_phone` | user | Optional. |
 | Receive Email Notifications? | Radio | `family` → `parents_guardians[1].guardian_notifications` | user | Yes/No. Optional. Secondary contact only. |
 
-> **Primary contact notifications:** Not collected on the form. Hook always sets `guardian_notifications = "Yes"` for the primary contact.
+> **Primary contact notifications:** Not collected on the form. Hook always sets `guardian_notifications = 1` (true_false) for the primary contact.
 
 ---
 
@@ -106,7 +106,7 @@ Each child page is protected by user-state guards in the `[tb_reg_form]` shortco
 | *(Singlet HTML)* | HTML | — | — | Singlet policy for new athletes. |
 | Singlet Count | Number (calc) | *(display only)* | calculated | `{Register Athletes:23:count}` — all new athletes require a singlet. |
 | Singlet Subtotal | Number (calc) | *(display only)* | calculated | `{Singlet Count:40} * 35` |
-| Registration Total | Product (calc) | *(feeds order total)* | calculated | `({Register Athletes:23:count} * 75) + ({Register Athletes:23:count} * 35)` |
+| Registration Total | Product (calc) | *(feeds order total)* | calculated | `({Athlete Count:36} * 75) + ({Singlet Count:40} * 35)` |
 | Processing Contribution | Product (Radio) | *(feeds order total)* | user | No thanks $0 / Help a little $3 / Cover processing $5 / Pay it forward $10. Required. |
 | Order Total | Total | `application` → `payment_amount` | calculated | GF Total field. Hook writes to Application. |
 | Payment Method | Radio | `application` → `payment_method` | user | Credit Card / Check/Cash. Required. |
@@ -114,11 +114,10 @@ Each child page is protected by user-state guards in the `[tb_reg_form]` shortco
 
 ---
 
-## Form 2: 2026 Registration — Returning Family (ID 102)
+## Form 2: 2026 Registration — Returning Family
 
-**Hook fires:** `gform_after_submission` for form ID 102
-**Updates:** Family post (address + secondary contact only — display name is NOT overwritten)
-**Creates:** Application post, new Athlete posts (if any), Enrollment posts for all registered athletes
+**GF Form ID:** Assigned on import — see TB Settings → Registration Settings → Form IDs.
+**Hook fires:** `gform_after_submission` — form ID resolved from Registration Settings at runtime
 
 ---
 
@@ -150,7 +149,7 @@ All fields pre-populated via GPPA. Field 60 (hidden) anchors all GPPA queries by
 | Phone | Phone | `family` → `parents_guardians[1].guardian_phone` | pre-pop | Optional. |
 | Receive Email Notifications? | Radio | `family` → `parents_guardians[1].guardian_notifications` | pre-pop | Yes/No. Optional. Secondary contact only. |
 
-> **Primary contact notifications:** Not collected on the form. Hook always sets `guardian_notifications = "Yes"` for the primary contact.
+> **Primary contact notifications:** Not collected on the form. Hook always sets `guardian_notifications = 1` (true_false) for the primary contact.
 
 ---
 
@@ -297,14 +296,17 @@ during these evaluations may be used for research purposes.</p>
 | `family` | `account_user` | `get_current_user_id()` |
 | `family` | `family_status` | `Active` |
 | `family` | `family_display_name` | Set by New Family hook only. **NOT updated by Returning Family hook.** |
-| `family` | `parents_guardians[0].guardian_notifications` | Always `"Yes"` — not collected in form |
+| `family` | `parents_guardians[0].guardian_notifications` | Always `1` (true_false) — not collected in form |
+| `family` | `parents_guardians[0].is_primary_contact` | Always `1` (true_false) |
+| `family` | `parents_guardians[1].is_primary_contact` | Always `0` (true_false) |
+| `user` | `family` | ID of newly created Family post — set on the WP user via `update_field('family', $family_id, 'user_' . $user_id)` |
 | `application` | `payment_amount` | `$entry['payment_amount']` |
 | `application` | `gravity_form_entry_id` | `$entry['id']` |
 | `application` | `family` | ID of created or located Family post |
 | `application` | `season` | Value from hidden Season ID field |
 | `application` | `submission_date` | `date('Y-m-d')` at submission |
 | `application` | `submitted_by` | `get_current_user_id()` |
-| `application` | `new_returning` | `New` (Form 101) or `Returning` (Form 102) |
+| `application` | `new_returning` | `New` (New Family form) or `Returning` (Returning Family form) |
 | `application` | `application_status` | `Completed` |
 | `application` | `payment_status` | `Not Received` (default); `Paid` on Stripe confirmation |
 | `athlete` | `family` | ID of created or located Family post |
@@ -323,9 +325,10 @@ during these evaluations may be used for research purposes.</p>
 
 ## Open Items
 
-- [ ] **Stripe confirmation hook:** Confirm which hook updates `payment_status` to `Paid` — likely `gform_stripe_fulfillment` or `gform_stripe_after_payment_intent_succeeded`. Wire in `inc/gravity-helpers.php`.
+- [ ] **Stripe confirmation hook:** Confirm which hook updates `payment_status` to `Paid` — likely `gform_stripe_fulfillment` or `gform_stripe_after_payment_intent_succeeded`. Uncomment stub in `inc/gravity-helpers.php` once Stripe is connected on live domain.
 - [ ] **Handbook URL:** Active season post `handbook` field is a placeholder. Update before opening registration.
 - [ ] **Policy Compliance links:** Athlete eligibility checkbox references Eligibility, Code of Conduct, and Dress & Appearance Guidelines pages. Confirm URLs are current before go-live.
 - [ ] **GW Read Only dependency:** Field 1 (Family Name) on Returning Family form and identity fields on Register Returning Athlete nested form require GW Read Only (GravityPerks) to enforce non-editability. Confirm plugin is installed and active.
-- [ ] **Confirmation page structure (Open Question 12):** Q12 is still unresolved. Current GF confirmations redirect to `/registration/confirmation/?type=paid` and `/registration/confirmation/?type=offline`. Update once Q12 is decided.
-- [ ] **Additional Singlets (Returning):** The manual count field on RF Page 5 (Field 47) asks the parent to enter how many returning athletes selected a new singlet. This is minor UX friction — the parent must mentally count. Future improvement: derive this count from the nested form entries.
+- [x] **Confirmation page structure (Q12):** Resolved — Option A. Two child pages created: `/registration/confirmation/new-family/` and `/registration/confirmation/returning-family/`. GF confirmations redirect conditionally by payment method.
+- [ ] **Additional Singlets (Returning):** Manual count field on RF Page 5 (Field 47) asks the parent to enter how many returning athletes selected a new singlet. Future improvement: derive this count from nested form entries rather than manual input.
+- [ ] **User.family_id:** Not set at registration time. The TB family identifier (`TB-66281` style) is not auto-generated by the New Family hook. Decide whether to generate it at registration or leave as admin-populated.

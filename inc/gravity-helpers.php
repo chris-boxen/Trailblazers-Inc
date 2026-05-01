@@ -81,7 +81,8 @@ function tb_get_nested_entries( $entry, $field_id ) {
  *   Primary:   9 (first), 10 (last), 11 (relationship), 12 (email), 13 (phone)
  *   Secondary: 15 (first), 16 (last), 17 (relationship), 18 (email), 19 (phone), 20 (notifications)
  *
- * Primary guardian_notifications is always set to "Yes" — not collected on form.
+ * Primary guardian_notifications is always set to 1 (true_false) — not collected on form.
+ * Primary is_primary_contact is always set to 1; secondary is always set to 0.
  *
  * @param  array $entry  GF entry array.
  * @return array         ACF repeater row data.
