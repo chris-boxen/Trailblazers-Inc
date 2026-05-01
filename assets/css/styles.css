@@ -70,6 +70,8 @@ a.button {
 }
 a.button:hover { background: #333; }
 
+/* Flex Columns*/
+.flex-columns { display: flex; direction: row; gap: 2rem; margin-top: 1rem; margin-bottom: 1rem; }
 
 /* 
 ** -----------------------------------------------------------------------
