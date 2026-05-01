@@ -136,15 +136,13 @@ function tb_new_athlete_eligibility_confirmed( $nested_entry ) {
     $participation_type = rgar( $nested_entry, '1' );
 
     if ( $participation_type === 'Sibling Runner' ) {
-        return ! empty( $nested_entry['16.1'] )
-            && ! empty( $nested_entry['17.1'] );
+        return ! empty( $nested_entry['16.1'] );
     }
 
     // Athlete
     return ! empty( $nested_entry['10.1'] )
         && ! empty( $nested_entry['12.1'] )
-        && ! empty( $nested_entry['13.1'] )
-        && ! empty( $nested_entry['14.1'] );
+        && ! empty( $nested_entry['13.1'] );
 }
 
 
@@ -187,6 +185,15 @@ function tb_returning_athlete_eligibility_confirmed( $nested_entry ) {
  *   7  — Date of Birth
  *   8  — Grade
  *
+ * ACF group structure (group_tb_athlete.json):
+ *   field_69c9d99bc44e8  — Names group    (first_name, last_name, preferred_name, slug)
+ *   field_69c9dadf75c2d  — Demographics   (gender, dob, athletic_net_id)
+ *   field_69c9db84b5b0f  — Status         (account_status, participation_type)
+ *   top-level            — family         (post object, written by name)
+ *
+ * update_field() by sub-field key silently fails for ACF Group sub-fields.
+ * Write each group as an array keyed by the parent group's field key.
+ *
  * @param  array $nested_entry  Child GF entry (Form 11).
  * @param  int   $family_id     ID of the Family post to associate.
  * @return int|false            New Athlete post ID, or false on failure.
@@ -205,18 +212,32 @@ function tb_create_athlete_post( $nested_entry, $family_id ) {
         error_log( 'TB Registration: Failed to create Athlete post — ' . $athlete_id->get_error_message() );
         return false;
     }
+
     $gender_map = [ 'Male' => 'M', 'Female' => 'F' ];
-    
-    // Use field keys for fields inside ACF groups — update_field() by name
-    // fails silently for sub-fields of Group field types.
-    update_field( 'field_tb_first_name',    $first_name,                                   $athlete_id );
-    update_field( 'field_tb_last_name',     $last_name,                                    $athlete_id );
-    update_field( 'field_tb_preferred_name', rgar( $nested_entry, '5' ),                   $athlete_id );
-    update_field( 'field_tb_gender',        $gender_map[ rgar( $nested_entry, '6' ) ] ?? '', $athlete_id );
-    update_field( 'field_tb_dob',           rgar( $nested_entry, '7' ),                    $athlete_id );
-    update_field( 'family',                 $family_id,                                    $athlete_id ); // top-level, name works
-    update_field( 'field_tb_account_status',    'Active',                                  $athlete_id );
-    update_field( 'field_69c91e8b191ff',    rgar( $nested_entry, '1' ) ?: 'Athlete',       $athlete_id ); // participation_type
+
+    // Names group — must write parent group as array; sub-field key writes silently fail.
+    update_field( 'field_69c9d99bc44e8', [
+        'first_name'     => $first_name,
+        'last_name'      => $last_name,
+        'preferred_name' => rgar( $nested_entry, '5' ),
+        'slug'           => '',
+    ], $athlete_id );
+
+    // Demographics group — same pattern.
+    update_field( 'field_69c9dadf75c2d', [
+        'gender'          => $gender_map[ rgar( $nested_entry, '6' ) ] ?? '',
+        'dob'             => rgar( $nested_entry, '7' ),
+        'athletic_net_id' => '',
+    ], $athlete_id );
+
+    // Status group — account_status and participation_type are both sub-fields here.
+    update_field( 'field_69c9db84b5b0f', [
+        'account_status'   => 'Active',
+        'participation_type' => rgar( $nested_entry, '1' ) ?: 'Athlete',
+    ], $athlete_id );
+
+    // family is top-level — write by name as before.
+    update_field( 'family', $family_id, $athlete_id );
 
     return $athlete_id;
 }
@@ -282,12 +303,17 @@ function tb_create_enrollment_post( $args ) {
     update_field( 'participation_type',            $args['participation_type'],                                   $enrollment_id );
     update_field( 'grade',                         $args['grade'],                                                $enrollment_id );
     
-    // Grouped fields — must use field keys.
-    update_field( 'field_tb_physical_status',      'Not Received',                                               $enrollment_id );
-    update_field( 'field_tb_singlet_requested',    $args['singlet_requested'] === 'Yes' ? 1 : 0,                 $enrollment_id );
-    update_field( 'field_tb_singlet_sizing_group', $args['singlet_sizing_group'],                                $enrollment_id );
-    update_field( 'field_tb_singlet_size',         $args['singlet_size'],                                        $enrollment_id );
-    update_field( 'field_tb_singlet_status',       ( $args['singlet_requested'] === 'Yes' ) ? 'Ordered' : 'Not Needed', $enrollment_id );
+    // physical_status — written by key; if this is also blank after testing,
+    // it is inside a group and needs the same array treatment (search group_tb_enrollment.json).
+    update_field( 'field_tb_physical_status', 'Not Received', $enrollment_id );
+
+    // Singlet group — must write parent group as array; sub-field key writes silently fail.
+    update_field( 'field_69c9de8888649', [
+        'singlet_requested'    => $args['singlet_requested'] === 'Yes' ? 1 : 0,
+        'singlet_sizing_group' => $args['singlet_sizing_group'],
+        'singlet_size'         => $args['singlet_size'],
+        'singlet_status'       => $args['singlet_requested'] === 'Yes' ? 'Ordered' : 'Not Needed',
+    ], $enrollment_id );
     
     return $enrollment_id;
 }
@@ -390,7 +416,9 @@ function tb_handle_new_family( $entry, $form ) {
     update_field( 'street_address',      rgar( $entry, '5' ),                $family_id );
     update_field( 'city',                rgar( $entry, '6' ),                $family_id );
     update_field( 'state',               rgar( $entry, '7' ),                $family_id );
+    update_field( 'zip_code',            rgar( $entry, '51' ),               $family_id );
     update_field( 'parents_guardians',   tb_build_guardians( $entry ),       $family_id );
+    
     // For Check/Cash, entry['payment_amount'] is 0. Read the Total field directly.
     $payment_amount = (float) ( $entry['payment_amount'] ?? 0 );
     if ( $payment_amount === 0.0 ) {
@@ -545,6 +573,7 @@ function tb_handle_returning_family( $entry, $form ) {
     update_field( 'street_address',    rgar( $entry, '5' ),          $family_id );
     update_field( 'city',              rgar( $entry, '6' ),          $family_id );
     update_field( 'state',             rgar( $entry, '7' ),          $family_id );
+    update_field( 'zip_code',          rgar( $entry, '62' ),         $family_id );
     update_field( 'parents_guardians', tb_build_guardians( $entry ), $family_id );
 
     update_field( 'zip_code', rgar( $entry, '62' ), $family_id );
