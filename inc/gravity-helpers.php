@@ -253,7 +253,7 @@ function tb_create_athlete_post( $nested_entry, $family_id ) {
  *   @type int    $season_id              Athletic Season post ID.
  *   @type string $new_returning          'New Athlete' | 'Returning Athlete'
  *   @type bool   $eligibility_confirmed  True if all required eligibility boxes were checked.
- *   @type string $singlet_requested      'Yes' | 'No'
+ *   @type string $singlet_requested      1 | 0
  * }
  * @return int|false  New Enrollment post ID, or false on failure.
  */
@@ -267,7 +267,7 @@ function tb_create_enrollment_post( $args ) {
         'eligibility_confirmed'  => false,
         'participation_type'     => 'Athlete',
         'grade'                  => '',
-        'singlet_requested'      => 'No',
+        'singlet_requested'      => 0,
         'singlet_sizing_group'   => '',
         'singlet_size'           => '',
         'submitted_by'           => 0,
@@ -493,7 +493,7 @@ function tb_handle_new_family( $entry, $form ) {
             'eligibility_confirmed' => tb_new_athlete_eligibility_confirmed( $nested_entry ),
             'participation_type'    => rgar( $nested_entry, '1' ) ?: 'Athlete',
             'grade'                 => rgar( $nested_entry, '8' ),
-            'singlet_requested'     => rgar( $nested_entry, '19' ),
+            'singlet_requested'     => rgar( $nested_entry, '19' ) === '1' ? 'Yes' : 'No',
             'singlet_sizing_group'  => rgar( $nested_entry, '20' ),
             'singlet_size'          => rgar( $nested_entry, '21' ),
             'submitted_by'          => $user_id,
@@ -648,7 +648,7 @@ function tb_handle_returning_family( $entry, $form ) {
             'eligibility_confirmed' => tb_returning_athlete_eligibility_confirmed( $nested_entry ),
             'participation_type'    => rgar( $nested_entry, '9' ) ?: 'Athlete',
             'grade'                 => rgar( $nested_entry, '8' ),
-            'singlet_requested'     => rgar( $nested_entry, '20' ),
+            'singlet_requested'     => rgar( $nested_entry, '20' ) === '1' ? 'Yes' : 'No',
             'singlet_sizing_group'  => rgar( $nested_entry, '21' ),
             'singlet_size'          => rgar( $nested_entry, '22' ),
             'submitted_by'          => $user_id,
@@ -677,7 +677,7 @@ function tb_handle_returning_family( $entry, $form ) {
             'eligibility_confirmed' => tb_new_athlete_eligibility_confirmed( $nested_entry ),
             'participation_type'    => rgar( $nested_entry, '1' ) ?: 'Athlete',
             'grade'                 => rgar( $nested_entry, '8' ),
-            'singlet_requested'     => rgar( $nested_entry, '19' ),
+            'singlet_requested'     => rgar( $nested_entry, '19' ) === '1' ? 'Yes' : 'No',
             'singlet_sizing_group'  => rgar( $nested_entry, '20' ),
             'singlet_size'          => rgar( $nested_entry, '21' ),
             'submitted_by'          => $user_id,
