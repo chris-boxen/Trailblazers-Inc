@@ -370,6 +370,9 @@ function tb_handle_new_family( $entry, $form ) {
     update_field( 'city',                rgar( $entry, '6' ),                $family_id );
     update_field( 'state',               rgar( $entry, '7' ),                $family_id );
     update_field( 'parents_guardians',   tb_build_guardians( $entry ),       $family_id );
+    
+    // Set reverse reference on the WP user per SCHEMA.md 3-way linkage rule.
+    update_field( 'family', $family_id, 'user_' . $user_id );
 
     // -------------------------------------------------------------------------
     // 2. Create Application post
