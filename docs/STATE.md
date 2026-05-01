@@ -1,11 +1,10 @@
 # STATE
 
 ## Current Objective
-Pre-launch UX fixes and Stripe / Returning Family testing in progress on
-https://trailblazers-inc.flywheelsites.com/. All CPT writes verified clean
-for New Family / Check/Cash path as of 2026-05-01. Remaining work before
-opening registration to families: singlet count formula, confirmation emails,
-confirmation page content, Stripe testing, and RF flow testing.
+Pre-launch testing in progress on https://trailblazers-inc.flywheelsites.com/.
+New Family CC path tested and payment flow confirmed working. Remaining work
+before opening registration: singlet count formula fix, confirmation page
+content, Returning Family testing, and domain swap.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -91,7 +90,7 @@ The following have been successfully imported:
   - ✅ Stripe webhook registered
   - ✅ Stripe Test Signing Secret entered in GF
   - ✅ Stripe feeds configured on both parent forms
-  - ⬜ Handbook URL — update active season post before opening registration
+  - ✅ Handbook URL — updated on 2026 XC Athletic Season post
 
   ### Registration flow (inc/registration-helpers.php)
   - ✅ `login_redirect` filter — non-admin users → `/registration/` after login
@@ -105,16 +104,22 @@ The following have been successfully imported:
   - ✅ `gform_after_submission` — Returning Family: updates Family (address +
     guardians only), creates Application, Athletes (if any), Enrollments;
     CC failure guard; season/user ID fallbacks
-  - ⬜ Stripe confirmation hook — stub present; wire after Stripe confirmed
+  - ✅ `gform_field_value_tb_handbook_url` — populates hidden handbook URL
+    field on Page 3 of both registration forms from active season post
+  - ✅ Stripe confirmation hook — not needed; payment_status and payment_amount
+    are set correctly within gform_after_submission via the Payment Element
+    redirect flow. Stub removed.
 
   ### End-to-end test status
   - ✅ Test 3 (New Family, Check/Cash) — 2026-05-01 — all CPT writes verified:
     Family, Application, Athlete, Enrollment all fields correct
-  - ⬜ New Family, Credit Card — not yet tested
+  - ✅ New Family, Credit Card — 2026-05-01 — Stripe charge confirmed, CPT
+    writes verified. payment_status writes Paid, payment_amount writes from
+    GFCommon::get_order_total(). Notification emails confirmed sending.
+  - ✅ Singlet count formula on NF Page 5 corrected — now counts athletes who
+    requested a singlet rather than mirroring total athlete count
+  - ✅ Confirmation page content added — New Family and Returning Family
+    confirmation text entered in Registration Settings → Messaging
   - ⬜ Returning Family — not yet tested
 
   ### Known pre-launch issues
-  - ⬜ Singlet count formula on NF Page 5 uses Athlete Count rather than
-    count of athletes who requested a singlet
-  - ⬜ Confirmation emails not sending — GF notifications / SMTP2GO not verified
-  - ⬜ Confirmation pages blank — content needed in Registration Settings → Messaging

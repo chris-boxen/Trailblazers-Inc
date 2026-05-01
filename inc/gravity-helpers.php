@@ -451,17 +451,10 @@ function tb_handle_new_family( $entry, $form ) {
     update_field( 'new_returning',         'New',                           $application_id );
     update_field( 'application_status',    'Completed',                     $application_id );
     update_field( 'payment_status',        $entry['payment_status'] === 'Paid' ? 'Paid' : 'Not Received', $application_id );
-    // For Check/Cash, entry['payment_amount'] is 0. Read the Total field directly.
-    $payment_amount = (float) ( $entry['payment_amount'] ?? 0 );
-    if ( $payment_amount === 0.0 ) {
-        foreach ( $form['fields'] as $field ) {
-            if ( $field->type === 'total' ) {
-                $payment_amount = (float) rgar( $entry, (string) $field->id );
-                break;
-            }
-        }
-    }
-    update_field( 'payment_amount',        $payment_amount,                 $application_id );
+    // Calculate from form product fields — reliable for both CC and Check/Cash,
+    // independent of Stripe's async entry update timing.
+    $payment_amount = (float) GFCommon::get_order_total( $form, $entry );
+    update_field( 'payment_amount', $payment_amount, $application_id );
     update_field( 'gravity_form_entry_id', $entry['id'],                    $application_id );
 
     update_field( 'digital_signature',     rgar( $entry, '31' ),            $application_id );
@@ -603,16 +596,9 @@ function tb_handle_returning_family( $entry, $form ) {
     update_field( 'application_status',    'Completed',                     $application_id );
     update_field( 'payment_status',        $entry['payment_status'] === 'Paid' ? 'Paid' : 'Not Received', $application_id );
     
-    // For Check/Cash, entry['payment_amount'] is 0. Read the Total field directly.
-    $payment_amount = (float) ( $entry['payment_amount'] ?? 0 );
-    if ( $payment_amount === 0.0 ) {
-        foreach ( $form['fields'] as $field ) {
-            if ( $field->type === 'total' ) {
-                $payment_amount = (float) rgar( $entry, (string) $field->id );
-                break;
-            }
-        }
-    }
+    // Calculate from form product fields — reliable for both CC and Check/Cash,
+    // independent of Stripe's async entry update timing.
+    $payment_amount = (float) GFCommon::get_order_total( $form, $entry );
     update_field( 'payment_amount', $payment_amount, $application_id );
     update_field( 'gravity_form_entry_id', $entry['id'],                    $application_id );
 
