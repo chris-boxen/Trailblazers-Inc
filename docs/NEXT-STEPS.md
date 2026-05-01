@@ -48,55 +48,86 @@ As of 2026-04-30. See CHANGELOG.md 2026-04-30.
 
 ---
 
-## Now — Flywheel + Stripe + Testing
+## Completed — Flywheel + Stripe Setup
+As of 2026-05-01.
 
-### 1. Push theme to Flywheel
-Push the current repo state to the Flywheel staging site
-(trailblazers-inc.flywheelsites.com). All theme code is ready.
+- ✅ Theme pushed to https://trailblazers-inc.flywheelsites.com/
+- ✅ Stripe connected: Test mode, York County Trailblazers, Inc.
+- ✅ Stripe webhook registered; Test Signing Secret entered in GF
+- ✅ Stripe feeds configured on both New Family and Returning Family forms
+- ✅ New Family form updated: zip code field, GPPA for primary contact,
+  relationship placeholder, enhanced dropdown UX deactivated
 
-### 2. Connect Stripe on Flywheel
-GF → Settings → Stripe → Connect with Stripe.
-Use test mode. OAuth will work on the public Flywheel domain.
-Register webhook endpoint. Enter signing secret.
+## Now — End-to-End Testing
 
-### 3. GF Admin — configure Stripe feeds
-On both New Family and Returning Family forms: GF → (form) → Settings → Stripe → Add New.
-- Transaction Type: Products and Services
-- Payment Amount: Form Total
-- Billing Info: map to primary contact fields
-- Condition: Payment Method is Credit Card
+### 1. Re-test New Family, Check/Cash (IMMEDIATE)
+Latest push (2026-05-01) restores missing Enrollment writes and adds
+submitted_by + digital_signature + payment amount fallback. Delete previous
+test records and run a fresh New Family / Check/Cash submission. Verify:
+- Family post: name, address, zip, guardians, account_user, family_status
+- Application post: family, season, payment_amount (non-zero), payment_method,
+  digital_signature, submitted_by, new_returning, application_status, payment_status
+- Athlete post: first_name, last_name, gender (M/F), dob, family, account_status,
+  participation_type
+- Enrollment post: season, application, family, athlete, new_returning,
+  grade, participation_type, eligibility_confirmed, submitted_by,
+  digital_signature, physical_status, singlet fields
 
-### 4. Test end-to-end
-- New Family: full submission → confirm Family, Application, Athlete,
-  Enrollment posts created with correct field values
-- Returning Family: full submission → confirm Family updated (not recreated),
-  Application created, Enrollments created for returning and new athletes
-- Credit card path: verify Stripe test charge succeeds; verify confirmation
-  redirect lands on correct page
-- Check/Cash path: verify confirmation redirect lands on correct page
-- Login redirect: confirm non-admin users land at `/registration/` after login
-- User-state routing: confirm all three routing states work correctly
-- Already-enrolled guard: confirm returning family cannot submit twice
+### 2. Fix zip code hook mapping
+The NF form now has a zip code field. Verify the hook writes it to the Family
+`zip_code` ACF field. Check the field ID on the live form and confirm
+`update_field('zip_code', rgar($entry, 'X'), $family_id)` is in both handlers
+with the correct field ID.
 
-### 5. Wire Stripe confirmation hook
-After Stripe feeds are tested, confirm the correct hook name
-(`gform_stripe_fulfillment` or `gform_stripe_after_payment_intent_succeeded`)
-and uncomment + complete the stub in `inc/gravity-helpers.php`.
+### 3. Investigate confirmation emails
+Test user received no confirmation emails after NF submission. Check:
+- GF → New Family form → Notifications — is a notification configured and active?
+- Is SMTP configured on the Flywheel site (SMTP2GO is installed)?
+- Check GF entry log for notification send status
 
-### 6. Active season post — update handbook URL
+### 4. Fix singlet count formula on NF Page 5
+Singlet count appears to use Athlete Count rather than the number of athletes
+who requested a singlet. Revisit the NF Page 5 Registration Total formula and
+the Singlet Count calculated field.
+
+### 5. Test New Family, Credit Card
+After Check/Cash test passes, run a Credit Card submission using a Stripe test
+card. Verify Stripe test charge succeeds and confirmation redirect lands on the
+correct page.
+
+### 6. Test Returning Family flow
+After NF tests pass, test a Returning Family submission (Check/Cash first,
+then Credit Card).
+
+### 7. Wire Stripe confirmation hook
+After Stripe feeds are tested end-to-end, confirm the correct hook name and
+uncomment + complete the stub in `inc/gravity-helpers.php`.
+
+### 8. Add confirmation page content
+Add content in TB Settings → Registration Settings → Messaging:
+- New Family Confirmation Text
+- Returning Family Confirmation Text
+
+### 9. Update handbook URL
 Add the 2026 XC handbook URL to the `handbook` field on the 2026 XC Athletic
 Season post before opening registration.
 
-### 7. Add confirmation page content
-Add meaningful content to TB Settings → Registration Settings → Messaging tab:
-- New Family Confirmation Text
-- Returning Family Confirmation Text
-These are rendered by `[tb_reg_confirmation]` on the confirmation pages.
-
-### 8. Domain swap
+### 10. Domain swap
 Remove trailblazers.team from the old Flywheel site, add as primary domain
 to the new site. Update the four GF confirmation redirect URLs to the new domain.
 Re-verify Stripe webhook endpoint URL in Stripe dashboard.
+
+---
+
+## Backlog — UX Issues (non-blocking, pre-launch polish)
+Noted during Test 1. Address before opening registration to families.
+
+- [ ] WP subscriber dashboard — needs content and layout updates
+- [ ] Handbook note inside nested athlete form is redundant with the
+  standalone Handbook page (Page 3) — remove or relocate
+- [ ] Optional donations field choices don't display amounts — fix choice labels
+- [ ] Singlet count formula fix (also in step 4 above)
+- [ ] Confirmation pages need content (also in step 8 above)
 
 ---
 

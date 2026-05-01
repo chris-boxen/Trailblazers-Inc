@@ -1,10 +1,11 @@
 # STATE
 
 ## Current Objective
-Registration code audit complete. All six blocking/medium fixes applied and
-confirmed in repo. Current focus: push theme to Flywheel, connect Stripe,
-configure Stripe feeds, and run end-to-end test submissions before opening
-registration to families.
+End-to-end registration testing in progress on https://trailblazers-inc.flywheelsites.com/.
+Site is live, Stripe connected (Test mode), feeds configured. Multiple code audit
+passes completed and pushed. Latest push (2026-05-01) restores missing Enrollment
+field writes, adds submitted_by + digital_signature to Enrollment, and applies
+Check/Cash payment amount fallback to New Family handler. Re-test pending.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -164,47 +165,79 @@ The following have been successfully imported:
   fields, username auto-generation
 
 ## GravityForms Registration — Build Status
-Full field spec in `docs/FORM-FIELD-MAP.md` v2.3.
-
-### Forms (imported — GF assigns IDs on import, enter in Registration Settings)
-- ✅ Register New Athlete — nested form, permanent/reusable
-- ✅ Register Returning Athlete — nested form, permanent/reusable
-- ✅ 2026 Registration — New Family — 5-page, requireLogin
-- ✅ 2026 Registration — Returning Family — 5-page, requireLogin, GPPA configured
-
-### Post-import manual configuration
-- ✅ GF form IDs entered in TB Settings → Registration Settings
-- ✅ GPPA configured on Returning Family Page 1 (Field 60 anchor + 16 fields)
-- ✅ GPPA configured on Register Returning Athlete (athlete selector + identity)
-- ✅ GW Read Only configured on Family Name (RF Field 1) and identity fields
-- ✅ GF confirmations updated — conditional redirects by payment method pointing
-  to type-specific confirmation pages on trailblazers-inc.flywheelsites.com
-- ⬜ Stripe feed — pending Stripe connection on live domain
-- ⬜ Handbook URL — update active season post before opening registration
-
-### Registration flow (inc/registration-helpers.php)
-- ✅ `login_redirect` filter — non-admin users → `/registration/` after login
-- ✅ `[tb_reg_router]` — user-state routing on `/registration/`
-- ✅ `/registration/` page updated to use `[tb_reg_router]`
-- ✅ `[tb_reg_form]` guards — wrong-type, logged-out, and already-enrolled redirects
-
-### Hooks (inc/gravity-helpers.php)
-- ✅ `gform_after_submission` — New Family: creates Family, Application, Athletes,
-  Enrollments; CC failure guard; season/user ID fallbacks
-- ✅ `gform_after_submission` — Returning Family: updates Family (address +
-  guardians only), creates Application, Athletes (if any), Enrollments;
-  CC failure guard; season/user ID fallbacks
-- ⬜ Stripe confirmation hook — stub present; wire after Stripe confirmed on live site
-
-## Registration Infrastructure — Build Status
-Complete as of 2026-04-20. See CHANGELOG.md 2026-04 for full record.
-- ✅ ACF options pages created (Trailblazers Settings + Registration Settings sub-page)
-- ✅ ACF field group `group_tb_registration_settings` built and synced (16 fields)
-- ✅ `inc/registration-helpers.php` created and loaded via `functions.php`
-- ✅ Seven permanent WP registration pages created with shortcodes
-- ✅ System verified: coming soon state rendering correctly on all pages
-- ✅ `tb_active_season_id` sync hook confirmed working (2026 XC auto-populated)
-- ✅ GF form IDs populated in Registration Settings
-- ✅ Confirmation page structure — Option A, two child pages (Q12 resolved)
-- ✅ CSS styling for `.tb-reg-btn`, `.tb-reg-btn--disabled`, `.tb-reg-hub__date`,
-  `.tb-reg-router` — added to `assets/css/styles.css`
+  Full field spec in `docs/FORM-FIELD-MAP.md`.
+  
+  ### Forms
+  - ✅ Register New Athlete — nested form, permanent/reusable
+  - ✅ Register Returning Athlete — nested form, permanent/reusable
+  - ✅ 2026 Registration — New Family — 5-page, requireLogin
+  - ✅ 2026 Registration — Returning Family — 5-page, requireLogin, GPPA configured
+  
+  ### New Family form updates (applied on Flywheel, 2026-05-01)
+  - ✅ Zip code field added to address section
+  - ✅ Primary contact First Name / Last Name / Email populated via GPPA from WP user;
+    marked read-only
+  - ✅ Relationship field placeholder changed to "Please Select..." for both guardians
+  - ✅ Enhanced dropdown UX deactivated (was breaking CSS styles)
+  
+  ### Post-import manual configuration
+  - ✅ GF form IDs entered in TB Settings → Registration Settings
+  - ✅ GPPA configured on Returning Family Page 1 (Field 60 anchor + 16 fields)
+  - ✅ GPPA configured on Register Returning Athlete (athlete selector + identity)
+  - ✅ GW Read Only configured on Family Name (RF Field 1) and identity fields
+  - ✅ GF confirmations updated — conditional redirects by payment method to
+    type-specific confirmation pages on trailblazers-inc.flywheelsites.com
+  - ✅ Stripe connected: Test mode, York County Trailblazers, Inc.
+  - ✅ Stripe webhook registered: https://trailblazers-inc.flywheelsites.com/?callback=gravityformsstripe
+  - ✅ Stripe Test Signing Secret entered in GF
+  - ✅ Stripe feeds configured on both parent forms (Products & Services, Form Total,
+    conditional on Credit Card)
+  - ⬜ Zip code field added to NF form — hook mapping to Family `zip_code` field
+    not yet verified
+  - ⬜ Handbook URL — update active season post before opening registration
+  
+  ### Registration flow (inc/registration-helpers.php)
+  - ✅ `login_redirect` filter — non-admin users → `/registration/` after login
+  - ✅ `[tb_reg_router]` — user-state routing on `/registration/`
+  - ✅ `/registration/` page updated to use `[tb_reg_router]`
+  - ✅ `[tb_reg_form]` guards — wrong-type, logged-out, and already-enrolled redirects
+  
+  ### Hooks (inc/gravity-helpers.php)
+  - ✅ `gform_after_submission` — New Family: creates Family, Application, Athletes,
+    Enrollments; CC failure guard; season/user ID fallbacks
+  - ✅ `gform_after_submission` — Returning Family: updates Family (address +
+    guardians only), creates Application, Athletes (if any), Enrollments;
+    CC failure guard; season/user ID fallbacks
+  - ⬜ Stripe confirmation hook — stub present; wire after Stripe confirmed on live site
+  
+  ### Code audit fixes applied (gravity-helpers.php) — as of 2026-05-01
+  1. ✅ `tb_reg_get_form_id()` option key names corrected (`_id` suffix)
+  2. ✅ Season ID / User ID fallbacks added to both handlers
+  3. ✅ CC payment failure guard added to both handlers
+  4. ✅ `guardian_notifications` changed from string to int 1/0 (true_false)
+  5. ✅ `is_primary_contact` added to both guardian rows
+  6. ✅ `User.family` reverse reference set after Family post creation
+  7. ✅ `dob` field name corrected (was `date_of_birth`)
+  8. ✅ Gender value mapping added (Male/Female → M/F)
+  9. ✅ Enrollment expanded: grade, participation_type, singlet group fields
+  10. ✅ ACF group field keys used in `tb_create_athlete_post()` — name writes
+      silently fail for sub-fields of ACF Group types
+  11. ✅ ACF group field keys used for singlet + physical_status in
+      `tb_create_enrollment_post()`
+  12. ✅ Restored missing Enrollment relationship writes (season, application,
+      family, athlete, new_returning, eligibility_confirmed) — accidentally
+      dropped in fix #11
+  13. ✅ `submitted_by` and `digital_signature` added as args to
+      `tb_create_enrollment_post()`; all three call sites updated
+  14. ✅ Check/Cash payment amount fallback applied to both handlers — reads
+      GF Total field directly when `entry['payment_amount']` is 0
+  
+  ### End-to-end test status (as of 2026-05-01)
+  Test 1 (New Family, Check/Cash) completed before fixes 10–14 were applied.
+  Re-test pending after latest push. Known outstanding issues:
+  - ⬜ Confirmation emails not received by test user — cause unknown
+  - ⬜ Singlet count on NF Page 5 appears to use Athlete Count rather than
+    requested singlet count — form formula likely needs adjustment
+  - ⬜ Family ID blank — admin-populated field, not set by hook (by design)
+  - ⬜ Zip code write not yet verified (field newly added to form)
+  - ⬜ Confirmation pages blank — content needed in Registration Settings → Messaging
