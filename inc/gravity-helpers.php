@@ -337,8 +337,8 @@ function tb_handle_registration_submission( $entry, $form ) {
  */
 function tb_handle_new_family( $entry, $form ) {
     $family_name = rgar( $entry, '1' );
-    $season_id   = (int) rgar( $entry, '2' );
-    $user_id     = (int) rgar( $entry, '3' );
+    $season_id   = (int) rgar( $entry, '2' ) ?: (int) get_option( 'tb_active_season_id' );
+    $user_id     = (int) rgar( $entry, '3' ) ?: get_current_user_id();
 
     // -------------------------------------------------------------------------
     // 1. Create Family post
@@ -464,8 +464,8 @@ function tb_handle_new_family( $entry, $form ) {
  */
 function tb_handle_returning_family( $entry, $form ) {
     $family_id = (int) rgar( $entry, '60' ); // GPPA-resolved Family post ID
-    $season_id = (int) rgar( $entry, '2' );
-    $user_id   = (int) rgar( $entry, '3' );
+    $season_id = (int) rgar( $entry, '2' ) ?: (int) get_option( 'tb_active_season_id' );
+    $user_id   = (int) rgar( $entry, '3' ) ?: get_current_user_id();
 
     if ( ! $family_id ) {
         error_log( 'TB Registration: Returning Family submission missing Family Post ID (field 60). Entry ID: ' . $entry['id'] );
