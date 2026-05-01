@@ -450,7 +450,7 @@ function tb_handle_new_family( $entry, $form ) {
     update_field( 'submitted_by',          $user_id,                        $application_id );
     update_field( 'new_returning',         'New',                           $application_id );
     update_field( 'application_status',    'Completed',                     $application_id );
-    update_field( 'payment_status',        'Not Received',                  $application_id );
+    update_field( 'payment_status',        $entry['payment_status'] === 'Paid' ? 'Paid' : 'Not Received', $application_id );
     // For Check/Cash, entry['payment_amount'] is 0. Read the Total field directly.
     $payment_amount = (float) ( $entry['payment_amount'] ?? 0 );
     if ( $payment_amount === 0.0 ) {
@@ -601,7 +601,7 @@ function tb_handle_returning_family( $entry, $form ) {
     update_field( 'submitted_by',          $user_id,                        $application_id );
     update_field( 'new_returning',         'Returning',                     $application_id );
     update_field( 'application_status',    'Completed',                     $application_id );
-    update_field( 'payment_status',        'Not Received',                  $application_id );
+    update_field( 'payment_status',        $entry['payment_status'] === 'Paid' ? 'Paid' : 'Not Received', $application_id );
     
     // For Check/Cash, entry['payment_amount'] is 0. Read the Total field directly.
     $payment_amount = (float) ( $entry['payment_amount'] ?? 0 );
@@ -688,43 +688,7 @@ function tb_handle_returning_family( $entry, $form ) {
 
 
 // =============================================================================
-// SECTION 5 — STRIPE PAYMENT CONFIRMED HOOK
-// =============================================================================
-
-/**
- * Update Application payment_status to 'Paid' when Stripe confirms a charge.
- * Fires via gform_post_payment_completed regardless of redirect or webhook path.
- */
-add_action( 'gform_post_payment_completed', function( $entry, $action ) {
-    $new_family_form_id       = tb_reg_get_form_id( 'new_family' );
-    $returning_family_form_id = tb_reg_get_form_id( 'returning_family' );
-
-    if ( (int) $entry['form_id'] !== $new_family_form_id
-         && (int) $entry['form_id'] !== $returning_family_form_id ) {
-        return;
-    }
-
-    $entry_id = $entry['id'] ?? 0;
-    if ( ! $entry_id ) return;
-
-    $applications = get_posts( [
-        'post_type'      => 'application',
-        'posts_per_page' => 1,
-        'meta_key'       => 'gravity_form_entry_id',
-        'meta_value'     => $entry_id,
-        'fields'         => 'ids',
-    ] );
-
-    if ( empty( $applications ) ) {
-        error_log( 'TB Registration: gform_post_payment_completed — no Application post found for entry ID ' . $entry_id );
-        return;
-    }
-
-    update_field( 'payment_status', 'Paid', $applications[0] );
-}, 10, 2 );
-
-// =============================================================================
-// SECTION 6 — HANDBOOK POPULATION
+// SECTION 5 — HANDBOOK POPULATION
 // =============================================================================
 
 /**
