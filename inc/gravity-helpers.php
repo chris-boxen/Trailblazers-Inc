@@ -339,6 +339,13 @@ function tb_handle_new_family( $entry, $form ) {
     $family_name = rgar( $entry, '1' );
     $season_id   = (int) rgar( $entry, '2' ) ?: (int) get_option( 'tb_active_season_id' );
     $user_id     = (int) rgar( $entry, '3' ) ?: get_current_user_id();
+        
+    // Guard: abort if CC payment failed — prevents orphaned posts.
+    if ( rgar( $entry, '48' ) === 'Credit Card'
+         && in_array( $entry['payment_status'] ?? '', [ 'Failed', 'Void' ] ) ) {
+        error_log( 'TB Registration: New Family CC payment failed — aborting post creation. Entry ID: ' . $entry['id'] );
+        return;
+    }
 
     // -------------------------------------------------------------------------
     // 1. Create Family post
@@ -466,6 +473,13 @@ function tb_handle_returning_family( $entry, $form ) {
     $family_id = (int) rgar( $entry, '60' ); // GPPA-resolved Family post ID
     $season_id = (int) rgar( $entry, '2' ) ?: (int) get_option( 'tb_active_season_id' );
     $user_id   = (int) rgar( $entry, '3' ) ?: get_current_user_id();
+        
+    // Guard: abort if CC payment failed — prevents orphaned posts.
+    if ( rgar( $entry, '55' ) === 'Credit Card'
+         && in_array( $entry['payment_status'] ?? '', [ 'Failed', 'Void' ] ) ) {
+        error_log( 'TB Registration: Returning Family CC payment failed — aborting post creation. Entry ID: ' . $entry['id'] );
+        return;
+    }
 
     if ( ! $family_id ) {
         error_log( 'TB Registration: Returning Family submission missing Family Post ID (field 60). Entry ID: ' . $entry['id'] );
