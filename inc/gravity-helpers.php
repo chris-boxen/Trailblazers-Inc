@@ -305,7 +305,10 @@ function tb_create_enrollment_post( $args ) {
     
     // physical_status — written by key; if this is also blank after testing,
     // it is inside a group and needs the same array treatment (search group_tb_enrollment.json).
-    update_field( 'field_tb_physical_status', 'Not Received', $enrollment_id );
+    update_field( 'field_69c9e3f08452e', [
+        'physical_status'   => 'Not Received',
+        'enrollment_status' => 'Pending',
+    ], $enrollment_id );
 
     // Singlet group — must write parent group as array; sub-field key writes silently fail.
     update_field( 'field_69c9de8888649', [
@@ -575,8 +578,6 @@ function tb_handle_returning_family( $entry, $form ) {
     update_field( 'state',             rgar( $entry, '7' ),          $family_id );
     update_field( 'zip_code',          rgar( $entry, '62' ),         $family_id );
     update_field( 'parents_guardians', tb_build_guardians( $entry ), $family_id );
-
-    update_field( 'zip_code', rgar( $entry, '62' ), $family_id );
 
     // -------------------------------------------------------------------------
     // 2. Create Application post
