@@ -96,7 +96,8 @@ function tb_build_guardians( $entry ) {
         'guardian_relationship'  => rgar( $entry, '11' ),
         'guardian_email'         => rgar( $entry, '12' ),
         'guardian_phone'         => rgar( $entry, '13' ),
-        'guardian_notifications' => 'Yes',
+        'guardian_notifications' => 1,
+        'is_primary_contact' => 1,
     ];
 
     // Secondary contact (optional — only add row if first name is present)
@@ -107,7 +108,8 @@ function tb_build_guardians( $entry ) {
             'guardian_relationship'  => rgar( $entry, '17' ),
             'guardian_email'         => rgar( $entry, '18' ),
             'guardian_phone'         => rgar( $entry, '19' ),
-            'guardian_notifications' => rgar( $entry, '20' ) ?: 'No',
+            'guardian_notifications' => rgar( $entry, '20' ) === 'Yes' ? 1 : 0,
+            'is_primary_contact' => 0,
         ];
     }
 
