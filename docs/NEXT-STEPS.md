@@ -30,73 +30,61 @@ As of 2026-04-26. Full field spec in `docs/FORM-FIELD-MAP.md` v2.3.
 
 ---
 
-## Now — Complete Registration Before May 1
+## Now — Push to Flywheel + Stripe + Testing
 
-### 1. WP Admin — update /registration/ page shortcode
+### ✅ 1. WP Admin — update /registration/ page shortcode
 Replace `[tb_reg_hub]` with `[tb_reg_router]` on the `/registration/` page.
 
-### 2. WP Admin — enter GF form IDs in Registration Settings
-TB Settings → Registration Settings → Form IDs tab. Enter the IDs GF assigned
-to the three registration forms on import (New Family, Returning Family, Physicals).
+### ✅ 2. WP Admin — enter GF form IDs in Registration Settings
+TB Settings → Registration Settings → Form IDs tab.
 
-### 3. GF Admin — post-import GPPA configuration
-GPPA rules cannot be reliably exported/imported. Configure manually:
+### ✅ 3. GF Admin — post-import GPPA configuration
+Returning Family Page 1 and Register Returning Athlete nested form.
 
-**Returning Family form — Page 1 (Field 60 anchor):**
-- Field 60 (Family Post ID, hidden): GPPA values → Post type: family,
-  filter: `meta_account_user = current_user:ID`, return: `ID`
-- All 16 contact/address fields: GPPA values → filter: `ID = gf_field:60`,
-  each returning its respective ACF meta key
+### ✅ 4. GF Admin — configure GW Read Only
+Returning Family Field 1 and Register Returning Athlete identity fields.
 
-**Register Returning Athlete nested form:**
-- Field 1 (Family Post ID, hidden): same GPPA query as RF Field 60
-- Field 2 (Select Athlete): GPPA choices → Post type: athlete,
-  filter: `meta_family = gf_field:1` AND `meta_account_status = Active`,
-  label: `post_title`, value: `ID`
-- Fields 4–7 (identity, read-only): GPPA values → filter: `ID = gf_field:2`,
-  returning `meta_first_name`, `meta_last_name`, `meta_gender`, `meta_dob`
+### ✅ 5. Write submission hook — inc/gravity-helpers.php
+Both parent form handlers written. Stripe confirmation hook stubbed.
+See FORM-FIELD-MAP.md Hook-Set Fields table.
 
-### 4. GF Admin — configure GW Read Only
-- Returning Family Field 1 (Family Name): enable GW Read Only
-- Register Returning Athlete Fields 4–7 (name, DOB, gender): enable GW Read Only
+### 6. Push theme to Flywheel
+Commit this session's changes and push to the Flywheel staging site
+(trailblazers-inc.flywheelsites.com). Stripe OAuth and webhook configuration
+require a publicly accessible HTTPS domain.
 
-### 5. GF Admin — configure Stripe feed
-On both New Family and Returning Family forms: GF Settings → Stripe → Add New Feed.
-Map the Registration Total product field as the payment amount.
+### 7. Connect Stripe on Flywheel
+GF → Settings → Stripe → Connect with Stripe (OAuth will work on public domain).
+Use test mode. Register webhook endpoint. Enter signing secret.
 
-### 6. Write submission hook — inc/gravity-helpers.php
-Write `gform_after_submission` hooks for both parent forms. See FORM-FIELD-MAP.md
-Hook-Set Fields table for the full list of what each hook must create/update.
+### 8. GF Admin — configure Stripe feeds
+On both New Family and Returning Family forms: GF → (form) → Settings → Stripe → Add New.
+- Transaction Type: Products and Services
+- Payment Amount: Form Total
+- Billing Info: map to primary contact fields
+- Condition: Payment Method is Credit Card
 
-**New Family hook must:**
-- Create Family post (account_user, family_display_name, address, parents_guardians)
-- Create Application post (season, family, payment fields, signature, new_returning=New)
-- For each nested athlete entry: create Athlete post, then create Enrollment post
-
-**Returning Family hook must:**
-- Locate existing Family post via account_user
-- Update Family post (address, secondary contact only — do NOT overwrite family_display_name)
-- Create Application post (season, family, payment fields, signature, new_returning=Returning)
-- For each returning nested athlete entry: create Enrollment post (no new Athlete post)
-- For each new nested athlete entry: create Athlete post, then create Enrollment post
-- Primary contact guardian_notifications always set to "Yes" (not in form)
-
-**Stripe confirmation hook:**
-- Wire hook (likely `gform_stripe_fulfillment`) to update Application
-  `payment_status` → `Paid` on successful charge
-
-### 7. Test end-to-end
+### 9. Test end-to-end
 - New Family: full submission → confirm Family, Application, Athlete,
   Enrollment posts created with correct field values
 - Returning Family: full submission → confirm Family updated (not recreated),
   Application created, Enrollments created for returning and new athletes
+- Credit card path: verify Stripe test charge succeeds
 - Login redirect → confirm non-admin users land at `/registration/`
-- User-state routing → confirm new user hits New Family, returning user hits
-  Returning Family, already-enrolled user sees message
+- User-state routing → confirm routing logic works for all three states
 
-### 8. Active season post — update handbook URL
+### 10. Wire Stripe confirmation hook
+After Stripe is connected and feeds tested, confirm the correct hook name
+(`gform_stripe_fulfillment` or `gform_stripe_after_payment_intent_succeeded`)
+and uncomment + complete the stub in `inc/gravity-helpers.php`.
+
+### 11. Active season post — update handbook URL
 Add the 2026 XC handbook URL to the `handbook` field on the 2026 XC Athletic
-Season post before opening registration. The form currently shows a placeholder.
+Season post before opening registration.
+
+### 12. Domain swap
+Remove trailblazers.team from the old Flywheel site, add as primary domain
+to the new site. Re-verify Stripe webhook endpoint URL in Stripe dashboard.
 
 ---
 

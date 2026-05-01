@@ -1,10 +1,10 @@
 # STATE
 
 ## Current Objective
-2026 XC registration forms are built and imported. Current focus is getting
-registration working end-to-end before the May 1 deadline: complete post-import
-GPPA/Stripe configuration, write the `gravity-helpers.php` submission hook,
-and test both the New Family and Returning Family flows.
+`inc/gravity-helpers.php` submission hooks are written. Current focus is pushing
+to Flywheel, connecting Stripe on the live domain, configuring Stripe feeds on
+both parent forms, and running end-to-end test submissions before opening
+registration to families.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -140,6 +140,8 @@ The following have been successfully imported:
   application) are TOP-LEVEL, not inside any Group wrapper
 - `group_tb_registration_settings.json` — ACF options page field group;
   location: `options_page == registration-settings`
+- Application CPT `payment_method` choices updated: consolidated `Check` and `Cash`
+  into a single `Check/Cash` value to match the GF form radio field.
 
 ## ACF Options Pages
 - `options_page_trailblazers-settings.json` — top-level TB Settings parent menu
@@ -181,11 +183,11 @@ As of 2026-04-26. Full field spec in `docs/FORM-FIELD-MAP.md` v2.3.
 - ⬜ Replace `[tb_reg_hub]` with `[tb_reg_router]` on `/registration/` page in WP admin
 
 ### Hooks (inc/gravity-helpers.php)
-- ⬜ `gform_after_submission` — New Family: create Family, Application, Athletes,
+- ✅ `gform_after_submission` — New Family: creates Family, Application, Athletes,
   Enrollments from form entry
-- ⬜ `gform_after_submission` — Returning Family: update Family, create Application,
-  new Athletes (if any), Enrollments for all registered athletes
-- ⬜ Stripe confirmation hook — update `payment_status` to `Paid` on Application
+- ✅ `gform_after_submission` — Returning Family: updates Family (address + guardians
+  only), creates Application, new Athletes (if any), Enrollments for all athletes
+- ⬜ Stripe confirmation hook — stub present; wire after Stripe confirmed on live site
 
 ## Registration Infrastructure — Build Status
 Complete as of 2026-04-20. See CHANGELOG.md 2026-04 for full record.

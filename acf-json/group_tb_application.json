@@ -246,8 +246,7 @@
             },
             "choices": {
                 "Credit Card": "Credit Card",
-                "Check": "Check",
-                "Cash": "Cash"
+                "Check\/Cash": "Check\/Cash"
             },
             "default_value": false,
             "return_format": "value",
@@ -343,5 +342,5 @@
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1774923825
+    "modified": 1777594609
 }
