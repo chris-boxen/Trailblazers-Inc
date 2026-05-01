@@ -691,6 +691,14 @@ function tb_handle_returning_family( $entry, $form ) {
 // SECTION 5 — STRIPE PAYMENT CONFIRMED HOOK (STUB)
 // =============================================================================
 
+add_action( 'gform_stripe_fulfillment', function() {
+    error_log( 'TB: gform_stripe_fulfillment fired' );
+}, 10, 4 );
+
+add_action( 'gform_stripe_after_payment_intent_succeeded', function() {
+    error_log( 'TB: gform_stripe_after_payment_intent_succeeded fired' );
+}, 10, 4 );
+
 /**
  * Update Application payment_status to 'Paid' when Stripe confirms a charge.
  *
@@ -735,3 +743,20 @@ function tb_handle_stripe_payment_confirmed( $entry, $action, $previous_status, 
     update_field( 'payment_status', 'Paid', $applications[0]->ID );
 }
 */
+
+// =============================================================================
+// SECTION 6 — HANDBOOK POPULATION
+// =============================================================================
+
+/**
+ * Populate the hidden Handbook URL field (Page 3, both registration forms).
+ * Parameter name on the GF hidden field: tb_handbook_url
+ *
+ * ACF 'handbook' is a link field — returns an array. Extract ['url'].
+ */
+add_filter( 'gform_field_value_tb_handbook_url', function() {
+    $season_id = get_option( 'tb_active_season_id' );
+    if ( ! $season_id ) return '';
+    $handbook = get_field( 'handbook', (int) $season_id );
+    return ! empty( $handbook['url'] ) ? $handbook['url'] : '';
+} );
