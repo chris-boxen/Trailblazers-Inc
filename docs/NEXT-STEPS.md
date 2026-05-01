@@ -46,8 +46,6 @@ As of 2026-04-30. See CHANGELOG.md 2026-04-30.
   5. Enrollment check added to `[tb_reg_form type="returning_family"]` guard
   6. Registration shortcode CSS added to `assets/css/styles.css`
 
----
-
 ## Completed — Flywheel + Stripe Setup
 As of 2026-05-01.
 
@@ -55,142 +53,94 @@ As of 2026-05-01.
 - ✅ Stripe connected: Test mode, York County Trailblazers, Inc.
 - ✅ Stripe webhook registered; Test Signing Secret entered in GF
 - ✅ Stripe feeds configured on both New Family and Returning Family forms
-- ✅ New Family form updated: zip code field, GPPA for primary contact,
-  relationship placeholder, enhanced dropdown UX deactivated
+- ✅ New Family form updated: zip code field (51), Family ID field (52, GP
+  Unique ID), GPPA for primary contact, relationship placeholder,
+  enhanced dropdown UX deactivated
 
-## Now — End-to-End Testing
+## Completed — Hook Fixes + End-to-End Verification
+As of 2026-05-01. See CHANGELOG.md 2026-05.
 
-### 1. Re-test New Family, Check/Cash (IMMEDIATE)
-Latest push (2026-05-01) restores missing Enrollment writes and adds
-submitted_by + digital_signature + payment amount fallback. Delete previous
-test records and run a fresh New Family / Check/Cash submission. Verify:
-- Family post: name, address, zip, guardians, account_user, family_status
-- Application post: family, season, payment_amount (non-zero), payment_method,
-  digital_signature, submitted_by, new_returning, application_status, payment_status
-- Athlete post: first_name, last_name, gender (M/F), dob, family, account_status,
-  participation_type
-- Enrollment post: season, application, family, athlete, new_returning,
-  grade, participation_type, eligibility_confirmed, submitted_by,
-  digital_signature, physical_status, singlet fields
+- ✅ ACF Group sub-field writes fixed — switched to parent group array pattern
+  in `tb_create_athlete_post()` and `tb_create_enrollment_post()`
+- ✅ Eligibility check fixed — removed non-existent field IDs (14, 17) from
+  `tb_new_athlete_eligibility_confirmed()`
+- ✅ Zip code written to Family post (NF field 51, RF field 62)
+- ✅ Family ID (field 52, GP Unique ID) written to Family post, each Athlete
+  post (IDs group), and WP User — three-way linkage complete
+- ✅ Athlete slug computed via `sanitize_title()` from first + last name
+- ✅ Duplicate `payment_amount` block removed from NF handler Section 1
+- ✅ Test 3 (New Family, Check/Cash) — all four CPTs writing correctly:
+  Family, Application, Athlete, Enrollment all fields verified
 
-### 2. Fix zip code hook mapping
-The NF form now has a zip code field. Verify the hook writes it to the Family
-`zip_code` ACF field. Check the field ID on the live form and confirm
-`update_field('zip_code', rgar($entry, 'X'), $family_id)` is in both handlers
-with the correct field ID.
+---
 
-### 3. Investigate confirmation emails
-Test user received no confirmation emails after NF submission. Check:
+## Now — Pre-Launch UX + Testing
+
+### 1. Fix singlet count formula (NF Page 5)
+Singlet Count field currently mirrors Athlete Count. For new families every
+athlete requires a singlet, so these happen to match — but the formula is
+semantically wrong and will break if logic changes. Revisit the calculated
+field to count athletes who selected a singlet rather than total athlete count.
+
+### 2. Investigate confirmation emails
+Test user has not received confirmation emails. Check in order:
 - GF → New Family form → Notifications — is a notification configured and active?
-- Is SMTP configured on the Flywheel site (SMTP2GO is installed)?
-- Check GF entry log for notification send status
+- Is SMTP2GO configured on the Flywheel site with valid credentials and a
+  from address? Send a test email to confirm delivery.
+- After SMTP confirmed, re-submit a test registration and check the GF entry
+  log for notification send status.
 
-### 4. Fix singlet count formula on NF Page 5
-Singlet count appears to use Athlete Count rather than the number of athletes
-who requested a singlet. Revisit the NF Page 5 Registration Total formula and
-the Singlet Count calculated field.
-
-### 5. Test New Family, Credit Card
-After Check/Cash test passes, run a Credit Card submission using a Stripe test
-card. Verify Stripe test charge succeeds and confirmation redirect lands on the
-correct page.
-
-### 6. Test Returning Family flow
-After NF tests pass, test a Returning Family submission (Check/Cash first,
-then Credit Card).
-
-### 7. Wire Stripe confirmation hook
-After Stripe feeds are tested end-to-end, confirm the correct hook name and
-uncomment + complete the stub in `inc/gravity-helpers.php`.
-
-### 8. Add confirmation page content
+### 3. Add confirmation page content
 Add content in TB Settings → Registration Settings → Messaging:
 - New Family Confirmation Text
 - Returning Family Confirmation Text
 
-### 9. Update handbook URL
+### 4. Test New Family, Credit Card
+Run a Credit Card submission using a Stripe test card. Verify:
+- Stripe test charge succeeds in Stripe dashboard
+- Confirmation redirect lands on the correct page
+- Application `payment_status` updates to Paid once Stripe hook is wired
+
+### 5. Test Returning Family flow
+After NF tests pass, test a Returning Family submission (Check/Cash first,
+then Credit Card). Verify:
+- Family address and guardians updated (display name not overwritten)
+- Returning athlete Enrollment created with correct athlete post ID
+- New athlete path works same as NF
+- Payment flow mirrors NF results
+
+### 6. Wire Stripe confirmation hook
+After Stripe is tested end-to-end, confirm the correct hook name and
+uncomment + complete the stub in `inc/gravity-helpers.php`. Candidates:
+- `gform_stripe_fulfillment`
+- `gform_stripe_after_payment_intent_succeeded`
+Hook should locate Application post by `gravity_form_entry_id` and update
+`payment_status` → `Paid`.
+
+### 7. Update handbook URL
 Add the 2026 XC handbook URL to the `handbook` field on the 2026 XC Athletic
 Season post before opening registration.
 
-### 10. Domain swap
+### 8. Domain swap
 Remove trailblazers.team from the old Flywheel site, add as primary domain
-to the new site. Update the four GF confirmation redirect URLs to the new domain.
-Re-verify Stripe webhook endpoint URL in Stripe dashboard.
+to the new site. Update the four GF confirmation redirect URLs to the new
+domain. Re-verify Stripe webhook endpoint URL in Stripe dashboard.
 
 ---
 
 ## Backlog — UX Issues (non-blocking, pre-launch polish)
-Noted during Test 1. Address before opening registration to families.
 
 - [ ] WP subscriber dashboard — needs content and layout updates
 - [ ] Handbook note inside nested athlete form is redundant with the
   standalone Handbook page (Page 3) — remove or relocate
 - [ ] Optional donations field choices don't display amounts — fix choice labels
-- [ ] Singlet count formula fix (also in step 4 above)
-- [ ] Confirmation pages need content (also in step 8 above)
 
 ---
 
 ## Deferred — Schema / Template Updates
 Not blocking registration. Return to these after registration is live.
 
-### Templates to update
-- `single-athlete.php`
-  - Add per-season `results_enabled` flag check with `results_unavailable_message` fallback
-  - Add Milesplit / AthleticNet external ID links when season flags + IDs are present
-
-- `single-athletic_event.php`
-  - Add per-season `results_enabled` flag check
-  - Update any `post_type => athletic_meet` references → `post_type => tribe_events`
-
-- `archive-athletic_record.php`
-  - Update any `post_type => athletic_meet` references → `post_type => tribe_events`
-
-- `taxonomy-sport.php`
-  - Update any `post_type => athletic_meet` references → `post_type => tribe_events`
-
-### Templates to build new
-- `tribe/events/single-event.php` — TEC theme override
-  - Renders meet header (name, date, venue via `tribe_venue`, season link)
-  - Renders results section gated by `results_status` field
-  - Mirrors the structure of the retired `single-athletic_meet.php`
-
-- Meet schedule custom query page template
-  - Queries `tribe_events` by category `athletic-meet`
-  - Filters by seasons where `calendar_show_meets = true`
-  - Replaces the retired `archive-athletic_meet.php`
-
-### TEC archive redirect
-- In `inc/cpt-hooks.php`: add `template_redirect` hook to redirect TEC's native
-  `/event/` archive to the custom meet schedule page
-- Only redirect the main archive, not single event pages
-
----
-
-## Deferred — Data Population
-- ⬜ Athletic Results — `08-athletic-results.csv`
-- ⬜ Athletic Records — `09-athletic-records.csv`
-
----
-
-## Parked — JS Filtering (ready to build, not urgent)
-Data attributes are wired on all archive templates. Can be built independently.
-
-- Add filter controls + JS to `archive-athlete.php`
-- Add filter controls + JS to `archive-athletic_record.php`
-- Add filter controls + JS to `taxonomy-sport.php` athlete table
-- Populate `inc/enqueue.php` with the filtering script
-
----
-
-## Later
-- CSS refinement for registration button styles (baseline added; may need
-  design polish to match full site aesthetic)
-- `inc/login.php` — `login_headerurl` hardcoded to `https://trailblazers.team`;
-  update after domain swap or change to use `home_url()`
-- `inc/login.php` — activation email hooks use `wpmu_signup_user_notification_*`
-  filters which only fire on multisite; single-site activation emails use
-  default WP template. Consider building proper single-site email customization.
+- Consider building proper single-site email customization
 - Revisit payment abstraction if workflow becomes more complex
 - Add stronger review workflows for physicals and approvals
 - Revisit theme folder naming (space in folder name)
