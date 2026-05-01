@@ -243,7 +243,11 @@ function tb_create_enrollment_post( $args ) {
         'season_id'              => 0,
         'new_returning'          => 'New Athlete',
         'eligibility_confirmed'  => false,
+        'participation_type'     => 'Athlete',
+        'grade'                  => '',
         'singlet_requested'      => 'No',
+        'singlet_sizing_group'   => '',
+        'singlet_size'           => '',
     ];
     $args = wp_parse_args( $args, $defaults );
 
@@ -268,6 +272,11 @@ function tb_create_enrollment_post( $args ) {
     update_field( 'new_returning',         $args['new_returning'],                                      $enrollment_id );
     update_field( 'eligibility_confirmed', $args['eligibility_confirmed'] ? 1 : 0,                      $enrollment_id );
     update_field( 'physical_status',       'Not Received',                                              $enrollment_id );
+    update_field( 'participation_type',    $args['participation_type'],                                  $enrollment_id );
+    update_field( 'grade',                 $args['grade'],                                               $enrollment_id );
+    update_field( 'singlet_requested',     $args['singlet_requested'] === 'Yes' ? 1 : 0,                $enrollment_id );
+    update_field( 'singlet_sizing_group',  $args['singlet_sizing_group'],                               $enrollment_id );
+    update_field( 'singlet_size',          $args['singlet_size'],                                       $enrollment_id );
     update_field( 'singlet_status',        ( $args['singlet_requested'] === 'Yes' ) ? 'Ordered' : 'Not Needed', $enrollment_id );
 
     return $enrollment_id;
@@ -421,7 +430,11 @@ function tb_handle_new_family( $entry, $form ) {
             'season_id'             => $season_id,
             'new_returning'         => 'New Athlete',
             'eligibility_confirmed' => tb_new_athlete_eligibility_confirmed( $nested_entry ),
+            'participation_type'    => rgar( $nested_entry, '1' ) ?: 'Athlete',
+            'grade'                 => rgar( $nested_entry, '8' ),
             'singlet_requested'     => rgar( $nested_entry, '19' ),
+            'singlet_sizing_group'  => rgar( $nested_entry, '20' ),
+            'singlet_size'          => rgar( $nested_entry, '21' ),
         ] );
     }
 }
@@ -560,7 +573,11 @@ function tb_handle_returning_family( $entry, $form ) {
             'season_id'             => $season_id,
             'new_returning'         => 'Returning Athlete',
             'eligibility_confirmed' => tb_returning_athlete_eligibility_confirmed( $nested_entry ),
+            'participation_type'    => rgar( $nested_entry, '9' ) ?: 'Athlete',
+            'grade'                 => rgar( $nested_entry, '8' ),
             'singlet_requested'     => rgar( $nested_entry, '20' ),
+            'singlet_sizing_group'  => rgar( $nested_entry, '21' ),
+            'singlet_size'          => rgar( $nested_entry, '22' ),
         ] );
     }
 
@@ -583,7 +600,11 @@ function tb_handle_returning_family( $entry, $form ) {
             'season_id'             => $season_id,
             'new_returning'         => 'New Athlete',
             'eligibility_confirmed' => tb_new_athlete_eligibility_confirmed( $nested_entry ),
+            'participation_type'    => rgar( $nested_entry, '1' ) ?: 'Athlete',
+            'grade'                 => rgar( $nested_entry, '8' ),
             'singlet_requested'     => rgar( $nested_entry, '19' ),
+            'singlet_sizing_group'  => rgar( $nested_entry, '20' ),
+            'singlet_size'          => rgar( $nested_entry, '21' ),
         ] );
     }
 }
