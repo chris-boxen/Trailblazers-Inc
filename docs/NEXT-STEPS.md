@@ -96,16 +96,20 @@ As of 2026-05-01. See CHANGELOG.md 2026-05.
   
   ---
   
-## Completed — Production Cutover
-  As of 2026-05-02.
+  ## Now — Pre-Launch
   
-  - ✅ trailblazers.team removed from old Flywheel site
-  - ✅ trailblazers.team set as primary domain on new Flywheel site
-  - ✅ GF confirmation redirect URLs updated to trailblazers.team
-  - ✅ Stripe switched to Live mode in GF Settings → Stripe
-  - ✅ Stripe webhook endpoint updated to https://trailblazers.team/?callback=gravityformsstripe
-  - ✅ Live Signing Secret entered in GF
-  - ✅ Webhook delivery confirmed (200 OK) — resend test passed
+  ### 1. Test Returning Family flow
+  Test a Returning Family submission (Check/Cash first, then Credit Card). Verify:
+  - Family address and guardians updated (display name not overwritten)
+  - Returning athlete Enrollment created with correct athlete post ID
+  - New athlete path works same as NF
+  - payment_status and payment_amount write correctly
+  
+  ### 2. Domain swap
+  Remove trailblazers.team from the old Flywheel site, add as primary domain
+  to the new site. Update the four GF confirmation redirect URLs to the new
+  domain. Re-verify Stripe webhook endpoint URL in Stripe dashboard. Enter
+  Live Signing Secret in GF Stripe settings.
 
 ---
 
