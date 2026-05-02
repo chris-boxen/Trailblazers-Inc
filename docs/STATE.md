@@ -1,10 +1,10 @@
 # STATE
 
+
 ## Current Objective
-Pre-launch testing in progress on https://trailblazers-inc.flywheelsites.com/.
-New Family CC path tested and payment flow confirmed working. Remaining work
-before opening registration: singlet count formula fix, confirmation page
-content, Returning Family testing, and domain swap.
+2026 XC registration is live at https://trailblazers.team/. Domain swap and
+Stripe production cutover complete as of 2026-05-02. Known post-launch bugs
+tracked in NEXT-STEPS.md backlog.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -80,16 +80,12 @@ The following have been successfully imported:
   - ✅ Enhanced dropdown UX deactivated
 
   ### Post-import manual configuration
-  - ✅ GF form IDs entered in TB Settings → Registration Settings
-  - ✅ GPPA configured on Returning Family Page 1 (Field 60 anchor + 16 fields)
-  - ✅ GPPA configured on Register Returning Athlete (athlete selector + identity)
-  - ✅ GW Read Only configured on Family Name (RF Field 1) and identity fields
   - ✅ GF confirmations updated — conditional redirects by payment method to
-    type-specific confirmation pages on trailblazers-inc.flywheelsites.com
-  - ✅ Stripe connected: Test mode, York County Trailblazers, Inc.
-  - ✅ Stripe webhook registered
-  - ✅ Stripe Test Signing Secret entered in GF
-  - ✅ Stripe feeds configured on both parent forms
+    type-specific confirmation pages on trailblazers.team
+  - ✅ Stripe connected: Live mode, York County Trailblazers, Inc.
+  - ✅ Stripe webhook registered — https://trailblazers.team/?callback=gravityformsstripe
+  - ✅ Stripe Live Signing Secret entered in GF
+  - ✅ Webhook delivery confirmed (200 OK) on trailblazers.team — 2026-05-02
   - ✅ Handbook URL — updated on 2026 XC Athletic Season post
 
   ### Registration flow (inc/registration-helpers.php)

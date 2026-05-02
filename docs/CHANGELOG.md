@@ -2,6 +2,20 @@
 
 ## 2026-05-02
 
+
+### Production cutover — domain swap and Stripe live mode
+
+- Primary domain switched to `trailblazers.team` on Flywheel
+- GF confirmation redirect URLs updated from `trailblazers-inc.flywheelsites.com`
+  to `trailblazers.team`
+- Stripe switched from Test to Live mode in GF Settings → Stripe
+- Stripe webhook endpoint updated to
+  `https://trailblazers.team/?callback=gravityformsstripe`
+- Live Signing Secret entered in GF
+- Webhook delivery verified — resend of existing event returned 200 OK
+
+---
+
 ### Returning Family CC path unblocked
 
 The RF Credit Card path was blocked by a chain of three distinct issues,

@@ -87,16 +87,16 @@ As of 2026-05-02. See CHANGELOG.md 2026-05.
 
 ---
 
-## Now — Launch
+## Completed — Production Cutover
+As of 2026-05-02.
 
-### 1. Domain swap
-- Remove `trailblazers.team` from old Flywheel site
-- Add `trailblazers.team` as primary domain on new Flywheel site
-- Update the four GF confirmation redirect URLs to `trailblazers.team`
-- Re-verify Stripe webhook endpoint URL in Stripe dashboard
-- Switch Stripe from Test mode to Live mode in GF Settings → Stripe
-- Enter Live Signing Secret in GF Settings → Stripe
-- Update webhook in Stripe dashboard to live mode pointing to `trailblazers.team`
+- ✅ trailblazers.team removed from old Flywheel site
+- ✅ trailblazers.team set as primary domain on new Flywheel site
+- ✅ GF confirmation redirect URLs updated to trailblazers.team
+- ✅ Stripe switched to Live mode in GF Settings → Stripe
+- ✅ Stripe webhook endpoint updated to https://trailblazers.team/?callback=gravityformsstripe
+- ✅ Live Signing Secret entered in GF
+- ✅ Webhook delivery confirmed (200 OK) — resend test passed
 
 ---
 
