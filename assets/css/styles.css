@@ -239,16 +239,16 @@ a.button:hover { background: #333; }
   --gf-field-date-width: 33%;
   
   /* BG */
-  --gf-ctrl-bg-color: rgba(0,0,0, 0.04);
-  --gf-ctrl-bg-color-hover: rgba(0,0,0, 0.08);
-  --gf-ctrl-bg-color-focus: rgba(0,0,0, 0.08);
+  --gf-ctrl-bg-color: rgb(245,245,245); /*rgba(0,0,0, 0.1);*/
+  --gf-ctrl-bg-color-hover: rgb(235,235,235); /* rgba(0,0,0, 0.2);*/
+  --gf-ctrl-bg-color-focus: rgb(235,235,235); /* rgba(0,0,0, 0.2);*/
   /* Border */
   --gf-ctrl-border-width: 1px;
   --gf-ctrl-border-style: solid;
   --gf-ctrl-radius: 0.25rem;
-  --gf-ctrl-border-color: rgba(0,0,0, 0.1);
-  --gf-ctrl-border-color-hover: rgba(0,0,0, 0.2);
-  --gf-ctrl-border-color-focus: rgba(0,0,0, 0.2);
+  --gf-ctrl-border-color: rgb(235,235,235); /*rgba(0,0,0, 0.1);*/
+  --gf-ctrl-border-color-hover: rgb(225,225,232); /* rgba(0,0,0, 0.2);*/
+  --gf-ctrl-border-color-focus: rgb(225,225,225); /*rgba(0,0,0, 0.2);*/
   /* Shadow */
   --gf-ctrl-shadow: none;
   --gf-ctrl-shadow-hover: none;
@@ -274,7 +274,7 @@ a.button:hover { background: #333; }
   /* Section */
   --gf-field-section-border-width: 1px;
   --gf-field-section-border-style: solid;
-  --gf-field-section-border-color: rgba(0,0,0, 0.1);
+  --gf-field-section-border-color: rgb(230,230,230);
   --gf-field-section-padding-y-end: 1rem;
 }
 .gfield--type-radio .gfield_label {
@@ -373,7 +373,7 @@ a.button:hover { background: #333; }
 
 /* Nested Form */
 .entry-content table.gpnf-nested-entries:not(.variations) { border: 1px solid #999; }
-.gpnf-nested-entries th { background: rgba(0, 0, 0, .2); }
+.gpnf-nested-entries th { background: rgb(204, 204, 204); }
 .entry-content thead th, 
 .entry-content tr th { color: #111; }
 
