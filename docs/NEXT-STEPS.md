@@ -60,73 +60,65 @@ As of 2026-05-01.
 ## Completed — Hook Fixes + End-to-End Verification
 As of 2026-05-01. See CHANGELOG.md 2026-05.
 
-- ✅ ACF Group sub-field writes fixed
-- ✅ Eligibility check fixed for NF and RF
-- ✅ Zip code, Family ID, three-way linkage all verified
-- ✅ New Family Check/Cash — all CPTs verified
-- ✅ New Family Credit Card — Stripe charge confirmed, CPTs verified
-- ✅ Singlet count formula corrected on NF Page 5
-- ✅ Confirmation page content added for both form types
-- ✅ Notification emails confirmed sending via Gravity SMTP
+- ✅ ACF Group sub-field writes fixed — switched to parent group array pattern
+  in `tb_create_athlete_post()` and `tb_create_enrollment_post()`
+- ✅ Eligibility check fixed — removed non-existent field IDs (14, 17) from
+  `tb_new_athlete_eligibility_confirmed()`
+- ✅ Zip code written to Family post (NF field 51, RF field 62)
+- ✅ Family ID (field 52, GP Unique ID) written to Family post, each Athlete
+  post (IDs group), and WP User — three-way linkage complete
+- ✅ Athlete slug computed via `sanitize_title()` from first + last name
+- ✅ Duplicate `payment_amount` block removed from NF handler Section 1
+- ✅ Test 3 (New Family, Check/Cash) — all four CPTs writing correctly:
+  Family, Application, Athlete, Enrollment all fields verified
 
-## Completed — Returning Family Testing + CC Unblock
-As of 2026-05-02. See CHANGELOG.md 2026-05.
-
-- ✅ RF eligibility check fixed — removed redundant fields 15.1 / 18.1
-- ✅ RF new athlete IDs group write added to Section 4 loop
-- ✅ RF Check/Cash — all CPTs writing correctly
-- ✅ RF CC path unblocked: "Use Stripe's Payment Element" unchecked on
-  field 57; switched to snapshot webhook payload; experimental handler
-  (`Experimental_GF_Elements_Handler`) now creates PaymentIntent correctly
-- ✅ `rgba` CSS values in `styles.css` fixed — was causing Stripe
-  re-initialization loop on Payment Element
-- ✅ `payment_status` logic updated — now reads payment method field value
-  (NF field 48, RF field 55) instead of `$entry['payment_status']`
-- ✅ RF Credit Card — Stripe charge confirmed, webhook delivering (200 OK),
-  CPT writes verified
-
----
-
-## Now — Launch
-
-### 1. Domain swap
-- Remove `trailblazers.team` from old Flywheel site
-- Add `trailblazers.team` as primary domain on new Flywheel site
-- Update the four GF confirmation redirect URLs to `trailblazers.team`
-- Re-verify Stripe webhook endpoint URL in Stripe dashboard
-- Switch Stripe from Test mode to Live mode in GF Settings → Stripe
-- Enter Live Signing Secret in GF Settings → Stripe
-- Update webhook in Stripe dashboard to live mode pointing to `trailblazers.team`
-
----
-
-## Backlog — Known Bugs (post-launch)
-
-- [ ] **RF CC `payment_status` not writing `Paid`** — Application and
-  Enrollment posts show `Not Received` after CC submission despite charge
-  succeeding. Field 55 contains `Credit Card` in entry; cause undiagnosed.
-  Workaround: manual update in WP admin. Needs debug log investigation.
-- [ ] **RF CC spinner — no visible progress** — ~27 seconds with no
-  intermediate state shown. Inherent to experimental handler flow. Add
-  "Processing your payment..." status message as interim UX fix.
-- [ ] **GF Stripe + GPPA Payment Element conflict** — "Use Stripe's Payment
-  Element" on RF field 57 causes 500 error. Root cause: `start_checkout()`
-  aborts with "Submission is not valid" before PaymentIntent is created.
-  Gravity Wiz ticket filed. Monitor for response.
-- [ ] **`gform_disable_notification` filter** — "TB Registration Receipt - Paid"
-  fires on failed CC payments. Add filter to suppress when payment status
-  is not Paid.
-- [ ] **Duplicate Stripe webhooks** — clean up stale sandbox webhooks; keep
-  only one active snapshot webhook per environment.
+## Completed — CC Testing + Payment + Handbook Fixes
+  As of 2026-05-01. See CHANGELOG.md 2026-05.
+  
+  - ✅ Handbook URL added to 2026 XC Athletic Season post
+  - ✅ `gform_field_value_tb_handbook_url` filter added to `gravity-helpers.php`
+    (Section 5) — reads ACF link field array, extracts ['url']
+  - ✅ GF HTML field merge tag fixed (missing `@` prefix) — handbook button
+    now resolves correctly on registration form Page 3
+  - ✅ payment_status hardcode removed from both NF and RF handlers — now reads
+    $entry['payment_status'] at hook time; writes Paid for CC, Not Received
+    for Check/Cash
+  - ✅ payment_amount block replaced in both handlers with
+    GFCommon::get_order_total($form, $entry) — reliable for both payment
+    methods, independent of Stripe's async entry update timing
+  - ✅ Stripe confirmation hook stub removed — not needed in Payment Element
+    redirect flow; payment data is available within gform_after_submission
+  - ✅ GF notification merge tag updated from Order Total field (always empty)
+    to {payment_amount} — confirmed correct for CC submissions
+  - ✅ Confirmation emails confirmed sending via Gravity SMTP — Admin
+    Notification and TB Registration Receipt - Paid both verified
+  - ✅ New Family, Credit Card — end-to-end test passed
+  
+  ---
+  
+  ## Now — Pre-Launch
+  
+  ### 1. Test Returning Family flow
+  Test a Returning Family submission (Check/Cash first, then Credit Card). Verify:
+  - Family address and guardians updated (display name not overwritten)
+  - Returning athlete Enrollment created with correct athlete post ID
+  - New athlete path works same as NF
+  - payment_status and payment_amount write correctly
+  
+  ### 2. Domain swap
+  Remove trailblazers.team from the old Flywheel site, add as primary domain
+  to the new site. Update the four GF confirmation redirect URLs to the new
+  domain. Re-verify Stripe webhook endpoint URL in Stripe dashboard. Enter
+  Live Signing Secret in GF Stripe settings.
 
 ---
 
-## Backlog — UX Issues (non-blocking polish)
+## Backlog — UX Issues (non-blocking, pre-launch polish)
 
 - [ ] WP subscriber dashboard — needs content and layout updates
-- [ ] Handbook note inside nested athlete form is redundant with Page 3 —
-  remove or relocate
-- [ ] Optional donations field — choice labels missing amounts
+- [ ] Handbook note inside nested athlete form is redundant with the
+  standalone Handbook page (Page 3) — remove or relocate
+- [ ] Optional donations field choices don't display amounts — fix choice labels
 
 ---
 
@@ -137,11 +129,10 @@ Not blocking registration. Return to these after registration is live.
 - Revisit payment abstraction if workflow becomes more complex
 - Add stronger review workflows for physicals and approvals
 - Revisit theme folder naming (space in folder name)
-- Add `template-parts/` structure when templates grow complex enough
-- Confirm `publicly_queryable` is false on Family, Application, Enrollment,
-  and Athletic Physical CPTs (see OPEN-QUESTIONS.md Q3)
-- Decide whether TEC `tribe_events_cat` needs sport sub-categories
-  (see OPEN-QUESTIONS.md Q10)
-- Additional Singlets (Returning) manual count field on RF Page 5 — future:
-  derive from nested form entries rather than manual input
-- Athletic Results and Athletic Records data import
+- Add `template-parts/` structure when templates grow complex enough to warrant it
+- Confirm `publicly_queryable` is false on Family, Application, Enrollment, and
+  Athletic Physical CPTs (see OPEN-QUESTIONS.md Q3)
+- Decide whether TEC `tribe_events_cat` needs sport sub-categories for calendar
+  filtering (see OPEN-QUESTIONS.md Q10)
+- Additional Singlets (Returning) manual count field on RF Page 5 — future
+  improvement: derive from nested form entries rather than manual input

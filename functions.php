@@ -15,3 +15,10 @@ require_once get_stylesheet_directory() . '/inc/acf-helpers.php';
 require_once get_stylesheet_directory() . '/inc/gravity-helpers.php';
 require_once get_stylesheet_directory() . '/inc/registration-helpers.php';
 require_once get_stylesheet_directory() . '/inc/login.php';
+
+add_filter( 'gpnf_session_path', function( $path ) {
+    if ( empty( $path ) && ! empty( $_SERVER['HTTP_REFERER'] ) ) {
+        return parse_url( $_SERVER['HTTP_REFERER'], PHP_URL_PATH );
+    }
+    return $path;
+} );

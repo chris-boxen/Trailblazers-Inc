@@ -106,8 +106,9 @@ The following have been successfully imported:
     CC failure guard; season/user ID fallbacks
   - ✅ `gform_field_value_tb_handbook_url` — populates hidden handbook URL
     field on Page 3 of both registration forms from active season post
-  - ✅ RF uses Experimental GF Elements handler — PaymentIntent created via AJAX after entry creation; webhook required for payment confirmation
-  - Use Stripe's Payment Element" must be unchecked on RF field 57; Payment Element flow throws 500 due to known GF Stripe + GPPA interaction (Gravity Wiz ticket filed)
+  - ✅ Stripe confirmation hook — not needed; payment_status and payment_amount
+    are set correctly within gform_after_submission via the Payment Element
+    redirect flow. Stub removed.
 
   ### End-to-end test status
   - ✅ Test 3 (New Family, Check/Cash) — 2026-05-01 — all CPT writes verified:
@@ -119,9 +120,6 @@ The following have been successfully imported:
     requested a singlet rather than mirroring total athlete count
   - ✅ Confirmation page content added — New Family and Returning Family
     confirmation text entered in Registration Settings → Messaging
-  - ✅ Returning Family, Check/Cash — 2026-05-02 — all CPT writes verified
-  - ✅ Returning Family, Credit Card — 2026-05-02 — Stripe charge confirmed, webhook delivering, CPT writes verified
+  - ⬜ Returning Family — not yet tested
 
-  ### Known issues
-  - payment_status on Application and Enrollment does not write Paid for RF CC submissions — cause undiagnosed; workaround is manual update
-  - RF CC submission spinner takes ~27 seconds with no visible progress — inherent to experimental handler flow; UX polish deferred
+  ### Known pre-launch issues
