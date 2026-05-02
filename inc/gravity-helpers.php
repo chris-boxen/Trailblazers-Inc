@@ -256,68 +256,69 @@ function tb_create_athlete_post( $nested_entry, $family_id ) {
  * @return int|false  New Enrollment post ID, or false on failure.
  */
 function tb_create_enrollment_post( $args ) {
-    $defaults = [
-        'athlete_id'             => 0,
-        'family_id'              => 0,
-        'application_id'         => 0,
-        'season_id'              => 0,
-        'new_returning'          => 'New Athlete',
-        'eligibility_confirmed'  => false,
-        'participation_type'     => 'Athlete',
-        'grade'                  => '',
-        'singlet_requested'      => 0,
-        'singlet_sizing_group'   => '',
-        'singlet_size'           => '',
-        'submitted_by'           => 0,
-        'digital_signature'      => '',
-    ];
-    $args = wp_parse_args( $args, $defaults );
-
-    $athlete_post  = get_post( $args['athlete_id'] );
-    $athlete_title = $athlete_post ? $athlete_post->post_title : 'Athlete ' . $args['athlete_id'];
-
-    $enrollment_id = wp_insert_post( [
-        'post_title'  => "$athlete_title — 2026 XC",
-        'post_type'   => 'enrollment',
-        'post_status' => 'publish',
-    ] );
-
-    if ( is_wp_error( $enrollment_id ) ) {
-        error_log( 'TB Registration: Failed to create Enrollment post — ' . $enrollment_id->get_error_message() );
-        return false;
-    }
-
-    // Relationships — top-level post object fields, name works fine.
-    update_field( 'season',                        $args['season_id'],                                           $enrollment_id );
-    update_field( 'application',                   $args['application_id'],                                      $enrollment_id );
-    update_field( 'family',                        $args['family_id'],                                           $enrollment_id );
-    update_field( 'athlete',                       $args['athlete_id'],                                          $enrollment_id );
-    
-    // Top-level fields — name works fine.
-    update_field( 'new_returning',                 $args['new_returning'],                                       $enrollment_id );
-    update_field( 'eligibility_confirmed',         $args['eligibility_confirmed'] ? 1 : 0,                      $enrollment_id );
-    update_field( 'submitted_by',                  $args['submitted_by'],                                        $enrollment_id );
-    update_field( 'digital_signature',             $args['digital_signature'],                                   $enrollment_id );
-    update_field( 'participation_type',            $args['participation_type'],                                   $enrollment_id );
-    update_field( 'grade',                         $args['grade'],                                                $enrollment_id );
-    
-    // physical_status — written by key; if this is also blank after testing,
-    // it is inside a group and needs the same array treatment (search group_tb_enrollment.json).
-    update_field( 'field_69c9e3f08452e', [
-        'physical_status'   => 'Not Received',
-        'enrollment_status' => 'Pending',
-    ], $enrollment_id );
-
-    // Singlet group — must write parent group as array; sub-field key writes silently fail.
-    update_field( 'field_69c9de8888649', [
-        'singlet_requested'    => $args['singlet_requested'] === 'Yes' ? 1 : 0,
-        'singlet_sizing_group' => $args['singlet_sizing_group'],
-        'singlet_size'         => $args['singlet_size'],
-        'singlet_status'       => $args['singlet_requested'] === 'Yes' ? 'Ordered' : 'Not Needed',
-    ], $enrollment_id );
-    
-    return $enrollment_id;
-}
+     $defaults = [
+         'athlete_id'             => 0,
+         'family_id'              => 0,
+         'application_id'         => 0,
+         'season_id'              => 0,
+         'new_returning'          => 'New Athlete',
+         'eligibility_confirmed'  => false,
+         'participation_type'     => 'Athlete',
+         'grade'                  => '',
+         'singlet_requested'      => 0,
+         'singlet_sizing_group'   => '',
+         'singlet_size'           => '',
+         'submitted_by'           => 0,
+         'digital_signature'      => '',
+         'payment_status'         => 'Not Received',
+     ];
+     $args = wp_parse_args( $args, $defaults );
+ 
+     $athlete_post  = get_post( $args['athlete_id'] );
+     $athlete_title = $athlete_post ? $athlete_post->post_title : 'Athlete ' . $args['athlete_id'];
+ 
+     $enrollment_id = wp_insert_post( [
+         'post_title'  => "$athlete_title — 2026 XC",
+         'post_type'   => 'enrollment',
+         'post_status' => 'publish',
+     ] );
+ 
+     if ( is_wp_error( $enrollment_id ) ) {
+         error_log( 'TB Registration: Failed to create Enrollment post — ' . $enrollment_id->get_error_message() );
+         return false;
+     }
+ 
+     // Relationships — top-level post object fields.
+     update_field( 'season',               $args['season_id'],                       $enrollment_id );
+     update_field( 'application',          $args['application_id'],                  $enrollment_id );
+     update_field( 'family',               $args['family_id'],                       $enrollment_id );
+     update_field( 'athlete',              $args['athlete_id'],                      $enrollment_id );
+ 
+     // Top-level fields.
+     update_field( 'new_returning',        $args['new_returning'],                   $enrollment_id );
+     update_field( 'eligibility_confirmed',$args['eligibility_confirmed'] ? 1 : 0,  $enrollment_id );
+     update_field( 'submitted_by',         $args['submitted_by'],                    $enrollment_id );
+     update_field( 'digital_signature',    $args['digital_signature'],               $enrollment_id );
+     update_field( 'participation_type',   $args['participation_type'],              $enrollment_id );
+     update_field( 'grade',                $args['grade'],                           $enrollment_id );
+ 
+     // Status group — payment_status, physical_status, enrollment_status are all sub-fields.
+     update_field( 'field_69c9e3f08452e', [
+         'payment_status'    => $args['payment_status'],
+         'physical_status'   => 'Not Received',
+         'enrollment_status' => 'Pending',
+     ], $enrollment_id );
+ 
+     // Singlet group.
+     update_field( 'field_69c9de8888649', [
+         'singlet_requested'    => $args['singlet_requested'] === 'Yes' ? 1 : 0,
+         'singlet_sizing_group' => $args['singlet_sizing_group'],
+         'singlet_size'         => $args['singlet_size'],
+         'singlet_status'       => $args['singlet_requested'] === 'Yes' ? 'Ordered' : 'Not Needed',
+     ], $enrollment_id );
+ 
+     return $enrollment_id;
+ }
 
 
 // =============================================================================
@@ -490,6 +491,7 @@ function tb_handle_new_family( $entry, $form ) {
             'singlet_size'          => rgar( $nested_entry, '21' ),
             'submitted_by'          => $user_id,
             'digital_signature'     => rgar( $entry, '31' ),
+            'payment_status'        => $payment_method_field === 'Credit Card' ? 'Paid' : 'Not Received',
         ] );
     }
 }
@@ -545,139 +547,133 @@ function tb_handle_new_family( $entry, $form ) {
  * @param  array $form   GF form.
  */
 function tb_handle_returning_family( $entry, $form ) {
-    $family_id = (int) rgar( $entry, '60' ); // GPPA-resolved Family post ID
-    $season_id = (int) rgar( $entry, '2' ) ?: (int) get_option( 'tb_active_season_id' );
-    $user_id   = (int) rgar( $entry, '3' ) ?: get_current_user_id();
-        
-    // Guard: abort if CC payment failed — prevents orphaned posts.
-    if ( rgar( $entry, '55' ) === 'Credit Card'
-         && in_array( $entry['payment_status'] ?? '', [ 'Failed', 'Void' ] ) ) {
-        error_log( 'TB Registration: Returning Family CC payment failed — aborting post creation. Entry ID: ' . $entry['id'] );
-        return;
-    }
-
-    if ( ! $family_id ) {
-        error_log( 'TB Registration: Returning Family submission missing Family Post ID (field 60). Entry ID: ' . $entry['id'] );
-        return;
-    }
-
-    // -------------------------------------------------------------------------
-    // 1. Update Family post (address + guardians only — NOT family_display_name)
-    // -------------------------------------------------------------------------
-    update_field( 'street_address',    rgar( $entry, '5' ),          $family_id );
-    update_field( 'city',              rgar( $entry, '6' ),          $family_id );
-    update_field( 'state',             rgar( $entry, '7' ),          $family_id );
-    update_field( 'zip_code',          rgar( $entry, '62' ),         $family_id );
-    update_field( 'parents_guardians', tb_build_guardians( $entry ), $family_id );
-
-    // -------------------------------------------------------------------------
-    // 2. Create Application post
-    // -------------------------------------------------------------------------
-    $family_post  = get_post( $family_id );
-    $family_title = $family_post ? $family_post->post_title : 'Family ' . $family_id;
-
-    $application_id = wp_insert_post( [
-        'post_title'  => $family_title . ' — 2026 XC Registration',
-        'post_type'   => 'application',
-        'post_status' => 'publish',
-    ] );
-
-    if ( is_wp_error( $application_id ) ) {
-        error_log( 'TB Registration: Failed to create Application post (Returning Family) — ' . $application_id->get_error_message() );
-        return;
-    }
-
-    update_field( 'family',                $family_id,                      $application_id );
-    update_field( 'season',                $season_id,                      $application_id );
-    update_field( 'submission_date',       date( 'Y-m-d' ),                 $application_id );
-    update_field( 'submitted_by',          $user_id,                        $application_id );
-    update_field( 'new_returning',         'Returning',                     $application_id );
-    update_field( 'application_status',    'Completed',                     $application_id );
-    $payment_method_field = rgar( $entry, '55' );
-    update_field( 'payment_status', $payment_method_field === 'Credit Card' ? 'Paid' : 'Not Received', $application_id );
-    
-    // Calculate from form product fields — reliable for both CC and Check/Cash,
-    // independent of Stripe's async entry update timing.
-    $payment_amount = (float) GFCommon::get_order_total( $form, $entry );
-    update_field( 'payment_amount', $payment_amount, $application_id );
-    update_field( 'gravity_form_entry_id', $entry['id'],                    $application_id );
-
-    update_field( 'digital_signature',     rgar( $entry, '35' ),            $application_id );
-    update_field( 'payment_method',        rgar( $entry, '55' ),            $application_id );
-
-    // -------------------------------------------------------------------------
-    // 3. Process returning athlete entries (Form 14)
-    //    — Athlete post already exists; do NOT create a new one.
-    //    — Update grade and participation_type on the existing Athlete post.
-    //    — Create Enrollment post only.
-    // -------------------------------------------------------------------------
-    $returning_entries = tb_get_nested_entries( $entry, 24 );
-
-    foreach ( $returning_entries as $nested_entry ) {
-        $athlete_id = (int) rgar( $nested_entry, '2' ); // GPPA-resolved athlete post ID
-
-        if ( ! $athlete_id ) {
-            error_log( 'TB Registration: Returning athlete nested entry missing athlete post ID (field 2). Skipping.' );
-            continue;
-        }
-
-        // Update mutable fields on the existing Athlete post.
-        update_field( 'grade',              rgar( $nested_entry, '8' ),           $athlete_id );
-        update_field( 'participation_type', rgar( $nested_entry, '9' ) ?: 'Athlete', $athlete_id );
-
-        tb_create_enrollment_post( [
-            'athlete_id'            => $athlete_id,
-            'family_id'             => $family_id,
-            'application_id'        => $application_id,
-            'season_id'             => $season_id,
-            'new_returning'         => 'Returning Athlete',
-            'eligibility_confirmed' => tb_returning_athlete_eligibility_confirmed( $nested_entry ),
-            'participation_type'    => rgar( $nested_entry, '9' ) ?: 'Athlete',
-            'grade'                 => rgar( $nested_entry, '8' ),
-            'singlet_requested'     => rgar( $nested_entry, '20' ) === '1' ? 'Yes' : 'No',
-            'singlet_sizing_group'  => rgar( $nested_entry, '21' ),
-            'singlet_size'          => rgar( $nested_entry, '22' ),
-            'submitted_by'          => $user_id,
-            'digital_signature'     => rgar( $entry, '35' ),
-        ] );
-    }
-
-    // -------------------------------------------------------------------------
-    // 4. Process new athlete entries on a returning family form (Form 11)
-    //    — Same as new family athlete processing.
-    // -------------------------------------------------------------------------
-    $new_athlete_entries = tb_get_nested_entries( $entry, 27 );
-
-    foreach ( $new_athlete_entries as $nested_entry ) {
-        $athlete_id = tb_create_athlete_post( $nested_entry, $family_id );
-        if ( ! $athlete_id ) {
-            continue;
-        }
-        
-        // IDs group — read existing family_id from Family post and copy to new Athlete.
-        $existing_ids = get_field( 'ids', $family_id );
-        update_field( 'field_69c9da2cbac29', [
-            'family_id'    => $existing_ids['family_id'] ?? '',
-            'milesplit_id' => $existing_ids['milesplit_id'] ?? '',
-        ], $athlete_id );
-
-        tb_create_enrollment_post( [
-            'athlete_id'            => $athlete_id,
-            'family_id'             => $family_id,
-            'application_id'        => $application_id,
-            'season_id'             => $season_id,
-            'new_returning'         => 'New Athlete',
-            'eligibility_confirmed' => tb_new_athlete_eligibility_confirmed( $nested_entry ),
-            'participation_type'    => rgar( $nested_entry, '1' ) ?: 'Athlete',
-            'grade'                 => rgar( $nested_entry, '8' ),
-            'singlet_requested'     => rgar( $nested_entry, '19' ) === '1' ? 'Yes' : 'No',
-            'singlet_sizing_group'  => rgar( $nested_entry, '20' ),
-            'singlet_size'          => rgar( $nested_entry, '21' ),
-            'submitted_by'          => $user_id,
-            'digital_signature'     => rgar( $entry, '35' ),
-        ] );
-    }
-}
+     $family_id = (int) rgar( $entry, '60' );
+     $season_id = (int) rgar( $entry, '2' ) ?: (int) get_option( 'tb_active_season_id' );
+     $user_id   = (int) rgar( $entry, '3' ) ?: get_current_user_id();
+ 
+     // Guard: abort if CC payment failed — prevents orphaned posts.
+     if ( rgar( $entry, '55' ) === 'Credit Card'
+          && in_array( $entry['payment_status'] ?? '', [ 'Failed', 'Void' ] ) ) {
+         error_log( 'TB Registration: Returning Family CC payment failed — aborting post creation. Entry ID: ' . $entry['id'] );
+         return;
+     }
+ 
+     if ( ! $family_id ) {
+         error_log( 'TB Registration: Returning Family submission missing Family Post ID (field 60). Entry ID: ' . $entry['id'] );
+         return;
+     }
+ 
+     // -------------------------------------------------------------------------
+     // 1. Update Family post (address + guardians only — NOT family_display_name)
+     // -------------------------------------------------------------------------
+     update_field( 'street_address',    rgar( $entry, '5' ),          $family_id );
+     update_field( 'city',              rgar( $entry, '6' ),          $family_id );
+     update_field( 'state',             rgar( $entry, '7' ),          $family_id );
+     update_field( 'zip_code',          rgar( $entry, '62' ),         $family_id );
+     update_field( 'parents_guardians', tb_build_guardians( $entry ), $family_id );
+ 
+     // -------------------------------------------------------------------------
+     // 2. Create Application post
+     // -------------------------------------------------------------------------
+     $family_post  = get_post( $family_id );
+     $family_title = $family_post ? $family_post->post_title : 'Family ' . $family_id;
+ 
+     $application_id = wp_insert_post( [
+         'post_title'  => $family_title . ' — 2026 XC Registration',
+         'post_type'   => 'application',
+         'post_status' => 'publish',
+     ] );
+ 
+     if ( is_wp_error( $application_id ) ) {
+         error_log( 'TB Registration: Failed to create Application post (Returning Family) — ' . $application_id->get_error_message() );
+         return;
+     }
+ 
+     update_field( 'family',             $family_id,    $application_id );
+     update_field( 'season',             $season_id,    $application_id );
+     update_field( 'submission_date',    date('Y-m-d'), $application_id );
+     update_field( 'submitted_by',       $user_id,      $application_id );
+     update_field( 'new_returning',      'Returning',   $application_id );
+     update_field( 'application_status', 'Completed',   $application_id );
+ 
+     $payment_method_field = rgar( $entry, '55' );
+     update_field( 'payment_status', $payment_method_field === 'Credit Card' ? 'Paid' : 'Not Received', $application_id );
+ 
+     $payment_amount = (float) GFCommon::get_order_total( $form, $entry );
+     update_field( 'payment_amount',        $payment_amount,      $application_id );
+     update_field( 'gravity_form_entry_id', $entry['id'],         $application_id );
+     update_field( 'digital_signature',     rgar( $entry, '35' ), $application_id );
+     update_field( 'payment_method',        rgar( $entry, '55' ), $application_id );
+ 
+     // -------------------------------------------------------------------------
+     // 3. Process returning athlete entries (Form 14)
+     // -------------------------------------------------------------------------
+     $returning_entries = tb_get_nested_entries( $entry, 24 );
+ 
+     foreach ( $returning_entries as $nested_entry ) {
+         $athlete_id = (int) rgar( $nested_entry, '2' );
+ 
+         if ( ! $athlete_id ) {
+             error_log( 'TB Registration: Returning athlete nested entry missing athlete post ID (field 2). Skipping.' );
+             continue;
+         }
+ 
+         update_field( 'grade',              rgar( $nested_entry, '8' ),              $athlete_id );
+         update_field( 'participation_type', rgar( $nested_entry, '9' ) ?: 'Athlete', $athlete_id );
+ 
+         tb_create_enrollment_post( [
+             'athlete_id'            => $athlete_id,
+             'family_id'             => $family_id,
+             'application_id'        => $application_id,
+             'season_id'             => $season_id,
+             'new_returning'         => 'Returning Athlete',
+             'eligibility_confirmed' => tb_returning_athlete_eligibility_confirmed( $nested_entry ),
+             'participation_type'    => rgar( $nested_entry, '9' ) ?: 'Athlete',
+             'grade'                 => rgar( $nested_entry, '8' ),
+             'singlet_requested'     => rgar( $nested_entry, '20' ) === '1' ? 'Yes' : 'No',
+             'singlet_sizing_group'  => rgar( $nested_entry, '21' ),
+             'singlet_size'          => rgar( $nested_entry, '22' ),
+             'submitted_by'          => $user_id,
+             'digital_signature'     => rgar( $entry, '35' ),
+             'payment_status'        => $payment_method_field === 'Credit Card' ? 'Paid' : 'Not Received',
+         ] );
+     }
+ 
+     // -------------------------------------------------------------------------
+     // 4. Process new athlete entries on a returning family form (Form 11)
+     // -------------------------------------------------------------------------
+     $new_athlete_entries = tb_get_nested_entries( $entry, 27 );
+ 
+     foreach ( $new_athlete_entries as $nested_entry ) {
+         $athlete_id = tb_create_athlete_post( $nested_entry, $family_id );
+         if ( ! $athlete_id ) {
+             continue;
+         }
+ 
+         $existing_ids = get_field( 'ids', $family_id );
+         update_field( 'field_69c9da2cbac29', [
+             'family_id'    => $existing_ids['family_id'] ?? '',
+             'milesplit_id' => $existing_ids['milesplit_id'] ?? '',
+         ], $athlete_id );
+ 
+         tb_create_enrollment_post( [
+             'athlete_id'            => $athlete_id,
+             'family_id'             => $family_id,
+             'application_id'        => $application_id,
+             'season_id'             => $season_id,
+             'new_returning'         => 'New Athlete',
+             'eligibility_confirmed' => tb_new_athlete_eligibility_confirmed( $nested_entry ),
+             'participation_type'    => rgar( $nested_entry, '1' ) ?: 'Athlete',
+             'grade'                 => rgar( $nested_entry, '8' ),
+             'singlet_requested'     => rgar( $nested_entry, '19' ) === '1' ? 'Yes' : 'No',
+             'singlet_sizing_group'  => rgar( $nested_entry, '20' ),
+             'singlet_size'          => rgar( $nested_entry, '21' ),
+             'submitted_by'          => $user_id,
+             'digital_signature'     => rgar( $entry, '35' ),
+             'payment_status'        => $payment_method_field === 'Credit Card' ? 'Paid' : 'Not Received',
+         ] );
+     }
+ }
 
 
 // =============================================================================
