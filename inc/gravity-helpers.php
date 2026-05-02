@@ -448,7 +448,7 @@ function tb_handle_new_family( $entry, $form ) {
     update_field( 'submitted_by',          $user_id,                        $application_id );
     update_field( 'new_returning',         'New',                           $application_id );
     update_field( 'application_status',    'Completed',                     $application_id );
-    $payment_method_field = rgar( $entry, '48' ); // NF — or '55' for RF
+    $payment_method_field = rgar( $entry, '48' );
     update_field( 'payment_status', $payment_method_field === 'Credit Card' ? 'Paid' : 'Not Received', $application_id );
     // Calculate from form product fields — reliable for both CC and Check/Cash,
     // independent of Stripe's async entry update timing.
@@ -593,7 +593,7 @@ function tb_handle_returning_family( $entry, $form ) {
     update_field( 'submitted_by',          $user_id,                        $application_id );
     update_field( 'new_returning',         'Returning',                     $application_id );
     update_field( 'application_status',    'Completed',                     $application_id );
-    $payment_method_field = rgar( $entry, '48' ); // NF — or '55' for RF
+    $payment_method_field = rgar( $entry, '55' );
     update_field( 'payment_status', $payment_method_field === 'Credit Card' ? 'Paid' : 'Not Received', $application_id );
     
     // Calculate from form product fields — reliable for both CC and Check/Cash,
