@@ -1,5 +1,62 @@
 # CHANGELOG
 
+## 2026-05-03
+
+### Added `assets/css/templates.css` — base template styles
+
+New file providing shared CSS for all CPT archive and single templates.
+Imported from `assets/css/styles.css`.
+
+Key systems:
+- `.tb-list` / `.tb-list-header` / `.tb-list-row` / `.tb-list-link` / `.tb-col`
+  — ul/li flex-grid list replacing HTML tables across all templates. Column
+  widths are defined per-list via `--tb-cols` CSS custom property, inherited
+  by both header and data rows automatically.
+- `.tb-single` / `.tb-single-header` / `.tb-single-headline` /
+  `.tb-single-image` / `.tb-single-meta` / `.tb-single-section`
+  — base classes for single CPT templates.
+- `.tb-archive` / `.tb-archive-header` / `.tb-archive-filters`
+  — base classes for archive templates.
+- `.tb-status` / `.tb-status--current` / `--future` / `--past`
+  — status badge pills.
+
+Per-list column definitions committed for coaches, meets, roster, and seasons lists.
+
+---
+
+### Added `archive-athletic_season.php`
+
+New archive template for the `athletic_season` CPT.
+- Columns: Season | Sport | Dates | Status
+- Data attributes on each row: `data-sport`, `data-status`, `data-year`
+- Sorted by `start_date` descending
+- Uses full ul/li list system with `.tb-seasons-list` column definition
+
+---
+
+### Refactored `single-athletic_season.php`
+
+- Replaced all three section tables (coaches, meets, athletes) with ul/li
+  list structure using `.tb-coaches-list`, `.tb-meets-list`, `.tb-roster-list`
+- Added `.tb-single` base class to outer wrapper
+- Added `.tb-single-section` to all three section wrappers
+- Added `.tb-single-header` layout with `.tb-single-headline` (left) and
+  `.tb-single-header-secondary-section` (right) grouping image + CTA
+- Meta row converted from separate `<p>` tags to flex `<span>` items inside
+  `.tb-single-meta`
+- Status badge updated to use `.tb-status` base class for pill shape
+- `featured_image` corrected from `get_post_thumbnail_id()` to
+  `get_field( 'featured_image' )` — field is ACF image, not WP post thumbnail
+- Handbook CTA wrapped in `.button` class and moved into secondary header section
+
+---
+
+### Fixed `athletic_season` permalink slug
+
+ACF CPT rewrite slug updated from `season` to `seasons` in both the ACF admin
+and `acf-json/post_type_tb_athletic_season.json`. Permalinks flushed.
+
+
 ## 2026-05-02
 
 

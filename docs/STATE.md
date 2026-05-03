@@ -2,9 +2,9 @@
 
 
 ## Current Objective
-2026 XC registration is live at https://trailblazers.team/. Domain swap and
-Stripe production cutover complete as of 2026-05-02. Known post-launch bugs
-tracked in NEXT-STEPS.md backlog.
+2026 XC registration is live at https://trailblazers.team/. Post-launch bug
+backlog is tracked in NEXT-STEPS.md. Active focus has shifted to building and
+refining public-facing CPT templates.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -17,6 +17,10 @@ tracked in NEXT-STEPS.md backlog.
 - 2026 XC registration forms built and imported. See CHANGELOG.md 2026-04 and
   FORM-FIELD-MAP.md v2.3.
 - Registration hooks complete and verified. See CHANGELOG.md 2026-05.
+- `assets/css/templates.css` added — base styles for all CPT templates.
+  Imported from `assets/css/styles.css`.
+- `archive-athletic_season.php` added. `single-athletic_season.php` refactored
+  to ul/li list system with base template classes.
 
 ## Completed — Data Population
 The following have been successfully imported:
@@ -31,7 +35,7 @@ The following have been successfully imported:
 8. ✅ Applications (2024 XC and 2025 XC)
 9. ✅ Enrollments (2025 XC and 2026 TF)
 
-## Remaining — Data Population (deferred, not blocking registration)
+## Remaining — Data Population (deferred, not blocking)
 10. ⬜ Athletic Results
 11. ⬜ Athletic Records
 
@@ -109,12 +113,7 @@ The following have been successfully imported:
   - ✅ Test 3 (New Family, Check/Cash) — 2026-05-01 — all CPT writes verified:
     Family, Application, Athlete, Enrollment all fields correct
   - ✅ New Family, Credit Card — 2026-05-01 — Stripe charge confirmed, CPT
-    writes verified. payment_status writes Paid, payment_amount writes from
-    GFCommon::get_order_total(). Notification emails confirmed sending.
-  - ✅ Singlet count formula on NF Page 5 corrected — now counts athletes who
-    requested a singlet rather than mirroring total athlete count
-  - ✅ Confirmation page content added — New Family and Returning Family
-    confirmation text entered in Registration Settings → Messaging
+    writes verified.
   - ✅ Returning Family, Check/Cash — 2026-05-02 — all CPT writes verified
   - ✅ Returning Family, Credit Card — 2026-05-02 — Stripe charge confirmed, webhook delivering, CPT writes verified
 
