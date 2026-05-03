@@ -1,0 +1,390 @@
+/*
+** -----------------------------------------------------------------------
+** templates.css
+** Base styles for CPT archive and single templates.
+**
+** Convention:
+**   .tb-archive          — outer wrapper for all archive templates
+**   .tb-archive-header   — page title block at top of every archive
+**   .tb-no-data          — empty-state fallback paragraph
+**
+**   .tb-single           — outer wrapper base for all single templates
+**   .tb-single-header    — two-column header (image + headline block)
+**   .tb-single-image     — optional photo/thumbnail within header
+**   .tb-single-headline  — text column within header
+**   .tb-single-title     — h1 within headline block
+**   .tb-single-meta      — flex row of pills/labels beneath the title
+**   .tb-single-description — body text beneath meta
+**   .tb-single-section   — repeated content sections (Coaches, Roster, etc.)
+**   .tb-single-section h2 — section heading with green underline accent
+**
+**   .tb-list             — base <ul> for all data lists
+**   .tb-list-header      — <li> containing column label <span>s
+**   .tb-list-row         — <li> containing a .tb-list-link
+**   .tb-list-link        — <a> wrapping all column <span>s, lays out grid
+**   .tb-col              — base column <span> (used in header + rows)
+**
+**   Per-list column widths are defined via --tb-cols on a specific class:
+**     .tb-coaches-list { --tb-cols: 2fr 1fr 1fr; }
+**   Both .tb-list-header and .tb-list-link inherit this via var(--tb-cols).
+**
+**   .tb-status           — base status badge (add modifier for color)
+**   .tb-status--current  — green badge
+**   .tb-status--future   — orange badge
+**   .tb-status--past     — gray badge
+**   .tb-status--active   — alias for current
+**   .tb-status--inactive — alias for past
+** -----------------------------------------------------------------------
+*/
+
+
+/* =========================================================================
+   SHARED UTILITIES
+   ========================================================================= */
+
+.tb-no-data {
+  color: var(--body-color);
+  font-style: italic;
+  padding: 0.75rem 0;
+  margin: 0;
+}
+
+/*
+ * Status badges
+ * Example: <span class="tb-status tb-status--current">Current</span>
+ */
+.tb-status {
+  display: inline-block;
+  font-family: var(--heading-font);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 0.3em 0.65em;
+  border-radius: 0.25rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.tb-status--current,
+.tb-status--active   { background: var(--medium-green); color: white; }
+
+.tb-status--future   { background: var(--tb-orange);    color: white; }
+
+.tb-status--past,
+.tb-status--inactive { background: #ccc;                color: #555;  }
+
+.tb-link-action {
+  font-family: var(--heading-font);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--medium-green);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+.tb-link-action:hover { color: var(--tb-orange); }
+
+
+/* =========================================================================
+   DATA LIST
+   Replaces <table> for all archive and within-single data displays.
+
+   Structure:
+     <ul class="tb-list tb-coaches-list">
+       <li class="tb-list-header">
+         <span class="tb-col">Name</span>
+         <span class="tb-col">Title</span>
+         <span class="tb-col">Role</span>
+       </li>
+       <li class="tb-list-row" data-name="…" data-role="…">
+         <a href="…" class="tb-list-link">
+           <span class="tb-col">Coach Name</span>
+           <span class="tb-col">Head Coach</span>
+           <span class="tb-col">Varsity</span>
+         </a>
+       </li>
+     </ul>
+   ========================================================================= */
+
+.tb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: white;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+/* Header row */
+.tb-list-header {
+  display: grid;
+  grid-template-columns: var(--tb-cols, 1fr);
+  gap: 1rem;
+  padding: 0.55rem 1rem;
+  background: var(--medium-green);
+}
+
+.tb-list-header .tb-col {
+  font-family: var(--heading-font);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: white;
+  white-space: nowrap;
+}
+
+/* Data row */
+.tb-list-row {
+  border-bottom: 1px solid #eee;
+}
+.tb-list-row:last-child {
+  border-bottom: none;
+}
+.tb-list-row:hover {
+  background: #f4f8f0;
+}
+
+/* Full-width link that lays out columns */
+.tb-list-link {
+  display: grid;
+  grid-template-columns: var(--tb-cols, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+}
+
+.tb-list-link .tb-col {
+  font-size: 0.92rem;
+  color: #444;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+/* First column is the primary label */
+.tb-list-link .tb-col:first-child {
+  font-weight: 600;
+  color: var(--dark-green);
+}
+.tb-list-row:hover .tb-list-link .tb-col:first-child {
+  color: var(--tb-orange);
+}
+
+/* Horizontal scroll container for narrow viewports */
+.tb-list-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .tb-list-header,
+  .tb-list-link {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+}
+
+
+/* =========================================================================
+   PER-LIST COLUMN DEFINITIONS
+   Set --tb-cols on each specific list class.
+   Both .tb-list-header and .tb-list-link inherit this automatically.
+   ========================================================================= */
+
+/* Coaches — Name | Title | Role */
+.tb-coaches-list { --tb-cols: 2fr 1.5fr 1.5fr; }
+
+/* Meet Schedule — Meet | Date | Location | Results */
+.tb-meets-list   { --tb-cols: 2fr 1.5fr 2fr 1fr; }
+
+/* Athlete Roster — Athlete | Grade | Participation */
+.tb-roster-list  { --tb-cols: 2fr 1fr 1.5fr; }
+
+/* Season Archive — Season | Sport | Dates | Status */
+.tb-seasons-list { --tb-cols: 2fr 1fr 2fr 1fr; }
+
+
+/* =========================================================================
+   ARCHIVE BASE
+   ========================================================================= */
+
+.tb-archive {
+  padding: 2rem 0 3rem;
+}
+
+.tb-archive-header {
+  margin-bottom: 1.75rem;
+}
+.tb-archive-header h1 {
+  font-family: var(--heading-font);
+  font-size: 2rem;
+  color: var(--dark-green);
+  margin: 0 0 0.25rem;
+  line-height: 1.2;
+}
+.tb-archive-header p {
+  color: var(--body-color);
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tb-archive-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.tb-archive-filters select,
+.tb-archive-filters input[type="text"] {
+  font-family: var(--body-font);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background: white;
+  color: #444;
+  min-width: 140px;
+}
+.tb-archive-filters select:focus,
+.tb-archive-filters input[type="text"]:focus {
+  outline: none;
+  border-color: var(--medium-green);
+}
+
+
+/* =========================================================================
+   SINGLE BASE
+   ========================================================================= */
+
+.tb-single {
+     background: #f1f2f3;
+   }
+
+/* Header */
+.tb-single-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 2rem 0;
+  align-items: flex-start;
+}
+@media (min-width: 700px) {
+  .tb-single-header {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 3rem 3rem 0;
+  }
+}
+
+.tb-single-image {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 240px;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: #e0e8d8;
+}
+.tb-single-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.tb-single-headline {
+  flex: 1;
+  min-width: 0;
+}
+
+.tb-single-title {
+  font-family: var(--heading-font);
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-weight: 200;
+  letter-spacing: -0.02em;
+  color: var(--dark-green);
+  margin: -0.5rem 0 0;
+  padding: 0;
+  line-height: 1.15;
+}
+
+.tb-single-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+  color: var(--body-color);
+}
+.tb-single-meta .tb-meta-sport { font-weight: 600; color: var(--dark-green); }
+.tb-single-meta .tb-meta-year  { color: #999; }
+
+.tb-single-description {
+  color: var(--body-color);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.65;
+  margin-bottom: 1rem;
+}
+.tb-single-description p { margin: 0 0 0.75em; }
+.tb-single-description p:last-child { margin-bottom: 0; }
+
+/*
+ * CTA / handbook link row beneath description
+ */
+.tb-single-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.tb-single-cta a {
+  width: 100%;
+  text-align: center;
+}
+
+
+/* =========================================================================
+ SINGLE SECTIONS
+ ========================================================================= */
+
+.tb-single-section {
+  padding: 1rem 2rem;
+}
+@media (min-width: 640px) {
+  .tb-single-section {
+    padding: 1.5rem 3rem;
+  }
+}
+
+.tb-single-section > h2 {
+  font-family: var(--heading-font);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--dark-green);
+  margin: 0 0 0.2rem;
+  padding: 0;
+  line-height: 2rem;
+}
+
+.tb-single-section > h3 {
+  font-family: var(--heading-font);
+  font-size: 1rem;
+  color: var(--dark-green);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.tb-section-note {
+  font-size: 0.85rem;
+  color: var(--body-color);
+  margin: 0 0 0.75rem;
+  font-style: italic;
+}

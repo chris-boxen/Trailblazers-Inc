@@ -7,6 +7,8 @@
     "advanced_configuration": true,
     "import_source": "",
     "import_date": "",
+    "allow_ai_access": false,
+    "ai_description": "",
     "labels": {
         "name": "Athletic Seasons",
         "singular_name": "Athletic Season",
@@ -71,11 +73,11 @@
     "taxonomies": [
         "sport"
     ],
-    "has_archive": false,
-    "has_archive_slug": "",
+    "has_archive": true,
+    "has_archive_slug": "seasons",
     "rewrite": {
         "permalink_rewrite": "custom_permalink",
-        "slug": "season",
+        "slug": "seasons",
         "with_front": "1",
         "feeds": "0",
         "pages": "1"
@@ -86,5 +88,5 @@
     "delete_with_user": false,
     "register_meta_box_cb": "",
     "enter_title_here": "",
-    "modified": 1774737844
+    "modified": 1777777036
 }
