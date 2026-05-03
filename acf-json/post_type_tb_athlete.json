@@ -7,6 +7,8 @@
     "advanced_configuration": true,
     "import_source": "",
     "import_date": "",
+    "allow_ai_access": false,
+    "ai_description": "",
     "labels": {
         "name": "Athletes",
         "singular_name": "Athlete",
@@ -69,9 +71,10 @@
     ],
     "taxonomies": "",
     "has_archive": true,
-    "has_archive_slug": "",
+    "has_archive_slug": "athletes",
     "rewrite": {
-        "permalink_rewrite": "post_type_key",
+        "permalink_rewrite": "custom_permalink",
+        "slug": "athletes",
         "with_front": "1",
         "feeds": "0",
         "pages": "1"
@@ -82,5 +85,5 @@
     "delete_with_user": false,
     "register_meta_box_cb": "",
     "enter_title_here": "",
-    "modified": 1774747828
+    "modified": 1777836078
 }

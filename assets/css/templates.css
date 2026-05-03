@@ -107,6 +107,10 @@
      </ul>
    ========================================================================= */
 
+.tb-list-wrap {
+  border-radius: 0.25rem;
+}
+
 .tb-list {
   list-style: none;
   margin: 0;
@@ -204,10 +208,19 @@
 .tb-meets-list   { --tb-cols: 2fr 1.5fr 2fr 1fr; }
 
 /* Athlete Roster — Athlete | Grade | Participation */
-.tb-roster-list  { --tb-cols: 2fr 1fr 1.5fr; }
+.tb-roster-list-wrap  { --tb-cols: 2fr 1fr 1.5fr; }
 
 /* Season Archive — Season | Sport | Dates | Status */
 .tb-seasons-list { --tb-cols: 2fr 1fr 2fr 1fr; }
+
+/* Athlete Archive — Name | Gender | Grad Year | Status | Sport */
+.tb-athlete-list-wrap { --tb-cols: 2.5fr 1fr 1fr 1fr 1.5fr; }
+ 
+/* Athlete PR/SR Records — Type | Event | Result | Meet | Date */
+.tb-records-list     { --tb-cols: 1fr 1.5fr 1.5fr 2fr 1.5fr; }
+ 
+/* Per-meet results (within single-athlete) — Event | Result | Place */
+.tb-results-list     { --tb-cols: 2fr 1.5fr 1fr; }
 
 
 /* =========================================================================
@@ -233,7 +246,7 @@
   font-weight: 200;
   letter-spacing: -0.02em;
   color: var(--dark-green);
-  margin: -0.5rem 0 0;
+  margin: -1rem 0 0;
   padding: 0;
   line-height: 1.15;
 }

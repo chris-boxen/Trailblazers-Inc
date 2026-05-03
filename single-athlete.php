@@ -36,30 +36,29 @@ while ( have_posts() ) :
 	// -------------------------------------------------------------------------
 	// ATHLETE CORE FIELDS
 	// -------------------------------------------------------------------------
-	$first_name      = get_field( 'first_name', $athlete_id );
-	$last_name       = get_field( 'last_name', $athlete_id );
-	$preferred_name  = get_field( 'preferred_name', $athlete_id );
-	$family_id       = get_field( 'family', $athlete_id ); // returns post ID
-	$milesplit_id    = get_field( 'milesplit_id', $athlete_id );
-	$athletic_net_id = get_field( 'athletic_net_id', $athlete_id );
-	$display_name    = $preferred_name ?: $first_name;
-	$full_name       = trim( $display_name . ' ' . $last_name );
-	$photo_id        = get_post_thumbnail_id( $athlete_id );
+	$names        = get_field( 'names',        $athlete_id );
+	$demographics = get_field( 'demographics', $athlete_id );
+	$status_data  = get_field( 'status',       $athlete_id );
+	
+	$first_name      = $names['first_name']        ?? '';
+	$last_name       = $names['last_name']         ?? '';
+	$preferred_name  = $names['preferred_name']    ?? '';
+	$family_id       = get_field( 'family',          $athlete_id ); // top-level
+	$milesplit_id    = get_field( 'milesplit_id',     $athlete_id ); // top-level
+	$athletic_net_id = $demographics['athletic_net_id'] ?? '';
+	$photo_id        = get_field( 'featured_image',  $athlete_id ); // top-level
+	
+	$display_name   = $preferred_name ?: $first_name;
+	$full_name      = trim( $display_name . ' ' . $last_name );
+	$family_display = $family_id ? get_the_title( $family_id ) : '';
 
-	// Sport taxonomy terms
 	$sports = get_the_terms( $athlete_id, 'sport' );
 
-	// Family display name
-	$family_display = '';
-	if ( $family_id ) {
-		$family_display = get_field( 'family_display_name', $family_id );
-	}
-
 	// -------------------------------------------------------------------------
-	// ENROLLMENTS — pull all enrollments for this athlete, ordered by season
-	// Used to build season context for results grouping
+	// SEASONS MAP — build via Enrollment
+	// Collect enrollments for this athlete; for each, pull season flags.
 	// -------------------------------------------------------------------------
-	$enrollment_query = new WP_Query( [
+	$enrollments_query = new WP_Query( [
 		'post_type'      => 'enrollment',
 		'posts_per_page' => -1,
 		'post_status'    => 'publish',
@@ -72,76 +71,74 @@ while ( have_posts() ) :
 		],
 	] );
 
-	// Build a map of season_id => enrollment + season data
-	$seasons_map = [];
-	if ( $enrollment_query->have_posts() ) {
-		foreach ( $enrollment_query->posts as $enrollment ) {
+	$seasons_map = []; // season_id => season metadata + flags
+	if ( $enrollments_query->have_posts() ) {
+		foreach ( $enrollments_query->posts as $enrollment ) {
 			$season_id = get_field( 'season', $enrollment->ID );
-			if ( ! $season_id ) continue;
+			if ( ! $season_id || isset( $seasons_map[ $season_id ] ) ) continue;
 
 			$seasons_map[ $season_id ] = [
-				'enrollment_id'              => $enrollment->ID,
-				'grade'                      => get_field( 'grade', $enrollment->ID ),
-				'participation_type'         => get_field( 'participation_type', $enrollment->ID ),
-				'new_returning'              => get_field( 'new_returning', $enrollment->ID ),
-				'season_title'               => get_field( 'season_title', $season_id ),
-				'season_start'               => get_field( 'start_date', $season_id ),
-				// Season feature flags (sub-fields of customize_data group — directly queryable)
-				'results_enabled'            => get_field( 'results_enabled', $season_id ),
-				'results_unavailable_message'=> get_field( 'results_unavailable_message', $season_id ),
-				'link_milesplit'             => get_field( 'link_milesplit', $season_id ),
-				'link_athletic_net'          => get_field( 'link_athletic_net', $season_id ),
+				'season_title'              => get_field( 'season_title', $season_id ),
+				'results_enabled'           => get_field( 'results_enabled', $season_id ),
+				'results_unavailable_message' => get_field( 'results_unavailable_message', $season_id ),
+				'link_milesplit'            => get_field( 'link_milesplit', $season_id ),
+				'link_athletic_net'         => get_field( 'link_athletic_net', $season_id ),
+				'start_date'                => get_field( 'start_date', $season_id ),
 			];
 		}
-		// Sort seasons by start date descending (most recent first)
-		uasort( $seasons_map, function( $a, $b ) {
-			return strcmp( $b['season_start'], $a['season_start'] );
-		} );
 	}
 	wp_reset_postdata();
 
+	// Sort seasons by start_date descending (most recent first)
+	uasort( $seasons_map, function( $a, $b ) {
+		$ts_a = $a['start_date'] ? strtotime( $a['start_date'] ) : 0;
+		$ts_b = $b['start_date'] ? strtotime( $b['start_date'] ) : 0;
+		return $ts_b - $ts_a;
+	} );
+
 	// -------------------------------------------------------------------------
-	// RESULTS — pull all results for this athlete
-	// TEC date from _EventStartDate postmeta
+	// RESULTS — query all results for this athlete, group by season → meet
 	// -------------------------------------------------------------------------
-	$results_query = new WP_Query( [
-		'post_type'      => 'athletic_result',
-		'posts_per_page' => -1,
-		'post_status'    => 'publish',
-		'meta_query'     => [
-			[
-				'key'     => 'athlete',
-				'value'   => $athlete_id,
-				'compare' => '=',
+	$results_grouped = []; // season_id => [ meet_id => [ result rows ] ]
+
+	if ( ! empty( $seasons_map ) ) {
+		$results_query = new WP_Query( [
+			'post_type'      => 'athletic_result',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'meta_query'     => [
+				[
+					'key'     => 'athlete',
+					'value'   => $athlete_id,
+					'compare' => '=',
+				],
 			],
-		],
-	] );
+		] );
 
-	// Group results: season_id => meet_id => [ results ]
-	$results_grouped = [];
-	if ( $results_query->have_posts() ) {
-		foreach ( $results_query->posts as $result ) {
-			$meet_id = get_field( 'meet', $result->ID );
-			if ( ! $meet_id ) continue;
+		if ( $results_query->have_posts() ) {
+			foreach ( $results_query->posts as $result ) {
+				$meet_id = get_field( 'meet', $result->ID );
+				if ( ! $meet_id ) continue;
 
-			$season_id = get_field( 'season', $meet_id );
-			if ( ! $season_id ) continue;
+				$season_id = get_field( 'season', $meet_id );
+				if ( ! $season_id ) continue;
 
-			// TEC date from _EventStartDate postmeta
-			$raw_date  = get_post_meta( $meet_id, '_EventStartDate', true );
-			$meet_date = $raw_date ? date( 'Y-m-d', strtotime( $raw_date ) ) : '';
+				// TEC date from _EventStartDate postmeta
+				$raw_date  = get_post_meta( $meet_id, '_EventStartDate', true );
+				$meet_date = $raw_date ? date( 'Y-m-d', strtotime( $raw_date ) ) : '';
 
-			$results_grouped[ $season_id ][ $meet_id ][] = [
-				'result_id'      => $result->ID,
-				'event_name'     => get_field( 'event_name', $result->ID ),
-				'result_display' => get_field( 'result_display', $result->ID ),
-				'place'          => get_field( 'place', $result->ID ),
-				'meet_name'      => get_the_title( $meet_id ),
-				'meet_date'      => $meet_date,
-			];
+				$results_grouped[ $season_id ][ $meet_id ][] = [
+					'result_id'      => $result->ID,
+					'event_name'     => get_field( 'event_name', $result->ID ),
+					'result_display' => get_field( 'result_display', $result->ID ),
+					'place'          => get_field( 'place', $result->ID ),
+					'meet_name'      => get_the_title( $meet_id ),
+					'meet_date'      => $meet_date,
+				];
+			}
 		}
+		wp_reset_postdata();
 	}
-	wp_reset_postdata();
 
 	// -------------------------------------------------------------------------
 	// RECORDS — pull PR/SR records for this athlete
@@ -185,98 +182,108 @@ while ( have_posts() ) :
 
 ?>
 
-<div class="tb-athlete">
+<div class="tb-single tb-athlete">
 
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 1: ATHLETE HEADER                                          ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section class="tb-athlete-header">
+	<section class="tb-single-header tb-athlete-header">
 
-		<?php if ( $photo_id ) : ?>
-			<div class="tb-athlete-photo">
-				<?php echo wp_get_attachment_image( $photo_id, 'medium' ); ?>
-			</div>
-		<?php endif; ?>
+		<div class="tb-single-headline tb-athlete-headline">
 
-		<div class="tb-athlete-identity">
+			<h1 class="tb-single-title tb-athlete-name">
+				<?php echo esc_html( $full_name ); ?>
+			</h1>
 
-			<h1 class="tb-athlete-name"><?php echo esc_html( $full_name ); ?></h1>
+			<div class="tb-single-meta tb-athlete-meta">
 
-			<?php if ( $sports && ! is_wp_error( $sports ) ) : ?>
-				<p class="tb-athlete-sport">
-					<?php
-					$sport_links = [];
-					foreach ( $sports as $sport ) {
+				<?php if ( $sports && ! is_wp_error( $sports ) ) : ?>
+					<?php foreach ( $sports as $sport ) :
 						$sport_url = get_term_link( $sport );
-						if ( ! is_wp_error( $sport_url ) ) {
-							$sport_links[] = '<a href="' . esc_url( $sport_url ) . '">' . esc_html( $sport->name ) . '</a>';
-						} else {
-							$sport_links[] = esc_html( $sport->name );
-						}
-					}
-					echo implode( ', ', $sport_links );
 					?>
-				</p>
+					<span class="tb-meta-sport">
+						<?php if ( ! is_wp_error( $sport_url ) ) : ?>
+							<a href="<?php echo esc_url( $sport_url ); ?>"><?php echo esc_html( $sport->name ); ?></a>
+						<?php else : ?>
+							<?php echo esc_html( $sport->name ); ?>
+						<?php endif; ?>
+					</span>
+					<?php endforeach; ?>
+				<?php endif; ?>
+
+				<?php if ( $family_display ) : ?>
+					<span class="tb-meta-family"><?php echo esc_html( $family_display ); ?></span>
+				<?php endif; ?>
+
+			</div><!-- .tb-single-meta -->
+
+		</div><!-- .tb-single-headline -->
+
+		<div class="tb-single-header-secondary-section">
+
+			<?php if ( $photo_id ) : ?>
+				<div class="tb-single-image tb-athlete-image">
+					<?php echo wp_get_attachment_image( $photo_id, 'medium' ); ?>
+				</div>
 			<?php endif; ?>
 
-			<?php if ( $family_display ) : ?>
-				<p class="tb-athlete-family"><?php echo esc_html( $family_display ); ?></p>
-			<?php endif; ?>
+		</div><!-- .tb-single-header-secondary-section -->
 
-		</div><!-- .tb-athlete-identity -->
-
-	</section><!-- .tb-athlete-header -->
+	</section><!-- .tb-single-header -->
 
 
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 2: RECORDS                                                 ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section class="tb-athlete-records">
+	<section class="tb-single-section tb-athlete-records">
 
 		<h2>Personal Records</h2>
 
 		<?php if ( empty( $records ) ) : ?>
 			<p class="tb-no-data">No records on file.</p>
 		<?php else : ?>
-			<table class="tb-table">
-				<thead>
-					<tr>
-						<th>Type</th>
-						<th>Event</th>
-						<th>Result</th>
-						<th>Meet</th>
-						<th>Date</th>
-					</tr>
-				</thead>
-				<tbody>
+			<div class="tb-list-wrap">
+				<ul class="tb-list tb-records-list">
+
+					<li class="tb-list-header">
+						<span class="tb-col">Type</span>
+						<span class="tb-col">Event</span>
+						<span class="tb-col">Result</span>
+						<span class="tb-col">Meet</span>
+						<span class="tb-col">Date</span>
+					</li>
+
 					<?php foreach ( $records as $record ) : ?>
-					<tr>
-						<td><?php echo esc_html( $record['record_type'] ); ?></td>
-						<td><?php echo esc_html( $record['event_name'] ); ?></td>
-						<td><?php echo esc_html( $record['result_display'] ); ?></td>
-						<td>
-							<?php if ( $record['meet_id'] ) : ?>
-								<a href="<?php echo esc_url( get_permalink( $record['meet_id'] ) ); ?>">
+					<li class="tb-list-row">
+						<div class="tb-list-link">
+							<span class="tb-col"><?php echo esc_html( $record['record_type'] ?: '—' ); ?></span>
+							<span class="tb-col"><?php echo esc_html( $record['event_name'] ); ?></span>
+							<span class="tb-col"><?php echo esc_html( $record['result_display'] ); ?></span>
+							<span class="tb-col">
+								<?php if ( $record['meet_id'] ) : ?>
+									<a href="<?php echo esc_url( get_permalink( $record['meet_id'] ) ); ?>" class="tb-link-action">
+										<?php echo esc_html( $record['meet_name'] ); ?>
+									</a>
+								<?php else : ?>
 									<?php echo esc_html( $record['meet_name'] ); ?>
-								</a>
-							<?php else : ?>
-								<?php echo esc_html( $record['meet_name'] ); ?>
-							<?php endif; ?>
-						</td>
-						<td><?php echo esc_html( $record['meet_date'] ); ?></td>
-					</tr>
+								<?php endif; ?>
+							</span>
+							<span class="tb-col"><?php echo esc_html( $record['meet_date'] ); ?></span>
+						</div>
+					</li>
 					<?php endforeach; ?>
-				</tbody>
-			</table>
+
+				</ul>
+			</div><!-- .tb-list-wrap -->
 		<?php endif; ?>
 
-	</section><!-- .tb-athlete-records -->
+	</section><!-- .tb-single-section .tb-athlete-records -->
 
 
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 3: RESULTS BY SEASON                                       ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section class="tb-athlete-results">
+	<section class="tb-single-section tb-athlete-results">
 
 		<h2>Results</h2>
 
@@ -302,66 +309,26 @@ while ( have_posts() ) :
 
 				<?php if ( ! $season_data['results_enabled'] ) : ?>
 
-					<?php // Results display is disabled for this season ?>
-					<div class="tb-results-unavailable">
-						<?php if ( ! empty( $season_data['results_unavailable_message'] ) ) : ?>
-							<?php echo wp_kses_post( $season_data['results_unavailable_message'] ); ?>
-						<?php else : ?>
-							<p>Results for this season are not available on this site.</p>
-						<?php endif; ?>
-
-						<?php // External links when IDs exist and season flags are on ?>
-						<?php if ( $season_data['link_milesplit'] && $milesplit_id ) : ?>
-							<p class="tb-external-link">
-								<a href="https://www.milesplit.com/athletes/view/<?php echo esc_attr( $milesplit_id ); ?>"
-								   target="_blank" rel="noopener noreferrer">
-									View on Milesplit
-								</a>
-							</p>
-						<?php endif; ?>
-
-						<?php if ( $season_data['link_athletic_net'] && $athletic_net_id ) : ?>
-							<p class="tb-external-link">
-								<a href="https://www.athletic.net/TrackAndField/Athlete.aspx?AID=<?php echo esc_attr( $athletic_net_id ); ?>"
-								   target="_blank" rel="noopener noreferrer">
-									View on Athletic.net
-								</a>
-							</p>
-						<?php endif; ?>
-					</div><!-- .tb-results-unavailable -->
+					<?php if ( $season_data['results_unavailable_message'] ) : ?>
+						<p class="tb-section-note"><?php echo wp_kses_post( $season_data['results_unavailable_message'] ); ?></p>
+					<?php else : ?>
+						<p class="tb-no-data">Results not available for this season.</p>
+					<?php endif; ?>
 
 				<?php elseif ( empty( $results_grouped[ $season_id ] ) ) : ?>
 
 					<p class="tb-no-data">No results recorded for this season.</p>
 
-					<?php // Still show external links if enabled and IDs exist ?>
-					<?php if ( $season_data['link_milesplit'] && $milesplit_id ) : ?>
-						<p class="tb-external-link">
-							<a href="https://www.milesplit.com/athletes/view/<?php echo esc_attr( $milesplit_id ); ?>"
-							   target="_blank" rel="noopener noreferrer">
-								View on Milesplit
-							</a>
-						</p>
-					<?php endif; ?>
-
-					<?php if ( $season_data['link_athletic_net'] && $athletic_net_id ) : ?>
-						<p class="tb-external-link">
-							<a href="https://www.athletic.net/TrackAndField/Athlete.aspx?AID=<?php echo esc_attr( $athletic_net_id ); ?>"
-							   target="_blank" rel="noopener noreferrer">
-								View on Athletic.net
-							</a>
-						</p>
-					<?php endif; ?>
-
 				<?php else : ?>
 
 					<?php foreach ( $results_grouped[ $season_id ] as $meet_id => $meet_results ) :
-						$first_result  = $meet_results[0];
-						$date_display  = $first_result['meet_date']
+
+						$first_result = reset( $meet_results );
+						$date_display = ( ! empty( $first_result['meet_date'] ) )
 							? date_i18n( 'F j, Y', strtotime( $first_result['meet_date'] ) )
 							: '';
-					?>
 
+					?>
 					<div class="tb-results-meet">
 
 						<h4 class="tb-meet-label">
@@ -373,24 +340,31 @@ while ( have_posts() ) :
 							<?php endif; ?>
 						</h4>
 
-						<table class="tb-table">
-							<thead>
-								<tr>
-									<th>Event</th>
-									<th>Result</th>
-									<th>Place</th>
-								</tr>
-							</thead>
-							<tbody>
+						<div class="tb-list-wrap">
+							<ul class="tb-list tb-results-list">
+
+								<li class="tb-list-header">
+									<span class="tb-col">Event</span>
+									<span class="tb-col">Result</span>
+									<span class="tb-col">Place</span>
+								</li>
+
 								<?php foreach ( $meet_results as $r ) : ?>
-								<tr>
-									<td><?php echo esc_html( $r['event_name'] ?: '—' ); ?></td>
-									<td><?php echo esc_html( $r['result_display'] ?: '—' ); ?></td>
-									<td><?php echo ( $r['place'] !== '' && $r['place'] !== null ) ? esc_html( $r['place'] ) : '—'; ?></td>
-								</tr>
+								<li class="tb-list-row">
+									<div class="tb-list-link">
+										<span class="tb-col"><?php echo esc_html( $r['event_name'] ?: '—' ); ?></span>
+										<span class="tb-col"><?php echo esc_html( $r['result_display'] ?: '—' ); ?></span>
+										<span class="tb-col">
+											<?php echo ( $r['place'] !== '' && $r['place'] !== null )
+												? esc_html( $r['place'] )
+												: '—'; ?>
+										</span>
+									</div>
+								</li>
 								<?php endforeach; ?>
-							</tbody>
-						</table>
+
+							</ul>
+						</div><!-- .tb-list-wrap -->
 
 					</div><!-- .tb-results-meet -->
 
@@ -415,7 +389,7 @@ while ( have_posts() ) :
 						</p>
 					<?php endif; ?>
 
-				<?php endif; ?>
+				<?php endif; // results_enabled ?>
 
 			</div><!-- .tb-results-season -->
 
@@ -423,9 +397,9 @@ while ( have_posts() ) :
 
 		<?php endif; ?>
 
-	</section><!-- .tb-athlete-results -->
+	</section><!-- .tb-single-section .tb-athlete-results -->
 
-</div><!-- .tb-athlete -->
+</div><!-- .tb-single .tb-athlete -->
 
 <?php
 endwhile;

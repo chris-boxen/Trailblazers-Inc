@@ -1,0 +1,55 @@
+/*
+** Isotope
+*/
+.filter-options .ui-group {
+  display: inline-block;
+}
+.filter-options .ui-group .group-label { 
+  margin: 1rem 0 0;
+}
+#ui-controls, 
+#filter-controls,
+#sort-controls {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	gap: 2rem;
+}
+#ui-controls .controls-group { flex-basis: 50%; margin: 1rem 0; }
+#filter-controls { gap: 1rem; }
+#sort-controls { justify-content: flex-end; gap: 1rem; }
+#filter-controls select { padding: 0.25rem 0.5rem; border-radius: 0.25rem; height: 2rem; box-sizing: border-box; }
+
+@media (max-width:900px) {
+	#ui-controls { flex-direction: column; gap: 0.5rem; align-items: start; }
+	#ui-controls .controls-group { margin: 0; }
+	#ui-controls h4 { font-size: 1rem; }
+	#filter-controls { gap: 0.5rem; }
+	.page-id-178 .container { width: 90%; }
+}
+
+#sorts {
+	border-radius: 0.25rem;
+	overflow: hidden;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	gap: 1px;
+}
+#sorts .button { 
+	border: none;
+	background: #ddd;
+	height: 2rem;
+	line-height: 2rem;
+	box-sizing: border-box;
+	padding: 0 1rem;
+	transition: 0.3s all ease-in-out;
+}
+#sorts .button:hover { background: #ccc; } 
+#sorts .button.is-checked { background: var(--tb-green); color: white; } 
+
+/* 
+** Directory 
+*/
+#directory, #directory>li { width: 100%; }

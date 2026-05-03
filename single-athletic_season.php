@@ -140,14 +140,17 @@ while ( have_posts() ) :
 		foreach ( $enrollment_query->posts as $enrollment ) {
 			$athlete_id = get_field( 'athlete', $enrollment->ID );
 			if ( ! $athlete_id ) continue;
-
-			$first     = get_field( 'first_name', $athlete_id );
-			$preferred = get_field( 'preferred_name', $athlete_id );
-			$last      = get_field( 'last_name', $athlete_id );
+			
+			$names     = get_field( 'names', $athlete_id );
+			$first     = $names['first_name']     ?? '';
+			$preferred = $names['preferred_name'] ?? '';
+			$last      = $names['last_name']      ?? '';
 
 			$athletes[] = [
 				'athlete_id'         => $athlete_id,
 				'name'               => trim( ( $preferred ?: $first ) . ' ' . $last ),
+				'firt_name'          => $first,
+				'last_name'          => $last,
 				'grade'              => get_field( 'grade', $enrollment->ID ),
 				'participation_type' => get_field( 'participation_type', $enrollment->ID ),
 			];
@@ -305,32 +308,37 @@ while ( have_posts() ) :
 	<?php // SECTION 4: ATHLETE ROSTER                                          ?>
 	<?php // ----------------------------------------------------------------- ?>
 	<section class="tb-single-section tb-season-roster">
-
-		<h2>Athletes</h2>
-
+	
+		<h2>Athletes (<span class="filter-count"></span>)</h2>
+	
 		<?php if ( empty( $athletes ) ) : ?>
 			<p class="tb-no-data">No athletes enrolled yet.</p>
 		<?php else : ?>
-			<ul class="tb-list tb-roster-list">
-				<li class="tb-list-header">
+	
+			<div class="tb-list-wrap tb-roster-list-wrap">
+				<div class="tb-list-header">
 					<span class="tb-col">Athlete</span>
 					<span class="tb-col">Grade</span>
 					<span class="tb-col">Participation</span>
-				</li>
-				<?php foreach ( $athletes as $athlete ) : ?>
-				<li class="tb-list-row"
-					data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>"
-					data-type="<?php echo esc_attr( strtolower( $athlete['participation_type'] ?: 'athlete' ) ); ?>">
-					<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
-						<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
-						<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
-						<span class="tb-col"><?php echo esc_html( $athlete['participation_type'] ?: 'Athlete' ); ?></span>
-					</a>
-				</li>
-				<?php endforeach; ?>
-			</ul>
+				</div>
+				<ul id="directory" class="tb-list tb-roster-list">
+					<?php foreach ( $athletes as $athlete ) : ?>
+					<li class="tb-list-row"
+						data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
+						data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>"
+						data-type="<?php echo esc_attr( strtolower( $athlete['participation_type'] ?: 'athlete' ) ); ?>">
+						<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
+							<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
+							<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
+							<span class="tb-col"><?php echo esc_html( $athlete['participation_type'] ?: 'Athlete' ); ?></span>
+						</a>
+					</li>
+					<?php endforeach; ?>
+				</ul>
+			</div><!-- .tb-list-wrap -->
+	
 		<?php endif; ?>
-
+	
 	</section><!-- .tb-single-section .tb-season-roster -->
 
 </div><!-- .tb-single .tb-season -->

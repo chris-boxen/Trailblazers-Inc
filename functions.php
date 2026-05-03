@@ -15,3 +15,17 @@ require_once get_stylesheet_directory() . '/inc/acf-helpers.php';
 require_once get_stylesheet_directory() . '/inc/gravity-helpers.php';
 require_once get_stylesheet_directory() . '/inc/registration-helpers.php';
 require_once get_stylesheet_directory() . '/inc/login.php';
+
+/*------------------------------------------------------------------------------------*/
+/*	Load child theme stylesheets & scripts
+/*------------------------------------------------------------------------------------*/
+
+add_action("wp_enqueue_scripts", "load_childTheme_styles", 11);
+function load_childTheme_styles()
+{
+  wp_enqueue_script(
+  'tb-scripts',
+  get_stylesheet_directory_uri() . '/assets/js/tb.js?v=1.0',
+  array('jquery'), false, true
+  );
+}
