@@ -14,6 +14,26 @@
 - Live Signing Secret entered in GF
 - Webhook delivery verified — resend of existing event returned 200 OK
 
+
+### Fixed RF CC `payment_status` not writing `Paid` on Enrollment
+
+**Root cause:** `payment_status` is a sub-field of the `status` group
+(`field_69c9e3f08452e`) on the Enrollment CPT. It was absent from the group
+array write in `tb_create_enrollment_post()`, causing `update_field()` to
+silently fail. Application `payment_status` is top-level and was writing
+correctly; Enrollment was not.
+
+**Fix:**
+- Added `'payment_status' => 'Not Received'` to `$defaults` in
+  `tb_create_enrollment_post()`
+- Added `'payment_status' => $args['payment_status']` to the status group
+  array write
+- Passed `payment_status` from all three `tb_create_enrollment_post()` call
+  sites: NF handler, RF returning athlete loop, RF new athlete loop
+
+**Verified on staging** — both Application and Enrollment write `Paid`
+correctly on RF CC submissions.
+
 ---
 
 ### Returning Family CC path unblocked

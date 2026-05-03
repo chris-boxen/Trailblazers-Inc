@@ -100,12 +100,20 @@ As of 2026-05-02.
 
 ---
 
-## Backlog — Known Bugs (post-launch)
+## Fixed Payment Status
+As of 2026-05-02.
 
-- [ ] **RF CC `payment_status` not writing `Paid`** — Application and
-  Enrollment posts show `Not Received` after CC submission despite charge
-  succeeding. Field 55 contains `Credit Card` in entry; cause undiagnosed.
-  Workaround: manual update in WP admin. Needs debug log investigation.
+- ✅ **RF CC `payment_status` not writing `Paid`** — Fixed 2026-05-02.
+`payment_status` is a sub-field of the `status` group on the Enrollment
+CPT. It was missing from the group array write in `tb_create_enrollment_post()`,
+causing `update_field()` to silently fail. Fixed by adding `payment_status`
+to the group array and passing it from all three handler call sites.
+Verified on staging — Application and Enrollment both write `Paid` on RF CC
+submissions.
+
+---
+
+## Backlog — Known Bugs (post-launch)
 - [ ] **RF CC spinner — no visible progress** — ~27 seconds with no
   intermediate state shown. Inherent to experimental handler flow. Add
   "Processing your payment..." status message as interim UX fix.

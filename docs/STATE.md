@@ -119,5 +119,4 @@ The following have been successfully imported:
   - ✅ Returning Family, Credit Card — 2026-05-02 — Stripe charge confirmed, webhook delivering, CPT writes verified
 
   ### Known issues
-  - payment_status on Application and Enrollment does not write Paid for RF CC submissions — cause undiagnosed; workaround is manual update
   - RF CC submission spinner takes ~27 seconds with no visible progress — inherent to experimental handler flow; UX polish deferred
