@@ -1,5 +1,17 @@
 # CHANGELOG
 
+### Refactored `single-athlete.php` — base classes confirmed, records query fix
+
+- Base template classes verified: `.tb-single`, `.tb-single-header`,
+  `.tb-single-headline`, `.tb-single-meta`, `.tb-single-header-secondary-section`,
+  `.tb-single-image`, `.tb-single-section` — all present and consistent
+- Photo secondary section made conditional (omitted when no photo)
+- Records query: event name now uses `get_field( 'event_name' )` with
+  `get_the_title()` fallback — was using `get_the_title()` only
+- Event name column in records list is now a link to the Athletic Event single
+- Meet name in records list is now a link to the meet
+- `uksort` on meets within each season by `meet_date` descending — cleaned up
+
 ### Refactored `single-coach.php` — applied base template classes
 
 - Outer wrapper: added `.tb-single` alongside `.tb-coach`

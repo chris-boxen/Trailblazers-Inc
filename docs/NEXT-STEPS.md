@@ -55,7 +55,7 @@ As of 2026-05-03.
 
 Templates to build or refactor. Work through these in any order.
 
-- [ ] `single-athlete.php` — apply base classes; update queries for TEC meets
+- [x] `single-athlete.php` — apply base classes; update queries for TEC meets
 - [x] `single-coach.php` — apply base classes
 - [ ] `single-athletic_event.php` — apply base classes; update queries
 - [ ] `taxonomy-sport.php` — apply base classes; update queries for TEC
