@@ -208,7 +208,7 @@
 .tb-meets-list   { --tb-cols: 2fr 1.5fr 2fr 1fr; }
 
 /* Athlete Roster — Athlete | Grade | Participation */
-.tb-roster-list-wrap  { --tb-cols: 2fr 1fr 1.5fr; }
+.tb-roster-list-wrap  { --tb-cols: 2fr 1fr 3fr; }
 
 /* Season Archive — Season | Sport | Dates | Status */
 .tb-seasons-list { --tb-cols: 2fr 1fr 2fr 1fr; }

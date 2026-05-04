@@ -7,7 +7,10 @@
  *   1. Season header (title, sport, dates, status, description, handbook)
  *   2. Coaches — from coach_roster repeater on this season
  *   3. Meet Schedule — queried from tribe_events where season = this post
- *   4. Athlete Roster — queried from Enrollment where season = this post
+ *   4. Athlete Roster — queried from Enrollment where season = this post,
+ *      participation_type = Athlete
+ *   5. Sibling Runner Roster — queried from Enrollment where season = this post,
+ *      participation_type = Sibling Runner
  *
  * Field references:
  *   group_tb_athletic_season.json — season fields, season flags (customize_data group)
@@ -121,6 +124,7 @@ while ( have_posts() ) :
 
 	// -------------------------------------------------------------------------
 	// ATHLETE ROSTER
+	// Split into athletes and sibling runners by participation_type on Enrollment.
 	// -------------------------------------------------------------------------
 	$enrollment_query = new WP_Query( [
 		'post_type'      => 'enrollment',
@@ -135,29 +139,42 @@ while ( have_posts() ) :
 		],
 	] );
 
-	$athletes = [];
+	$athletes        = [];
+	$sibling_runners = [];
+
 	if ( $enrollment_query->have_posts() ) {
 		foreach ( $enrollment_query->posts as $enrollment ) {
 			$athlete_id = get_field( 'athlete', $enrollment->ID );
 			if ( ! $athlete_id ) continue;
-			
-			$names     = get_field( 'names', $athlete_id );
-			$first     = $names['first_name']     ?? '';
-			$preferred = $names['preferred_name'] ?? '';
-			$last      = $names['last_name']      ?? '';
 
-			$athletes[] = [
+			$names        = get_field( 'names', $athlete_id );
+			$demographics = get_field( 'demographics', $athlete_id );
+			$first        = $names['first_name']     ?? '';
+			$preferred    = $names['preferred_name'] ?? '';
+			$last         = $names['last_name']      ?? '';
+			$gender		  = $demographics['gender']  ?? '';
+
+			$participation_type = get_field( 'participation_type', $enrollment->ID );
+
+			$entry = [
 				'athlete_id'         => $athlete_id,
 				'name'               => trim( ( $preferred ?: $first ) . ' ' . $last ),
-				'firt_name'          => $first,
+				'first_name'         => $first,
 				'last_name'          => $last,
 				'grade'              => get_field( 'grade', $enrollment->ID ),
-				'participation_type' => get_field( 'participation_type', $enrollment->ID ),
+				'gender'             => $demographics['gender'] ?? '',  // M | F
+				'participation_type' => $participation_type,
 			];
+
+			if ( $participation_type === 'Sibling Runner' ) {
+				$sibling_runners[] = $entry;
+			} else {
+				$athletes[] = $entry;
+			}
 		}
-		usort( $athletes, function( $a, $b ) {
-			return strcmp( $a['name'], $b['name'] );
-		} );
+
+		usort( $athletes,        fn( $a, $b ) => strcmp( $a['last_name'], $b['last_name'] ) );
+		usort( $sibling_runners, fn( $a, $b ) => strcmp( $a['last_name'], $b['last_name'] ) );
 	}
 	wp_reset_postdata();
 
@@ -207,26 +224,28 @@ while ( have_posts() ) :
 					<?php echo wp_kses_post( nl2br( $description ) ); ?>
 				</div>
 			<?php endif; ?>
-			
+
 		</div><!-- .tb-single-headline -->
+
 		<div class="tb-single-header-secondary-section">
-		
-		<?php if ( $featured_image ) : ?>
-			<div class="tb-single-image tb-season-image">
-				<?php echo wp_get_attachment_image( $featured_image, 'large' ); ?>
-			</div>
-		<?php endif; ?>
-		
-		<?php if ( ! empty( $handbook['url'] ) ) : ?>
-			<div class="tb-single-cta tb-season-cta">
-				<a href="<?php echo esc_url( $handbook['url'] ); ?>"
-				   class="button"
-				   <?php echo ! empty( $handbook['target'] ) ? 'target="' . esc_attr( $handbook['target'] ) . '"' : ''; ?>
-				   rel="noopener noreferrer">
-					<?php echo esc_html( $handbook['title'] ?: 'Season Handbook' ); ?>
-				</a>
-			</div>
-		<?php endif; ?>
+
+			<?php if ( $featured_image ) : ?>
+				<div class="tb-single-image tb-season-image">
+					<?php echo wp_get_attachment_image( $featured_image, 'large' ); ?>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $handbook['url'] ) ) : ?>
+				<div class="tb-single-cta tb-season-cta">
+					<a href="<?php echo esc_url( $handbook['url'] ); ?>"
+					   class="button"
+					   <?php echo ! empty( $handbook['target'] ) ? 'target="' . esc_attr( $handbook['target'] ) . '"' : ''; ?>
+					   rel="noopener noreferrer">
+						<?php echo esc_html( $handbook['title'] ?: 'Season Handbook' ); ?>
+					</a>
+				</div>
+			<?php endif; ?>
+
 		</div><!-- .tb-single-header-secondary-section -->
 
 	</section><!-- .tb-single-header -->
@@ -284,7 +303,7 @@ while ( have_posts() ) :
 				</li>
 				<?php foreach ( $meets as $meet ) : ?>
 				<?php
-				$loc = array_filter( [ $meet['city'], $meet['state'] ] );
+				$loc         = array_filter( [ $meet['city'], $meet['state'] ] );
 				$loc_display = $loc ? implode( ', ', $loc ) : '—';
 				?>
 				<li class="tb-list-row"
@@ -308,38 +327,93 @@ while ( have_posts() ) :
 	<?php // SECTION 4: ATHLETE ROSTER                                          ?>
 	<?php // ----------------------------------------------------------------- ?>
 	<section class="tb-single-section tb-season-roster">
-	
+
 		<h2>Athletes (<span class="filter-count"></span>)</h2>
-	
+		
+		<div id="ui-controls">
+			<div id="filter-controls" class="controls-group">
+				<h4>Filter By</h4>
+				  <div class="ui-group">
+					  <select type="select" class="filter-select filter-options" data-group="gender">
+						<option value="">Select Gender</option>
+						<option value="[data-gender='m']" id="filter-boys">Boys</option>
+						<option value="[data-gender='f']" id="filter-girls">Girls</option>
+						<option value="">All</option>
+					  </select>
+				  </div>
+			</div>
+		
+			<div id="sort-controls" class="controls-group">
+				<h4>Sort By</h4>
+				<div id="sorts" class="button-group">  
+					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
+					<button class="button" data-sort-by="last_name">Last Name</button>
+					<button class="button" data-sort-by="grade">Grade</button>
+					<!--<button class="button" data-sort-by="pr">PR</button>-->
+					<!--<button class="button" data-sort-by="sr">SR</button>-->
+				</div>
+			</div>
+		</div><!-- #ui-controls -->
+
 		<?php if ( empty( $athletes ) ) : ?>
 			<p class="tb-no-data">No athletes enrolled yet.</p>
 		<?php else : ?>
-	
 			<div class="tb-list-wrap tb-roster-list-wrap">
 				<div class="tb-list-header">
 					<span class="tb-col">Athlete</span>
 					<span class="tb-col">Grade</span>
-					<span class="tb-col">Participation</span>
+					<span class="tb-col">Records</span>
 				</div>
 				<ul id="directory" class="tb-list tb-roster-list">
 					<?php foreach ( $athletes as $athlete ) : ?>
 					<li class="tb-list-row"
 						data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
-						data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>"
-						data-type="<?php echo esc_attr( strtolower( $athlete['participation_type'] ?: 'athlete' ) ); ?>">
+						data-gender="<?php echo esc_attr( strtolower( $athlete['gender'] ) ); ?>"
+						data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>">
 						<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
 							<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
 							<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
-							<span class="tb-col"><?php echo esc_html( $athlete['participation_type'] ?: 'Athlete' ); ?></span>
 						</a>
 					</li>
 					<?php endforeach; ?>
 				</ul>
 			</div><!-- .tb-list-wrap -->
-	
 		<?php endif; ?>
-	
+
 	</section><!-- .tb-single-section .tb-season-roster -->
+
+
+	<?php // ----------------------------------------------------------------- ?>
+	<?php // SECTION 5: SIBLING RUNNER ROSTER                                   ?>
+	<?php // ----------------------------------------------------------------- ?>
+	<?php if ( ! empty( $sibling_runners ) ) : ?>
+	<section class="tb-single-section tb-season-sibling-runners">
+
+		<h2>Sibling Runners</h2>
+		
+		<div class="tb-list-wrap tb-roster-list-wrap">
+			<div class="tb-list-header">
+				<span class="tb-col">Athlete</span>
+				<span class="tb-col">Grade</span>
+				<span class="tb-col">Records</span>
+			</div>
+			<ul class="tb-list tb-sibling-runners-list">
+				<?php foreach ( $sibling_runners as $athlete ) : ?>
+				<li class="tb-list-row"
+					data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
+					data-gender="<?php echo esc_attr( $athlete['gender'] ); ?>"
+					data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>">
+					<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
+						<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
+						<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
+					</a>
+				</li>
+				<?php endforeach; ?>
+			</ul>
+		</div><!-- .tb-list-wrap -->
+	</section><!-- .tb-single-section .tb-season-sibling-runners -->
+	<?php endif; ?>
+
 
 </div><!-- .tb-single .tb-season -->
 
