@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-05-03 (continued)
+
+### Updated `single-athletic_season.php` — split roster, added gender
+
+- Athlete roster split into two separate sections:
+  - Section 4: Athletes (participation_type = Athlete)
+  - Section 5: Sibling Runners (participation_type = Sibling Runner)
+  - Section 5 only renders if sibling runners exist
+- Added `gender` column (sourced from `demographics` group on Athlete post) to both lists
+- Added `data-gender` attribute to rows in both lists
+- Removed `data-type` attribute from roster rows (redundant now that lists are separate)
+- Sort changed from display name to `last_name` for more reliable alpha ordering
+- Fixed typo: `firt_name` → `first_name` in entry builder
+- New CSS class `.tb-sibling-runners-list` added; requires column definition in `templates.css`
+
+
 ## 2026-05-03
 
 ### Added `assets/css/templates.css` — base template styles
