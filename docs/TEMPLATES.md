@@ -11,8 +11,8 @@ All CPT-specific templates are built as PHP files.
 |---|---|---|---|
 | `single-athlete.php` | PHP | ✅ Built | Bio, season history, PRs, results (Season → Meet) |
 | `single-athletic_meet.php` | PHP | ✅ Built | Meet header, results by event, gated by `results_status` |
-| `single-athletic_season.php` | PHP | ✅ Built | Header, coaches, meet schedule, athlete roster. Updated 2026-05-03: ul/li list structure, base template classes, `.tb-single-header-secondary-section` grouping image + CTA |
-| `single-coach.php` | PHP | ✅ Built | Photo, name, title, bio |
+| `single-athletic_season.php` | PHP | ✅ Built | Header, coaches, meet schedule, athlete roster, sibling runner roster. Updated 2026-05-03: ul/li lists, base classes, header secondary section. Roster split by participation_type; gender column on both roster lists. |
+| `single-coach.php` | PHP | ✅ Built | Photo, name, title, bio. Updated 2026-05-03: base template classes applied, photo in `.tb-single-header-secondary-section` |
 | `single-athletic_event.php` | PHP | ✅ Built | Header with linked sport, records, results (Season → Meet) |
 | `taxonomy-sport.php` | PHP | ✅ Built | Sport header, seasons, coaches, athletes table with filtering attributes |
 | `archive-athlete.php` | PHP | ✅ Built | All athletes, sortable/filterable list, data attributes |

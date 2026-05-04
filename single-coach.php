@@ -4,7 +4,7 @@
  * Displays a single Coach profile page.
  *
  * Sections:
- *   1. Coach header (photo, name, title)
+ *   1. Coach header (name, title | photo)
  *   2. Bio
  *
  * Note: Season backreference (which seasons this coach has coached) is not
@@ -32,48 +32,52 @@ while ( have_posts() ) :
 	$bio        = get_field( 'bio', $coach_id );
 	$image_id   = get_field( 'featured_image', $coach_id );
 
-	$full_name  = trim( $first_name . ' ' . $last_name );
+	$full_name = trim( $first_name . ' ' . $last_name );
 
 ?>
 
-<div class="tb-coach">
+<div class="tb-single tb-coach">
 
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 1: COACH HEADER                                            ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section class="tb-coach-header">
+	<section class="tb-single-header tb-coach-header">
 
-		<?php if ( $image_id ) : ?>
-			<div class="tb-coach-photo">
-				<?php echo wp_get_attachment_image( $image_id, 'medium' ); ?>
-			</div>
-		<?php endif; ?>
+		<div class="tb-single-headline">
 
-		<div class="tb-coach-headline">
-
-			<h1 class="tb-coach-name"><?php echo esc_html( $full_name ?: get_the_title() ); ?></h1>
+			<h1 class="tb-single-headline__title tb-coach-name">
+				<?php echo esc_html( $full_name ?: get_the_title() ); ?>
+			</h1>
 
 			<?php if ( $title ) : ?>
 				<p class="tb-coach-title"><?php echo esc_html( $title ); ?></p>
 			<?php endif; ?>
 
-		</div><!-- .tb-coach-headline -->
+		</div><!-- .tb-single-headline -->
 
-	</section><!-- .tb-coach-header -->
+		<?php if ( $image_id ) : ?>
+		<div class="tb-single-header-secondary-section">
+			<div class="tb-single-image tb-coach-photo">
+				<?php echo wp_get_attachment_image( $image_id, 'medium' ); ?>
+			</div>
+		</div><!-- .tb-single-header-secondary-section -->
+		<?php endif; ?>
+
+	</section><!-- .tb-single-header tb-coach-header -->
 
 
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 2: BIO                                                     ?>
 	<?php // ----------------------------------------------------------------- ?>
 	<?php if ( $bio ) : ?>
-	<section class="tb-coach-bio">
+	<section class="tb-single-section tb-coach-bio">
 		<div class="tb-coach-bio-content">
 			<?php echo wp_kses_post( $bio ); ?>
 		</div>
-	</section><!-- .tb-coach-bio -->
+	</section><!-- .tb-single-section tb-coach-bio -->
 	<?php endif; ?>
 
-</div><!-- .tb-coach -->
+</div><!-- .tb-single tb-coach -->
 
 <?php
 endwhile;

@@ -1,5 +1,16 @@
 # CHANGELOG
 
+### Refactored `single-coach.php` — applied base template classes
+
+- Outer wrapper: added `.tb-single` alongside `.tb-coach`
+- Header restructured to match base single pattern:
+  - `.tb-single-header` on the section
+  - `.tb-single-headline` wraps name and title
+  - Photo moved into `.tb-single-header-secondary-section` > `.tb-single-image`
+  - Secondary section omitted entirely when no photo exists
+- Bio section: added `.tb-single-section` alongside `.tb-coach-bio`
+- No schema changes, no new queries
+
 ## 2026-05-03 (continued)
 
 ### Updated `single-athletic_season.php` — split roster, added gender
