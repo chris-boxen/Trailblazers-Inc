@@ -298,38 +298,43 @@ add_shortcode( 'tb_reg_hub', function() {
 add_shortcode( 'tb_reg_form', function( $atts ) {
     $atts = shortcode_atts( [ 'type' => 'new_family' ], $atts );
 
-    $status = get_field( 'reg_status', 'option' );
+    // Physicals form is not gated by registration open/close dates.
+    if ( $atts['type'] !== 'physicals' ) {
 
-    if ( $status === 'closed' ) {
-        $msg = get_field( 'reg_closed_message', 'option' );
-        return $msg ? wpautop( $msg ) : '<p>Registration is closed.</p>';
-    }
+        $status = get_field( 'reg_status', 'option' );
 
-    if ( $status === 'coming_soon' ) {
-        $msg = get_field( 'reg_coming_soon_message', 'option' );
-        return $msg ? wpautop( $msg ) : '<p>Registration is not yet open.</p>';
-    }
+        if ( $status === 'closed' ) {
+            $msg = get_field( 'reg_closed_message', 'option' );
+            return $msg ? wpautop( $msg ) : '<p>Registration is closed.</p>';
+        }
 
-    // Date-driven open/close check — mirrors the logic in [tb_reg_hub]
-    $close     = get_field( 'reg_close', 'option' );
-    $open_key  = $atts['type'] === 'returning_family'
-        ? 'reg_returning_open'
-        : 'reg_new_family_open';
-    $open      = get_field( $open_key, 'option' );
-    $state     = tb_reg_button_state( $open, $close );
+        if ( $status === 'coming_soon' ) {
+            $msg = get_field( 'reg_coming_soon_message', 'option' );
+            return $msg ? wpautop( $msg ) : '<p>Registration is not yet open.</p>';
+        }
 
-    if ( $state === 'pending' ) {
-        $label = tb_reg_date_label( 'pending', $open, $close );
-        $msg   = get_field( 'reg_coming_soon_message', 'option' );
-        return $msg
-            ? wpautop( $msg )
-            : '<p>Registration is not yet open.' . ( $label ? ' ' . esc_html( $label ) . '.' : '' ) . '</p>';
-    }
+        // Date-driven open/close check — mirrors the logic in [tb_reg_hub]
+        $close     = get_field( 'reg_close', 'option' );
+        $open_key  = $atts['type'] === 'returning_family'
+            ? 'reg_returning_open'
+            : 'reg_new_family_open';
+        $open      = get_field( $open_key, 'option' );
+        $state     = tb_reg_button_state( $open, $close );
 
-    if ( $state === 'closed' ) {
-        $msg = get_field( 'reg_closed_message', 'option' );
-        return $msg ? wpautop( $msg ) : '<p>Registration is closed.</p>';
-    }
+        if ( $state === 'pending' ) {
+            $label = tb_reg_date_label( 'pending', $open, $close );
+            $msg   = get_field( 'reg_coming_soon_message', 'option' );
+            return $msg
+                ? wpautop( $msg )
+                : '<p>Registration is not yet open.' . ( $label ? ' ' . esc_html( $label ) . '.' : '' ) . '</p>';
+        }
+
+        if ( $state === 'closed' ) {
+            $msg = get_field( 'reg_closed_message', 'option' );
+            return $msg ? wpautop( $msg ) : '<p>Registration is closed.</p>';
+        }
+
+    } // end non-physicals gate
 
     // ---- User-state guards (skipped for administrators) ----
     if ( ! current_user_can( 'manage_options' ) ) {
@@ -352,7 +357,7 @@ add_shortcode( 'tb_reg_form', function( $atts ) {
             wp_redirect( home_url( '/registration/' ) );
             exit;
         }
-        
+
         if ( $atts['type'] === 'returning_family' && $has_family ) {
             $active_season_id = (int) get_option( 'tb_active_season_id' );
             if ( $active_season_id ) {
@@ -389,7 +394,6 @@ add_shortcode( 'tb_reg_form', function( $atts ) {
 
     return do_shortcode( "[gravityforms id='{$form_id}']" );
 } );
-
 
 // ---------------------------------------------------------------------------
 // 7. Shortcode: [tb_reg_confirmation type="..."]

@@ -15,6 +15,7 @@
  *   Form 12 — 2026 Registration: New Family
  *   Form 13 — 2026 Registration: Returning Family
  *   Form 14 — Register Returning Athlete  (nested, permanent)
+ *   Form 16 — Submit Physical             (permanent)
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -36,6 +37,7 @@ function tb_reg_get_form_id( $type ) {
     $key_map = [
         'new_family'       => 'reg_new_family_form_id',
         'returning_family' => 'reg_returning_family_form_id',
+        'physicals'        => 'reg_physicals_form_id',
     ];
     if ( ! isset( $key_map[ $type ] ) ) {
         return 0;
@@ -340,10 +342,14 @@ function tb_handle_registration_submission( $entry, $form ) {
         return; // Registration Settings not yet configured — bail silently.
     }
 
+    $physicals_form_id        = tb_reg_get_form_id( 'physicals' );
+
     if ( $new_family_form_id && (int) $form['id'] === $new_family_form_id ) {
         tb_handle_new_family( $entry, $form );
     } elseif ( $returning_family_form_id && (int) $form['id'] === $returning_family_form_id ) {
         tb_handle_returning_family( $entry, $form );
+    } elseif ( $physicals_form_id && (int) $form['id'] === $physicals_form_id ) {
+        tb_handle_physicals( $entry, $form );
     }
 }
 
@@ -692,3 +698,260 @@ add_filter( 'gform_field_value_tb_handbook_url', function() {
     $handbook = get_field( 'handbook', (int) $season_id );
     return ! empty( $handbook['url'] ) ? $handbook['url'] : '';
 } );
+
+
+// =============================================================================
+// SECTION 6 — PHYSICALS POPULATION
+// =============================================================================
+
+/**
+ * Populate the hidden Family Post ID field on the physicals form.
+ * Parameter name: tb_family_post_id
+ */
+add_filter( 'gform_field_value_tb_family_post_id', function() {
+    $user_id = get_current_user_id();
+    return $user_id ? tb_get_family_post_id( $user_id ) : '';
+} );
+
+/**
+ * Populate the hidden Season ID field on the physicals form.
+ * Parameter name: tb_active_season_id
+ */
+add_filter( 'gform_field_value_tb_active_season_id', function() {
+    return (int) get_option( 'tb_active_season_id' );
+} );
+
+add_filter( 'gform_field_value_tb_test', function() {
+    return '12345';
+} );
+
+/**
+ * Populate the Athlete select field on the physicals form with athletes
+ * enrolled in the active season for the logged-in user's family.
+ * Runs at priority 20 to override any residual GPPA output.
+ */
+add_filter( 'gform_pre_render', function( $form ) {
+    $physicals_form_id = (int) get_field( 'reg_physicals_form_id', 'option' );
+    if ( ! $physicals_form_id || (int) $form['id'] !== $physicals_form_id ) {
+        return $form;
+    }
+
+    if ( ! is_user_logged_in() ) return $form;
+
+    $user_id   = get_current_user_id();
+    $family_id = tb_get_family_post_id( $user_id );
+    $season_id = (int) get_option( 'tb_active_season_id' );
+
+    if ( ! $family_id || ! $season_id ) return $form;
+
+    $enrollments = get_posts( [
+        'post_type'      => 'enrollment',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'meta_query'     => [
+            'relation' => 'AND',
+            [ 'key' => 'family', 'value' => $family_id ],
+            [ 'key' => 'season', 'value' => $season_id ],
+        ],
+    ] );
+
+    if ( empty( $enrollments ) ) return $form;
+
+    $choices = [];
+    foreach ( $enrollments as $enrollment ) {
+        $athlete_id = (int) get_field( 'athlete', $enrollment->ID );
+        if ( ! $athlete_id ) continue;
+
+        $names      = get_field( 'names', $athlete_id );
+        $first      = $names['preferred_name'] ?: ( $names['first_name'] ?? '' );
+        $last       = $names['last_name'] ?? '';
+        $name       = trim( "$first $last" ) ?: get_the_title( $athlete_id );
+
+        $choices[] = [
+            'text'       => $name,
+            'value'      => (string) $athlete_id,
+            'isSelected' => false,
+            'price'      => '',
+        ];
+    }
+
+    if ( empty( $choices ) ) return $form;
+
+    // Sort by last name
+    usort( $choices, function( $a, $b ) {
+        $a_parts = explode( ' ', trim( $a['text'] ) );
+        $b_parts = explode( ' ', trim( $b['text'] ) );
+        return strcmp( end( $a_parts ), end( $b_parts ) );
+    } );
+
+    foreach ( $form['fields'] as &$field ) {
+        if ( (int) $field->id === 3 ) {
+            $field->choices = $choices;
+            break;
+        }
+    }
+
+    return $form;
+}, 20 );
+
+add_filter( 'gform_field_value_display', function( $value, $field, $input_id ) {
+    if ( (int) $field->formId !== (int) get_field( 'reg_physicals_form_id', 'option' ) ) {
+        return $value;
+    }
+    if ( (int) $field->id === 3 && is_numeric( $value ) ) {
+        $names = get_field( 'names', (int) $value );
+        $first = $names['preferred_name'] ?: ( $names['first_name'] ?? '' );
+        $last  = $names['last_name'] ?? '';
+        return trim( "$first $last" ) ?: $value;
+    }
+    return $value;
+}, 10, 3 );
+
+
+// =============================================================================
+// SECTION 7 — PHYSICALS HANDLER
+// =============================================================================
+
+/**
+ * Handle submission of Submit Physical form (Form 16, permanent).
+ *
+ * Creates or updates one Athletic Physical post per submission.
+ * If a Physical post already exists for this athlete + season, it is updated.
+ * If not, a new post is created.
+ *
+ * Form field reference:
+ *   1 — Family Post ID   (hidden, gform_field_value_tb_family_post_id)
+ *   2 — Season ID        (hidden, gform_field_value_tb_active_season_id)
+ *   3 — Athlete          (select, GPPA — value is athlete post ID)
+ *   4 — Physical Form    (fileupload, multipleFiles — JSON array of URLs)
+ *   5 — Email            (hidden, gform_field_value_tb_user_email)
+ *
+ * @param  array $entry  GF entry.
+ * @param  array $form   GF form.
+ */
+ 
+ add_action( 'gform_pre_submission', function( $form ) {
+     $physicals_form_id = (int) get_field( 'reg_physicals_form_id', 'option' );
+     if ( ! $physicals_form_id || (int) $form['id'] !== $physicals_form_id ) return;
+ 
+     $athlete_id = (int) rgpost( 'input_3' );
+     if ( ! $athlete_id ) return;
+ 
+     $names  = get_field( 'names', $athlete_id );
+     $first  = ! empty( $names['preferred_name'] ) ? $names['preferred_name'] : ( $names['first_name'] ?? '' );
+     $last   = $names['last_name'] ?? '';
+     $name   = trim( "$first $last" ) ?: get_the_title( $athlete_id );
+ 
+     $_POST['input_7'] = $name;
+ } );
+ 
+function tb_handle_physicals( $entry, $form ) {
+    $family_id  = (int) rgar( $entry, '1' ) ?: (int) get_field( 'family', 'user_' . get_current_user_id() );
+    $season_id  = (int) rgar( $entry, '2' ) ?: (int) get_option( 'tb_active_season_id' );
+    $athlete_id = (int) rgar( $entry, '3' );
+
+    if ( ! $athlete_id ) {
+        error_log( 'TB Physicals: Missing athlete ID in entry ' . $entry['id'] . ' — aborting.' );
+        return;
+    }
+
+    if ( ! $season_id ) {
+        error_log( 'TB Physicals: Missing season ID in entry ' . $entry['id'] . ' — aborting.' );
+        return;
+    }
+
+    // -------------------------------------------------------------------------
+    // Resolve file URL(s) from the fileupload field.
+    // GF stores multiple files as a JSON-encoded array; single file as a plain URL.
+    // Store as comma-separated string for readability in WP admin.
+    // -------------------------------------------------------------------------
+    $raw_files = rgar( $entry, '4' );
+    $file_url  = '';
+
+    if ( ! empty( $raw_files ) ) {
+        $decoded = json_decode( $raw_files, true );
+        if ( is_array( $decoded ) ) {
+            $file_url = implode( ', ', $decoded );
+        } else {
+            $file_url = $raw_files; // Single file — plain URL string.
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Check for an existing Physical post for this athlete + season.
+    // -------------------------------------------------------------------------
+    $existing = get_posts( [
+        'post_type'      => 'athletic_physical',
+        'posts_per_page' => 1,
+        'post_status'    => 'publish',
+        'meta_query'     => [
+            'relation' => 'AND',
+            [ 'key' => 'athlete',          'value' => $athlete_id, 'compare' => '=' ],
+            [ 'key' => 'season_received',  'value' => $season_id,  'compare' => '=' ],
+        ],
+    ] );
+
+    $athlete_title = get_the_title( $athlete_id ) ?: 'Athlete ' . $athlete_id;
+    $season_title  = get_the_title( $season_id )  ?: 'Season ' . $season_id;
+
+    if ( ! empty( $existing ) ) {
+        // -------------------------------------------------------------------------
+        // Update existing Physical post.
+        // -------------------------------------------------------------------------
+        $physical_id = $existing[0]->ID;
+
+        update_field( 'file_url',           $file_url,            $physical_id );
+        update_field( 'submission_method',  'Digital Upload',     $physical_id );
+        update_field( 'digital_copy_on_file', 1,                  $physical_id );
+
+        wp_update_post( [
+            'ID'         => $physical_id,
+            'post_title' => "Physical — {$athlete_title} — {$season_title}",
+        ] );
+
+        error_log( "TB Physicals: Updated existing Physical post {$physical_id} for athlete {$athlete_id}, season {$season_id}." );
+
+    } else {
+        // -------------------------------------------------------------------------
+        // Create new Physical post.
+        // -------------------------------------------------------------------------
+        $physical_id = wp_insert_post( [
+            'post_title'  => "Physical — {$athlete_title} — {$season_title}",
+            'post_type'   => 'athletic_physical',
+            'post_status' => 'publish',
+        ] );
+
+        if ( is_wp_error( $physical_id ) ) {
+            error_log( 'TB Physicals: Failed to create Athletic Physical post — ' . $physical_id->get_error_message() );
+            return;
+        }
+
+        update_field( 'athlete',              $athlete_id,          $physical_id );
+        update_field( 'family',               $family_id,           $physical_id );
+        update_field( 'season_received',      $season_id,           $physical_id );
+        update_field( 'submission_method',    'Digital Upload',     $physical_id );
+        update_field( 'digital_copy_on_file', 1,                    $physical_id );
+        update_field( 'file_url',             $file_url,            $physical_id );
+    }
+
+    // -------------------------------------------------------------------------
+    // Update Enrollment physical_status for this athlete + season.
+    // -------------------------------------------------------------------------
+    $enrollments = get_posts( [
+        'post_type'      => 'enrollment',
+        'posts_per_page' => 1,
+        'post_status'    => 'publish',
+        'meta_query'     => [
+            'relation' => 'AND',
+            [ 'key' => 'athlete', 'value' => $athlete_id, 'compare' => '=' ],
+            [ 'key' => 'season',  'value' => $season_id,  'compare' => '=' ],
+        ],
+    ] );
+
+    if ( ! empty( $enrollments ) ) {
+        $enrollment_id = $enrollments[0]->ID;
+        $status_group  = get_field( 'field_69c9e3f08452e', $enrollment_id ) ?: [];
+        $status_group['physical_status'] = 'Received';
+        update_field( 'field_69c9e3f08452e', $status_group, $enrollment_id );
+    }
+}

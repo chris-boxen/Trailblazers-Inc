@@ -56,7 +56,7 @@ The following have been successfully imported:
 - Athletic Event
 - Athletic Result
 - Athletic Record
-- Athletic Physical
+- Athletic Physical — `publicly_queryable` updated to false
 - Application
 - Enrollment
 
@@ -116,6 +116,20 @@ The following have been successfully imported:
     writes verified.
   - ✅ Returning Family, Check/Cash — 2026-05-02 — all CPT writes verified
   - ✅ Returning Family, Credit Card — 2026-05-02 — Stripe charge confirmed, webhook delivering, CPT writes verified
+  
+  ### Physical Upload form (inc/gravity-helpers.php + inc/registration-helpers.php)
+  - ✅ Form 16 — Submit Physical — permanent, requireLogin, enrollment-scoped
+  - ✅ `gform_pre_render` hook — populates athlete dropdown from active-season
+    enrollments for the logged-in family; replaces GPPA on field 3
+  - ✅ `gform_pre_submission` hook — writes athlete display name to hidden
+    field 7 for use in merge tags
+  - ✅ `gform_field_value_tb_family_post_id` filter — populates hidden field 1
+  - ✅ `gform_field_value_tb_active_season_id` filter — populates hidden field 2
+  - ✅ `tb_handle_physicals` — creates or updates Athletic Physical post;
+    updates Enrollment `physical_status` to Received
+  - ✅ `[tb_reg_form type="physicals"]` bypasses registration open/close gates
+  - ✅ Pages: `/registration/physicals/` and `/registration/physicals/confirmation/`
+  - ✅ End-to-end verified on production — 2026-05-05
 
   ### Known issues
   - RF CC submission spinner takes ~27 seconds with no visible progress — inherent to experimental handler flow; UX polish deferred
