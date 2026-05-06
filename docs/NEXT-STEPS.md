@@ -48,22 +48,6 @@ As of 2026-05-03.
 - ✅ `single-athletic_season.php` — refactored to ul/li lists + base classes;
   header restructured with `.tb-single-header-secondary-section` grouping
   image and CTA as a right column
-  
-## Completed — Physical Upload Form
-As of 2026-05-05.
-  
-- ✅ ACF `group_tb_athletic_physical` — replaced `link` field with `file_url` (text)
-- ✅ `athletic_physical` CPT — `publicly_queryable` set to false
-- ✅ GF Form 16 — Submit Physical (permanent) built and imported
-- ✅ Form ID entered in TB Settings → Registration Settings
-- ✅ `[tb_reg_form type="physicals"]` — bypasses reg open/close date gate
-- ✅ `gform_pre_render` — enrollment-scoped athlete dropdown
-- ✅ `gform_pre_submission` — athlete name written to hidden field for merge tags
-- ✅ `gform_field_value` filters — family post ID and season ID
-- ✅ `tb_handle_physicals` — Physical post create/update; Enrollment status update
-- ✅ WP pages created: `/registration/physicals/` and `/registration/physicals/confirmation/`
-- ✅ Notifications: admin + parent receipt
-- ✅ Verified on production — 2026-05-05
 
 ---
 

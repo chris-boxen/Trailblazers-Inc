@@ -1,5 +1,5 @@
 # Trailblazers — GravityForms Field Map
-**Version:** 2.3
+**Version:** 2.4
 **Season:** 2026 XC
 **Status:** Ready to build
 
@@ -286,6 +286,24 @@ means. My signature indicates that to the best of my knowledge, my answers to th
 above questions are complete and correct. I understand that the data acquired
 during these evaluations may be used for research purposes.</p>
 ```
+
+---
+
+## Form 3: Submit Physical
+
+**GF Form ID:** 16 (permanent — does not change season to season)
+**Hook fires:** `gform_after_submission` → `tb_handle_physicals()`
+**Athlete dropdown:** `gform_pre_render` — scoped to active-season enrollments for logged-in family
+**Pages:** `/registration/physicals/` (form) · `/registration/physicals/confirmation/` (confirmation)
+
+| Field | ID | GF Type | Maps to | How set | Notes |
+|---|---|---|---|---|---|
+| Family Post ID | 1 | Hidden | `athletic_physical` → `family` | `gform_field_value_tb_family_post_id` | Resolved from logged-in user via `tb_get_family_post_id()` |
+| Season ID | 2 | Hidden | `athletic_physical` → `season_received` | `gform_field_value_tb_active_season_id` | Reads `tb_active_season_id` site option |
+| Athlete | 3 | Select | `athletic_physical` → `athlete` | `gform_pre_render` | Choices scoped to active-season Enrollment posts for family. Value = athlete post ID. |
+| Physical Form | 4 | File Upload | `athletic_physical` → `file_url` | user | PDF/JPG/PNG/DOC/DOCX, 10MB, multiple files, media library off. Conditional: shows when field 3 is not empty. |
+| Email | 5 | Hidden | Notification recipient | `gform_field_value_tb_user_email` | Current user email. Used by parent receipt notification. |
+| Athlete Name | 6 | Hidden | Merge tags | `gform_pre_submission` | Athlete display name written at submission from field 3 post ID. Used in notification subject/body and file upload label. |
 
 ---
 

@@ -128,9 +128,9 @@
             "sub_fields": []
         },
         {
-            "key": "field_tb_new_returning",
-            "label": "New \/ Returning",
-            "name": "new_returning",
+            "key": "field_tb_new_returning_athlete",
+            "label": "New \/ Returning Athlete",
+            "name": "new_returning_athlete",
             "aria-label": "",
             "type": "select",
             "instructions": "",
@@ -780,5 +780,5 @@
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1776523107
+    "modified": 1778110170
 }

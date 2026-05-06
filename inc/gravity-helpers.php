@@ -251,7 +251,7 @@ function tb_create_athlete_post( $nested_entry, $family_id ) {
  *   @type int    $family_id              Family post ID.
  *   @type int    $application_id         Application post ID.
  *   @type int    $season_id              Athletic Season post ID.
- *   @type string $new_returning          'New Athlete' | 'Returning Athlete'
+ *   @type string $new_returning_athlete  'New Athlete' | 'Returning Athlete'
  *   @type bool   $eligibility_confirmed  True if all required eligibility boxes were checked.
  *   @type string $singlet_requested      1 | 0
  * }
@@ -263,7 +263,7 @@ function tb_create_enrollment_post( $args ) {
          'family_id'              => 0,
          'application_id'         => 0,
          'season_id'              => 0,
-         'new_returning'          => 'New Athlete',
+         'new_returning_athlete'  => 'New Athlete',
          'eligibility_confirmed'  => false,
          'participation_type'     => 'Athlete',
          'grade'                  => '',
@@ -297,7 +297,7 @@ function tb_create_enrollment_post( $args ) {
      update_field( 'athlete',              $args['athlete_id'],                      $enrollment_id );
  
      // Top-level fields.
-     update_field( 'new_returning',        $args['new_returning'],                   $enrollment_id );
+     update_field( 'new_returning_athlete',$args['new_returning_athlete'],                   $enrollment_id );
      update_field( 'eligibility_confirmed',$args['eligibility_confirmed'] ? 1 : 0,  $enrollment_id );
      update_field( 'submitted_by',         $args['submitted_by'],                    $enrollment_id );
      update_field( 'digital_signature',    $args['digital_signature'],               $enrollment_id );
