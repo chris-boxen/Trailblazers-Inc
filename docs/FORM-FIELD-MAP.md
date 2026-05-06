@@ -334,7 +334,7 @@ during these evaluations may be used for research purposes.</p>
 | `enrollment` | `family` | ID of created or located Family post |
 | `enrollment` | `season` | Value from hidden Season ID field |
 | `enrollment` | `athlete` | ID of created or located Athlete post |
-| `enrollment` | `new_returning` | `New Athlete` or `Returning Athlete` |
+| `enrollment` | `new_returning_athlete` | `New Athlete` or `Returning Athlete` |
 | `enrollment` | `eligibility_confirmed` | `true` if all required eligibility checkboxes checked |
 | `enrollment` | `physical_status` | `Not Received` |
 | `enrollment` | `singlet_status` | `Not Needed` if singlet_requested = No; `Ordered` if Yes |
