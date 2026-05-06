@@ -120,3 +120,57 @@
  
      return $field;
  } );
+ 
+ // =============================================================================
+ // ENROLLMENT — ADMIN LIST COLUMNS
+ // =============================================================================
+ 
+ /**
+  * Add New/Returning Athlete and Participation Type columns to the
+  * Enrollment post list in WP Admin.
+  */
+ add_filter( 'manage_enrollment_posts_columns', function( $columns ) {
+     // Insert after the title column.
+     $new = [];
+     foreach ( $columns as $key => $label ) {
+         $new[ $key ] = $label;
+         if ( $key === 'title' ) {
+             $new['new_returning_athlete'] = 'New / Returning';
+             $new['participation_type']    = 'Participation Type';
+         }
+     }
+     return $new;
+ } );
+ 
+ add_action( 'manage_enrollment_posts_custom_column', function( $column, $post_id ) {
+     switch ( $column ) {
+         case 'new_returning_athlete':
+             $val = get_field( 'new_returning_athlete', $post_id );
+             echo $val ? esc_html( $val ) : '<span style="color:#999;">—</span>';
+             break;
+         case 'participation_type':
+             $val = get_field( 'participation_type', $post_id );
+             echo $val ? esc_html( $val ) : '<span style="color:#999;">—</span>';
+             break;
+     }
+ }, 10, 2 );
+ 
+ /**
+  * Make both columns sortable.
+  */
+ add_filter( 'manage_edit-enrollment_sortable_columns', function( $columns ) {
+     $columns['new_returning_athlete'] = 'new_returning_athlete';
+     $columns['participation_type']    = 'participation_type';
+     return $columns;
+ } );
+ 
+ add_action( 'pre_get_posts', function( $query ) {
+     if ( ! is_admin() || ! $query->is_main_query() ) return;
+     if ( $query->get( 'post_type' ) !== 'enrollment' ) return;
+ 
+     $orderby = $query->get( 'orderby' );
+     if ( in_array( $orderby, [ 'new_returning_athlete', 'participation_type' ], true ) ) {
+         $query->set( 'meta_key', $orderby );
+         $query->set( 'orderby', 'meta_value' );
+     }
+ } );
