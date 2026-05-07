@@ -220,3 +220,63 @@
          $query->set( 'orderby', 'meta_value' );
      }
  } );
+ 
+ // =============================================================================
+ // APPLICATION — ADMIN LIST FILTERS
+ // =============================================================================
+ 
+ add_action( 'restrict_manage_posts', function( $post_type ) {
+     if ( $post_type !== 'application' ) return;
+ 
+     $method_filter  = $_GET['filter_payment_method']  ?? '';
+     $status_filter  = $_GET['filter_payment_status']  ?? '';
+ 
+     ?>
+     <select name="filter_payment_method">
+         <option value="">All Payment Methods</option>
+         <?php foreach ( [ 'Credit Card', 'Check/Cash' ] as $choice ) : ?>
+             <option value="<?php echo esc_attr( $choice ); ?>"
+                 <?php selected( $method_filter, $choice ); ?>>
+                 <?php echo esc_html( $choice ); ?>
+             </option>
+         <?php endforeach; ?>
+     </select>
+ 
+     <select name="filter_payment_status">
+         <option value="">All Payment Statuses</option>
+         <?php foreach ( [ 'Not Received', 'Partially Paid', 'Paid', 'Waived', 'Refunded' ] as $choice ) : ?>
+             <option value="<?php echo esc_attr( $choice ); ?>"
+                 <?php selected( $status_filter, $choice ); ?>>
+                 <?php echo esc_html( $choice ); ?>
+             </option>
+         <?php endforeach; ?>
+     </select>
+     <?php
+ } );
+ 
+ add_action( 'parse_query', function( $query ) {
+     if ( ! is_admin() || ! $query->is_main_query() ) return;
+     if ( $query->get( 'post_type' ) !== 'application' ) return;
+ 
+     $meta_query = [];
+ 
+     if ( ! empty( $_GET['filter_payment_method'] ) ) {
+         $meta_query[] = [
+             'key'     => 'payment_method',
+             'value'   => sanitize_text_field( $_GET['filter_payment_method'] ),
+             'compare' => '=',
+         ];
+     }
+ 
+     if ( ! empty( $_GET['filter_payment_status'] ) ) {
+         $meta_query[] = [
+             'key'     => 'payment_status',
+             'value'   => sanitize_text_field( $_GET['filter_payment_status'] ),
+             'compare' => '=',
+         ];
+     }
+ 
+     if ( ! empty( $meta_query ) ) {
+         $query->set( 'meta_query', $meta_query );
+     }
+ } );
