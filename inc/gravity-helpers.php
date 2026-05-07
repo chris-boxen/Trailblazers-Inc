@@ -318,6 +318,12 @@ function tb_create_enrollment_post( $args ) {
          'singlet_size'         => $args['singlet_size'],
          'singlet_status'       => $args['singlet_requested'] === 'Yes' ? 'Ordered' : 'Not Needed',
      ], $enrollment_id );
+     
+     // Sport taxonomy — inherit from season.
+     $sport_terms = wp_get_object_terms( $args['season_id'], 'sport', [ 'fields' => 'ids' ] );
+     if ( ! is_wp_error( $sport_terms ) && ! empty( $sport_terms ) ) {
+         wp_set_object_terms( $enrollment_id, $sport_terms, 'sport' );
+     }
  
      return $enrollment_id;
  }

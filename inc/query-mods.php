@@ -174,3 +174,49 @@
          $query->set( 'orderby', 'meta_value' );
      }
  } );
+ 
+ // =============================================================================
+ // APPLICATION — ADMIN LIST COLUMNS
+ // =============================================================================
+ 
+ add_filter( 'manage_application_posts_columns', function( $columns ) {
+     $new = [];
+     foreach ( $columns as $key => $label ) {
+         $new[ $key ] = $label;
+         if ( $key === 'title' ) {
+             $new['payment_method'] = 'Payment Method';
+             $new['payment_status'] = 'Payment Status';
+         }
+     }
+     return $new;
+ } );
+ 
+ add_action( 'manage_application_posts_custom_column', function( $column, $post_id ) {
+     switch ( $column ) {
+         case 'payment_method':
+             $val = get_field( 'payment_method', $post_id );
+             echo $val ? esc_html( $val ) : '<span style="color:#999;">—</span>';
+             break;
+         case 'payment_status':
+             $val = get_field( 'payment_status', $post_id );
+             echo $val ? esc_html( $val ) : '<span style="color:#999;">—</span>';
+             break;
+     }
+ }, 10, 2 );
+ 
+ add_filter( 'manage_edit-application_sortable_columns', function( $columns ) {
+     $columns['payment_method'] = 'payment_method';
+     $columns['payment_status'] = 'payment_status';
+     return $columns;
+ } );
+ 
+ add_action( 'pre_get_posts', function( $query ) {
+     if ( ! is_admin() || ! $query->is_main_query() ) return;
+     if ( $query->get( 'post_type' ) !== 'application' ) return;
+ 
+     $orderby = $query->get( 'orderby' );
+     if ( in_array( $orderby, [ 'payment_method', 'payment_status' ], true ) ) {
+         $query->set( 'meta_key', $orderby );
+         $query->set( 'orderby', 'meta_value' );
+     }
+ } );
