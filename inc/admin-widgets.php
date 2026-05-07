@@ -168,9 +168,9 @@ function tb_dashboard_get_enrollment_data(): ?array {
 
 		$participation   = get_post_meta( $id, 'participation_type',   true );
 		$new_returning   = get_post_meta( $id, 'new_returning_athlete', true );
-		$payment_status  = get_post_meta( $id, 'payment_status',       true );
-		$physical_status = get_post_meta( $id, 'physical_status',      true );
-		$singlet_status  = get_post_meta( $id, 'singlet_status',       true );
+		$payment_status  = get_field( 'payment_status',  $id );
+		$physical_status = get_field( 'physical_status', $id );
+		$singlet_status  = get_field( 'singlet_status',  $id );
 
 		if ( isset( $data['participation'][ $participation ] ) ) {
 			$data['participation'][ $participation ]++;
