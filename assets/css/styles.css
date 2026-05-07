@@ -108,6 +108,8 @@ a.button:hover { background: #333; }
  
  .et_pb_menu--with-logo .et_pb_menu__menu li.button.secondary a:hover { background: #444; }
  
+ .et_pb_menu--with-logo .et_pb_menu__menu li.button + li.button { padding-left: 0; }
+ 
 /* 
  ** -----------------------------------------------------------------------
  ** Registration Shortcodes
