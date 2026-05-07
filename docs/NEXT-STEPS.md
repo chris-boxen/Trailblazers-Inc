@@ -48,6 +48,17 @@ As of 2026-05-03.
 - ✅ `single-athletic_season.php` — refactored to ul/li lists + base classes;
   header restructured with `.tb-single-header-secondary-section` grouping
   image and CTA as a right column
+  
+## Completed — Post-Launch Bug Fixes + Admin Tools
+As of 2026-05-06.
+
+- ✅ Enrollment `new_returning_athlete` field key collision diagnosed and fixed
+- ✅ Sport taxonomy write added to `tb_create_enrollment_post()`
+- ✅ Admin list columns added: Enrollment (New/Returning, Participation Type),
+  Application (Payment Method, Payment Status)
+- ✅ Admin list filters added: Enrollment and Application — both sortable
+  and filterable; `inc/query-mods.php`
+- ✅ Existing enrollment data remediated via bulk edit
 
 ---
 
@@ -70,10 +81,7 @@ Templates to build or refactor. Work through these in any order.
 - [ ] **RF CC spinner — no visible progress** — ~27 seconds with no
   intermediate state shown. Add "Processing your payment..." status message.
 - [ ] **GF Stripe + GPPA Payment Element conflict** — RF field 57 workaround
-  in place. Monitor Gravity Wiz ticket.
-- [ ] **`gform_disable_notification` filter** — "TB Registration Receipt - Paid"
-  fires on failed CC payments. Add filter to suppress when payment status
-  is not Paid.
+  in place. Monitor Gravity Wiz ticket
 - [ ] **Duplicate Stripe webhooks** — clean up stale sandbox webhooks.
 
 ---

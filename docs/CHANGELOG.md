@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## 2026-05-06
+
+### Fixed ACF field key collision — Enrollment `new_returning_athlete`
+
+**Root cause:** `group_tb_enrollment` and `group_tb_application` both defined
+a field with key `field_tb_new_returning`. The application field has choices
+`New` / `Returning`; the enrollment field has choices `New Athlete` /
+`Returning Athlete`. ACF resolved the key to the application definition at
+write time, causing the enrollment value to fail validation silently and
+write as empty on every submission.
+
+**Fix:**
+- `group_tb_enrollment.json` — field key changed from `field_tb_new_returning`
+  to `field_tb_new_returning_athlete`; field name changed from `new_returning`
+  to `new_returning_athlete`
+- `inc/gravity-helpers.php` — all three `tb_create_enrollment_post()` call
+  sites updated from `'new_returning'` to `'new_returning_athlete'`; function
+  `$defaults` and `update_field()` call updated to match
+- `docs/FORM-FIELD-MAP.md` updated to v2.4
+- Existing enrollment posts remediated via WP Admin bulk edit
+
+### Fixed sport taxonomy not written on Enrollment creation
+
+`tb_create_enrollment_post()` never called `wp_set_object_terms()`. Sport
+terms are now inherited from the linked season post at enrollment creation time.
+
+```php
+
 ### Refactored `single-athlete.php` — base classes confirmed, records query fix
 
 - Base template classes verified: `.tb-single`, `.tb-single-header`,

@@ -116,6 +116,15 @@ The following have been successfully imported:
     writes verified.
   - ✅ Returning Family, Check/Cash — 2026-05-02 — all CPT writes verified
   - ✅ Returning Family, Credit Card — 2026-05-02 — Stripe charge confirmed, webhook delivering, CPT writes verified
+  
+  ### Post-launch bug fixes (2026-05-06)
+  - ✅ Enrollment `new_returning_athlete` field key collision fixed —
+    `field_tb_new_returning` → `field_tb_new_returning_athlete`; all call
+    sites updated; existing records remediated
+  - ✅ Sport taxonomy now written to Enrollment on creation — inherited from
+    linked season via `wp_set_object_terms()`
+  - ✅ Admin list columns + filters added for Enrollment and Application
+    CPTs in `inc/query-mods.php`
 
   ### Known issues
   - RF CC submission spinner takes ~27 seconds with no visible progress — inherent to experimental handler flow; UX polish deferred
