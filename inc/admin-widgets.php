@@ -16,12 +16,13 @@
  * which uses a static cache to avoid redundant queries across widgets.
  *
  * Field notes:
+ *   - participation_type and new_returning (stored key for new_returning_athlete field)
+ *     are top-level enrollment fields — queryable directly via get_post_meta().
  *   - payment_status, physical_status, enrollment_status are sub-fields of the
- *     'status' ACF group (field_69c9e3f08452e). ACF stores group sub-fields as
- *     flat post meta rows, so get_post_meta() works directly.
- *   - singlet_status is a sub-field of the 'singlet' ACF group (field_69c9de8888649).
- *     Same storage pattern — queryable via get_post_meta().
- *   - participation_type and new_returning_athlete are top-level enrollment fields.
+ *     'status' ACF group. ACF stores group sub-fields as {group_name}_{field_name},
+ *     so the actual meta keys are status_payment_status, status_physical_status, etc.
+ *   - singlet_status is a sub-field of the 'singlet' ACF group. The field name is
+ *     singlet_status, so the stored key is singlet_singlet_status.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -143,8 +144,10 @@ function tb_dashboard_get_enrollment_data(): ?array {
 			'Refunded'        => 0,
 		],
 		'physical' => [
-			'Received'     => 0,
-			'Not Received' => 0,
+			'Received'             => 0,
+			'Valid On File'        => 0,
+			'Not Received'         => 0,
+			'Rejected / Incomplete'=> 0,
 		],
 		'singlet' => [
 			'Ordered'        => 0,
@@ -166,11 +169,11 @@ function tb_dashboard_get_enrollment_data(): ?array {
 	// cheaper than get_field() inside a loop.
 	foreach ( $enrollment_ids as $id ) {
 
-		$participation   = get_post_meta( $id, 'participation_type',   true );
-		$new_returning   = get_post_meta( $id, 'new_returning_athlete', true );
-		$payment_status  = get_field( 'payment_status',  $id );
-		$physical_status = get_field( 'physical_status', $id );
-		$singlet_status  = get_field( 'singlet_status',  $id );
+		$participation   = get_post_meta( $id, 'participation_type',     true );
+		$new_returning   = get_post_meta( $id, 'new_returning',          true ); // field name is 'new_returning', not 'new_returning_athlete'
+		$payment_status  = get_post_meta( $id, 'status_payment_status',  true ); // ACF group sub-fields stored as {group_name}_{field_name}
+		$physical_status = get_post_meta( $id, 'status_physical_status', true );
+		$singlet_status  = get_post_meta( $id, 'singlet_singlet_status', true ); // singlet group + singlet_status field
 
 		if ( isset( $data['participation'][ $participation ] ) ) {
 			$data['participation'][ $participation ]++;
@@ -341,7 +344,7 @@ function tb_widget_physicals_cb(): void {
 		return;
 	}
 
-	$not_received = $d['physical']['Not Received'];
+	$not_received = $d['physical']['Not Received'] + $d['physical']['Rejected / Incomplete'];
 
 	if ( $not_received > 0 ) {
 		echo '<p style="background:#fff3cd;border-left:3px solid #ffc107;padding:6px 10px;margin-bottom:10px;font-size:12px;">'
