@@ -103,6 +103,11 @@ a.button:hover { background: #333; }
   background: var(--secondary-color);
  }
  
+ .et_pb_menu--with-logo .et_pb_menu__menu li.button.secondary a,
+ .et-db #et-boc .et-l .et_pb_menu_0_tb_header.et_pb_menu .button.secondary a { background: #999; }
+ 
+ .et_pb_menu--with-logo .et_pb_menu__menu li.button.secondary a:hover { background: #444; }
+ 
 /* 
  ** -----------------------------------------------------------------------
  ** Registration Shortcodes
