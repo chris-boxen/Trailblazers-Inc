@@ -176,6 +176,38 @@
  } );
  
  // =============================================================================
+ // ENROLLMENT — ADMIN LIST FILTERS
+ // =============================================================================
+ 
+ add_action( 'restrict_manage_posts', function( $post_type ) {
+     if ( $post_type !== 'enrollment' ) return;
+ 
+     $new_returning_filter = $_GET['filter_new_returning_athlete'] ?? '';
+     $participation_filter = $_GET['filter_participation_type']    ?? '';
+     ?>
+     <select name="filter_new_returning_athlete">
+         <option value="">All New / Returning</option>
+         <?php foreach ( [ 'New Athlete', 'Returning Athlete' ] as $choice ) : ?>
+             <option value="<?php echo esc_attr( $choice ); ?>"
+                 <?php selected( $new_returning_filter, $choice ); ?>>
+                 <?php echo esc_html( $choice ); ?>
+             </option>
+         <?php endforeach; ?>
+     </select>
+ 
+     <select name="filter_participation_type">
+         <option value="">All Participation Types</option>
+         <?php foreach ( [ 'Athlete', 'Sibling Runner' ] as $choice ) : ?>
+             <option value="<?php echo esc_attr( $choice ); ?>"
+                 <?php selected( $participation_filter, $choice ); ?>>
+                 <?php echo esc_html( $choice ); ?>
+             </option>
+         <?php endforeach; ?>
+     </select>
+     <?php
+ } );
+ 
+ // =============================================================================
  // APPLICATION — ADMIN LIST COLUMNS
  // =============================================================================
  
