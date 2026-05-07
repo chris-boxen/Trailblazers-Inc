@@ -183,16 +183,18 @@ function tb_dashboard_get_enrollment_data(): ?array {
 			$data['new_returning'][ $new_returning ]++;
 		}
 
-		if ( isset( $data['payment'][ $payment_status ] ) ) {
-			$data['payment'][ $payment_status ]++;
-		}
+		if ( $participation === 'Athlete' ) {
+			if ( isset( $data['payment'][ $payment_status ] ) ) {
+				$data['payment'][ $payment_status ]++;
+			}
 
-		if ( isset( $data['physical'][ $physical_status ] ) ) {
-			$data['physical'][ $physical_status ]++;
-		}
+			if ( isset( $data['physical'][ $physical_status ] ) ) {
+				$data['physical'][ $physical_status ]++;
+			}
 
-		if ( isset( $data['singlet'][ $singlet_status ] ) ) {
-			$data['singlet'][ $singlet_status ]++;
+			if ( isset( $data['singlet'][ $singlet_status ] ) ) {
+				$data['singlet'][ $singlet_status ]++;
+			}
 		}
 	}
 

@@ -176,6 +176,42 @@
  } );
  
  // =============================================================================
+ // ENROLLMENT — PAYMENT STATUS COLUMN
+ // =============================================================================
+ 
+ add_filter( 'manage_enrollment_posts_columns', function( $columns ) {
+     $new = [];
+     foreach ( $columns as $key => $label ) {
+         $new[ $key ] = $label;
+         if ( $key === 'title' ) {
+             $new['payment_status'] = 'Payment Status';
+         }
+     }
+     return $new;
+ } );
+ 
+ add_action( 'manage_enrollment_posts_custom_column', function( $column, $post_id ) {
+     if ( $column !== 'payment_status' ) return;
+     $val = get_post_meta( $post_id, 'status_payment_status', true );
+     echo $val ? esc_html( $val ) : '<span style="color:#999;">—</span>';
+ }, 10, 2 );
+ 
+ add_filter( 'manage_edit-enrollment_sortable_columns', function( $columns ) {
+     $columns['payment_status'] = 'payment_status';
+     return $columns;
+ } );
+ 
+ add_action( 'pre_get_posts', function( $query ) {
+     if ( ! is_admin() || ! $query->is_main_query() ) return;
+     if ( $query->get( 'post_type' ) !== 'enrollment' ) return;
+ 
+     if ( $query->get( 'orderby' ) === 'payment_status' ) {
+         $query->set( 'meta_key', 'status_payment_status' );
+         $query->set( 'orderby', 'meta_value' );
+     }
+ } );
+ 
+ // =============================================================================
  // ENROLLMENT — ADMIN LIST FILTERS
  // =============================================================================
  
@@ -205,6 +241,38 @@
          <?php endforeach; ?>
      </select>
      <?php
+ } );
+
+ 
+ add_action( 'restrict_manage_posts', function( $post_type ) {
+     if ( $post_type !== 'enrollment' ) return;
+ 
+     $current = $_GET['filter_enrollment_payment_status'] ?? '';
+ 
+     ?>
+     <select name="filter_enrollment_payment_status">
+         <option value="">All Payment Statuses</option>
+         <?php foreach ( [ 'Not Received', 'Partially Paid', 'Paid', 'Waived', 'Refunded' ] as $choice ) : ?>
+             <option value="<?php echo esc_attr( $choice ); ?>"
+                 <?php selected( $current, $choice ); ?>>
+                 <?php echo esc_html( $choice ); ?>
+             </option>
+         <?php endforeach; ?>
+     </select>
+     <?php
+ } );
+ 
+ add_action( 'parse_query', function( $query ) {
+     if ( ! is_admin() || ! $query->is_main_query() ) return;
+     if ( $query->get( 'post_type' ) !== 'enrollment' ) return;
+ 
+     if ( ! empty( $_GET['filter_enrollment_payment_status'] ) ) {
+         $query->set( 'meta_query', [ [
+             'key'     => 'status_payment_status',
+             'value'   => sanitize_text_field( $_GET['filter_enrollment_payment_status'] ),
+             'compare' => '=',
+         ] ] );
+     }
  } );
  
  // =============================================================================
