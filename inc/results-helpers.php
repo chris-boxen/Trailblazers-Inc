@@ -5,21 +5,29 @@
  *
  * Functions:
  *   tb_parse_result_time_seconds( $display )
- *       Parses a result_display string (MM:SS.ss or H:MM:SS.ss) and returns
- *       the equivalent float in seconds, or 0 if unparseable.
+ *       Parses MM:SS.ss or H:MM:SS.ss → float seconds. Returns 0 if
+ *       unparseable.
+ *
+ *   tb_run_result_times_sync()
+ *       Finds all athletic_result posts with empty result_time_seconds,
+ *       calculates from result_display, writes via update_field().
+ *       Returns [ 'updated' => int, 'skipped' => int ].
+ *       Called by the admin_init handler; available to other callers.
  *
  * Hooks:
  *   acf/save_post (priority 20)
- *       On save of any athletic_result post via the WP admin, derives
- *       result_time_seconds from result_display and writes it directly.
- *       Does not fire during CSV imports (importers bypass the ACF save
- *       pipeline). Use the Tools → Sync Result Times page after each import.
+ *       Derives result_time_seconds on WP admin saves of athletic_result.
+ *       Does not fire during WPUCI imports — use the sync tool after import.
+ *
+ *   admin_init
+ *       Catches POST from the sync button (Tools page or dashboard widget),
+ *       runs tb_run_result_times_sync(), redirects back to the referer with
+ *       result params: tb_sync_done, tb_sync_updated, tb_sync_skipped.
  *
  * Admin pages:
  *   Tools → Sync Result Times
- *       Finds all athletic_result posts where result_time_seconds is empty,
- *       calculates the value from result_display, and writes it directly.
- *       Use this after every WPUCI import.
+ *       Standalone sync page. The 📊 Results dashboard widget also provides
+ *       a sync button and reads the same redirect params for its notice.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -58,14 +66,76 @@ function tb_parse_result_time_seconds( string $display ): float {
 
 
 // ---------------------------------------------------------------------------
-// 2. ACF save hook: derive result_time_seconds on WP admin saves
+// 2. Sync executor
+// ---------------------------------------------------------------------------
+
+/**
+ * Find all athletic_result posts with empty result_time_seconds, derive the
+ * value from result_display, and write it via update_field().
+ *
+ * Uses get_post_meta() to read result_display directly, bypassing ACF shadow
+ * key resolution — safe for a plain text field and necessary because shadow
+ * keys may be absent on freshly-imported posts.
+ *
+ * @return array { int $updated, int $skipped }
+ */
+function tb_run_result_times_sync(): array {
+	$updated = 0;
+	$skipped = 0;
+
+	$missing = get_posts( [
+		'post_type'      => 'athletic_result',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'no_found_rows'  => true,
+		'meta_query'     => [ [
+			'key'     => 'result_time_seconds',
+			'compare' => 'NOT EXISTS',
+		] ],
+	] );
+
+	$empty = get_posts( [
+		'post_type'      => 'athletic_result',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'no_found_rows'  => true,
+		'meta_query'     => [ [
+			'key'     => 'result_time_seconds',
+			'value'   => '',
+			'compare' => '=',
+		] ],
+	] );
+
+	$ids = array_unique( array_merge( $missing, $empty ) );
+
+	foreach ( $ids as $post_id ) {
+		$display = get_post_meta( $post_id, 'result_display', true );
+		if ( ! $display ) {
+			$skipped++;
+			continue;
+		}
+		$seconds = tb_parse_result_time_seconds( $display );
+		if ( $seconds > 0 ) {
+			update_field( 'result_time_seconds', round( $seconds, 2 ), $post_id );
+			$updated++;
+		} else {
+			$skipped++;
+		}
+	}
+
+	return [ 'updated' => $updated, 'skipped' => $skipped ];
+}
+
+
+// ---------------------------------------------------------------------------
+// 3. ACF save hook: sync on WP admin saves
 // ---------------------------------------------------------------------------
 
 add_action( 'acf/save_post', 'tb_sync_result_time_seconds', 20 );
 
 /**
- * On ACF save of an athletic_result, write result_time_seconds from result_display.
- * Fires only through the WP admin save pipeline, not during CSV imports.
+ * On ACF save of an athletic_result, write result_time_seconds from
+ * result_display. Fires only through the WP admin save pipeline.
  *
  * @param int|string $post_id
  */
@@ -83,7 +153,31 @@ function tb_sync_result_time_seconds( $post_id ): void {
 
 
 // ---------------------------------------------------------------------------
-// 3. Admin Tools page: Sync Result Times
+// 4. admin_init POST handler
+// ---------------------------------------------------------------------------
+
+add_action( 'admin_init', function() {
+	if ( ! isset( $_POST['tb_sync_result_times'] ) ) return;
+	if ( ! current_user_can( 'manage_options' ) ) return;
+
+	check_admin_referer( 'tb_sync_result_times_action', 'tb_sync_result_times_nonce' );
+
+	$result = tb_run_result_times_sync();
+
+	$redirect = wp_get_referer() ?: admin_url( 'index.php' );
+	$redirect = add_query_arg( [
+		'tb_sync_done'    => 1,
+		'tb_sync_updated' => $result['updated'],
+		'tb_sync_skipped' => $result['skipped'],
+	], $redirect );
+
+	wp_safe_redirect( $redirect );
+	exit;
+} );
+
+
+// ---------------------------------------------------------------------------
+// 5. Tools page: Sync Result Times
 // ---------------------------------------------------------------------------
 
 add_action( 'admin_menu', function() {
@@ -97,65 +191,12 @@ add_action( 'admin_menu', function() {
 } );
 
 /**
- * Render the Tools → Sync Result Times admin page.
- * Handles both the display state and the POST action.
+ * Render the Tools → Sync Result Times page.
+ * POST is handled by the admin_init hook above; this page only displays state
+ * and the button, and reads redirect params for the success notice.
  */
 function tb_sync_result_times_page(): void {
 
-	// --- Run sync if form was submitted ---
-	$updated = 0;
-	$skipped = 0;
-	$ran     = false;
-
-	if (
-		isset( $_POST['tb_sync_result_times'] ) &&
-		check_admin_referer( 'tb_sync_result_times_action', 'tb_sync_result_times_nonce' )
-	) {
-		$ran = true;
-
-		$posts = get_posts( [
-			'post_type'      => 'athletic_result',
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'no_found_rows'  => true,
-			'meta_query'     => [ [
-				'key'     => 'result_time_seconds',
-				'compare' => 'NOT EXISTS',
-			] ],
-		] );
-
-		// Also catch posts where the field exists but is empty
-		$posts_empty = get_posts( [
-			'post_type'      => 'athletic_result',
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'no_found_rows'  => true,
-			'meta_query'     => [ [
-				'key'     => 'result_time_seconds',
-				'value'   => '',
-				'compare' => '=',
-			] ],
-		] );
-
-		$ids = array_unique( array_merge( $posts, $posts_empty ) );
-
-		foreach ( $ids as $post_id ) {
-			$display = get_post_meta( $post_id, 'result_display', true );
-			if ( ! $display ) {
-				$skipped++;
-				continue;
-			}
-			$seconds = tb_parse_result_time_seconds( $display );
-			if ( $seconds > 0 ) {
-				update_field( 'result_time_seconds', round( $seconds, 2 ), $post_id );
-				$updated++;
-			} else {
-				$skipped++;
-			}
-		}
-	}
-
-	// --- Count posts still needing sync (for display) ---
 	$needs_sync = count( get_posts( [
 		'post_type'      => 'athletic_result',
 		'posts_per_page' => -1,
@@ -179,6 +220,10 @@ function tb_sync_result_times_page(): void {
 		] ],
 	] ) );
 
+	$did_sync = isset( $_GET['tb_sync_done'] );
+	$updated  = $did_sync ? (int) ( $_GET['tb_sync_updated'] ?? 0 ) : 0;
+	$skipped  = $did_sync ? (int) ( $_GET['tb_sync_skipped'] ?? 0 ) : 0;
+
 	?>
 	<div class="wrap">
 		<h1>Sync Result Times</h1>
@@ -188,8 +233,8 @@ function tb_sync_result_times_page(): void {
 			CSV import via WPUCI.
 		</p>
 
-		<?php if ( $ran ) : ?>
-			<div class="notice notice-success">
+		<?php if ( $did_sync ) : ?>
+			<div class="notice notice-success is-dismissible">
 				<p>
 					<strong>Sync complete.</strong>
 					<?php echo esc_html( $updated ); ?> result<?php echo $updated !== 1 ? 's' : ''; ?> updated.
@@ -212,7 +257,7 @@ function tb_sync_result_times_page(): void {
 			</tr>
 		</table>
 
-		<?php if ( $needs_sync > 0 || ! $ran ) : ?>
+		<?php if ( $needs_sync > 0 ) : ?>
 			<form method="post">
 				<?php wp_nonce_field( 'tb_sync_result_times_action', 'tb_sync_result_times_nonce' ); ?>
 				<p>
