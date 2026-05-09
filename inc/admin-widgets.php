@@ -276,12 +276,17 @@ function tb_dashboard_get_results_data(): ?array {
 		'orderby'        => 'meta_value',
 		'meta_key'       => '_EventStartDate',
 		'order'          => 'ASC',
+		'tax_query'      => [ [
+			'taxonomy' => 'tribe_events_cat',
+			'field'    => 'slug',
+			'terms'    => 'athletic-meet',
+		] ],
 		'meta_query'     => [ [
 			'key'   => 'season',
 			'value' => $season_id,
-			'terms' => 'athletic-meet',
 		] ],
 	] );
+
 
 	$meets         = [];
 	$total_results = 0;
