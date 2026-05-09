@@ -82,7 +82,7 @@ while ( have_posts() ) :
 
 	// -------------------------------------------------------------------------
 	// MEETS
-	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------	
 	$meets_query = new WP_Query( [
 		'post_type'      => 'tribe_events',
 		'posts_per_page' => -1,
@@ -90,6 +90,11 @@ while ( have_posts() ) :
 		'meta_key'       => '_EventStartDate',
 		'orderby'        => 'meta_value',
 		'order'          => 'ASC',
+		'tax_query'      => [ [
+			'taxonomy' => 'tribe_events_cat',
+			'field'    => 'slug',
+			'terms'    => 'athletic-meet',
+		] ],
 		'meta_query'     => [
 			[
 				'key'     => 'season',
