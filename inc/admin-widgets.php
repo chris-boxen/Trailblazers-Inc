@@ -279,6 +279,7 @@ function tb_dashboard_get_results_data(): ?array {
 		'meta_query'     => [ [
 			'key'   => 'season',
 			'value' => $season_id,
+			'terms' => 'athletic-meet',
 		] ],
 	] );
 
