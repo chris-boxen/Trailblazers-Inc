@@ -140,7 +140,7 @@ function tb_sync_result_times_page(): void {
 		$ids = array_unique( array_merge( $posts, $posts_empty ) );
 
 		foreach ( $ids as $post_id ) {
-			$display = get_field( 'result_display', $post_id );
+			$display = get_post_meta( $post_id, 'result_display', true );
 			if ( ! $display ) {
 				$skipped++;
 				continue;
