@@ -59,7 +59,7 @@
             "bidirectional_target": []
         },
         {
-            "key": "field_tb_event",
+            "key": "field_tb_athletic_event",
             "label": "Athletic Event",
             "name": "athletic_event",
             "aria-label": "",
@@ -107,7 +107,7 @@
             "append": ""
         },
         {
-            "key": "field_tb_result",
+            "key": "field_tb_result_display",
             "label": "Result Display",
             "name": "result_display",
             "aria-label": "",
