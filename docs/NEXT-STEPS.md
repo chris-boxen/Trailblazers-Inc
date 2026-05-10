@@ -62,6 +62,21 @@ As of 2026-05-06.
 
 ---
 
+## Completed — Athletic Results Data Import
+As of 2026-05-09.
+
+- ✅ 2025 XC Athletic Results imported — 951 posts, 14 meets, via WPUCI
+- ✅ ACF field key collision fixed in `group_tb_athletic_result.json`;
+  postmeta shadow keys migrated on local; production migration deferred to
+  import time (no prior data)
+- ✅ `inc/results-helpers.php` — parse helper, sync executor, ACF save hook,
+  admin_init handler, Tools → Sync Result Times page
+- ✅ 📊 Results dashboard widget — per-meet counts, sync notice, sync button
+- ✅ `tribe_events_cat: athletic-meet` filter applied to all meet queries
+  (`single-athletic_season.php`, admin widget)
+  
+---
+
 ## Active — Template Build
 
 Templates to build or refactor. Work through these in any order.
@@ -98,7 +113,7 @@ Templates to build or refactor. Work through these in any order.
 
 ## Deferred — Schema / Data
 
-- [ ] Athletic Results and Athletic Records data import
+- [ ] Athletic Records data import
 - [ ] Confirm `publicly_queryable` is false on Family, Application, Enrollment,
   and Athletic Physical CPTs
 - [ ] Decide whether TEC `tribe_events_cat` needs sport sub-categories

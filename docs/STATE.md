@@ -2,9 +2,9 @@
 
 
 ## Current Objective
-2026 XC registration is live at https://trailblazers.team/. Post-launch bug
-backlog is tracked in NEXT-STEPS.md. Active focus has shifted to building and
-refining public-facing CPT templates.
+2026 XC registration is live at https://trailblazers.team/. 2025 XC Athletic
+Results imported and verified. Active focus is template build and Athletic
+Records import.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -21,6 +21,12 @@ refining public-facing CPT templates.
   Imported from `assets/css/styles.css`.
 - `archive-athletic_season.php` added. `single-athletic_season.php` refactored
   to ul/li list system with base template classes.
+- `inc/results-helpers.php` added — result time sync utility, ACF save hook,
+    admin_init POST handler, Tools → Sync Result Times page.
+- `inc/admin-widgets.php` updated — 📊 Results widget added; all meet queries
+  now filter by tribe_events_cat: athletic-meet.
+- ACF field key collision fixed in `group_tb_athletic_result.json`
+  (field_tb_event → field_tb_athletic_event, field_tb_result → field_tb_result_display).
 
 ## Completed — Data Population
 The following have been successfully imported:
@@ -36,7 +42,7 @@ The following have been successfully imported:
 9. ✅ Enrollments (2025 XC and 2026 TF)
 
 ## Remaining — Data Population (deferred, not blocking)
-10. ⬜ Athletic Results
+10. ✅ Athletic Results (2025 XC — 951 posts, 14 meets, via WPUCI)
 11. ⬜ Athletic Records
 
 ## Current Development Environment

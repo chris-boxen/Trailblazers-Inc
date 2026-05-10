@@ -1,5 +1,94 @@
 # CHANGELOG
 
+## 2026-05-09
+
+### Fixed ACF field key collisions in group_tb_athletic_result
+
+**Root cause:** `group_tb_athletic_result` and `group_tb_athletic_record` shared
+two field keys, causing ACF to resolve the wrong definition at render time:
+
+- `field_tb_event` — used in both groups for the Athletic Event link. On
+  `athletic_result` it backed `athletic_event`; on `athletic_record` it backed
+  `event`. ACF cached one definition, breaking field display on the other.
+- `field_tb_result` — different types in each group: `text` on `athletic_result`
+  (backing `result_display`) vs. `post_object → athletic_result` on
+  `athletic_record`. Caused `result_display` to render as a post_object selector.
+
+**Fix — `acf-json/group_tb_athletic_result.json`:**
+- `field_tb_event` → `field_tb_athletic_event` (field name `athletic_event` unchanged)
+- `field_tb_result` → `field_tb_result_display` (field name `result_display` unchanged)
+
+**Database migration (required on each environment after re-import):**
+```sql
+UPDATE wp_postmeta SET meta_value = 'field_tb_athletic_event'
+  WHERE meta_key = '_athletic_event' AND meta_value = 'field_tb_event';
+UPDATE wp_postmeta SET meta_value = 'field_tb_result_display'
+  WHERE meta_key = '_result_display' AND meta_value = 'field_tb_result';
+```
+952 rows affected on local. Environments with no prior import do not need
+this migration — the correct key is written at import time once the JSON fix
+is in place.
+
+---
+
+### Imported 2025 XC Athletic Results (951 posts)
+
+Imported via WP Ultimate CSV Importer from `TB Stats | 2025.xlsx`:
+- 14 meets across the full 2025 XC season
+- All meets renamed with year suffix for title uniqueness (e.g. "Homecoming 2025")
+- Eye Opener 2025 added manually to tribe_events before import (was missing)
+- All three post_object fields (athlete, meet, athletic_event) resolve correctly
+- `result_display` populating as plain text after field key collision fix
+- `result_time_seconds` backfilled via Tools → Sync Result Times after import
+
+**WPUCI field mapping behavior:**
+- `athlete` — matched by `post_name`
+- `meet` — matched by `post_title`
+- `athletic_event` — matched by post ID (249 for "5K")
+- Shadow keys absent on freshly-imported posts; sync tool reads `result_display`
+  via `get_post_meta()` directly to bypass ACF resolution
+
+---
+
+### Added `inc/results-helpers.php`
+
+New module for athletic result utilities. Required in `functions.php`.
+
+- `tb_parse_result_time_seconds()` — parses MM:SS.ss or H:MM:SS.ss → float seconds
+- `tb_run_result_times_sync()` — finds all `athletic_result` posts with empty
+  `result_time_seconds`, calculates from `result_display`, writes via `update_field()`.
+  Returns `['updated' => int, 'skipped' => int]`.
+- `acf/save_post` hook (priority 20) — derives `result_time_seconds` on WP admin
+  saves. Does not fire during WPUCI imports.
+- `admin_init` handler — catches sync button POST from any page, runs sync,
+  redirects to referer with result params.
+- Tools → Sync Result Times — standalone admin page. Use after every WPUCI import.
+
+---
+
+### Updated `inc/admin-widgets.php` — added Results widget + meet query fix
+
+Added `📊 Results` dashboard widget:
+- `tb_dashboard_get_results_data()` — queries meets for active season (filtered
+  by `tribe_events_cat: athletic-meet`), counts results per meet, counts posts
+  needing sync. Statically cached.
+- `tb_widget_results_cb()` — per-meet results table, sync notice on redirect,
+  sync button when unsynced results exist.
+
+---
+
+### Fixed meet queries — tribe_events_cat filter
+
+`single-athletic_season.php` and `inc/admin-widgets.php` were returning all
+`tribe_events` linked to a season, including non-meet types (practices,
+information meetings). Both now filter by `tribe_events_cat: athletic-meet`.
+
+**Standing rule:** All `tribe_events` queries scoped to a season must include
+a `tax_query` on `tribe_events_cat: athletic-meet` unless explicitly querying
+all event types.
+
+---
+
 ## 2026-05-06
 
 ### Fixed ACF field key collision — Enrollment `new_returning_athlete`
