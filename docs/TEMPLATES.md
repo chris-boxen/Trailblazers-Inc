@@ -84,6 +84,7 @@ Attribute values are always lowercase slugs. Space-separated values used for mul
 | `single-athletic_season.php` coaches | `data-name`, `data-role` |
 | `single-athletic_season.php` meets | `data-date`, `data-results` |
 | `single-athletic_season.php` athletes | `data-grade`, `data-type` |
+| `single-athlete.php` result rows | `data-meet-id`, `data-meet-date`, `data-event`, `data-result-seconds`, `data-place` |
 
 ## Template-parts direction
 Add when individual templates grow complex enough to warrant partials:
@@ -100,3 +101,6 @@ Add when individual templates grow complex enough to warrant partials:
 - Results on `single-athletic_event.php` query via the `event` post object field. Results with only a free-text `event_name` won't appear here.
 - Current record detection: if two records for the same athlete/event/type share the same meet date, both are flagged as current.
 - `featured_image` on Athletic Season is an ACF image field (returns ID), not the WP native post thumbnail. Use `get_field( 'featured_image', $id )`, not `get_post_thumbnail_id()`.
+- ACF Group sub-fields (`customize_data` on Athletic Season) must be read via
+  `get_field( 'customize_data', $id )` then accessed as array keys. Direct
+  `get_field( 'sub_field_name', $id )` returns NULL.

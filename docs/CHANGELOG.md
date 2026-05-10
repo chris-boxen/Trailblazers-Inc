@@ -1,5 +1,63 @@
 # CHANGELOG
 
+## 2026-05-10
+
+### Fixed 2025 XC enrollment count — 26 erroneous posts removed
+
+Enrollment import had pulled from the full Athlete CPT roster (including alumni)
+rather than active 2025 registrants. 26 enrollment posts were identified and
+deleted. Confirmed correct count: **118 athletes** for 2025 XC season.
+
+Root cause: import prep did not gate on `account_status = Active`. Standing rule:
+always filter by active account status when preparing enrollment import data.
+
+---
+
+### Fixed `results_enabled` always returning NULL on single-athlete.php
+
+`get_field( 'results_enabled', $season_id )` returned NULL because the field
+is a sub-field inside the `customize_data` ACF Group. ACF stores group
+sub-fields with a prefixed meta key (`customize_data_results_enabled`), not
+the bare sub-field name. Direct `get_field()` by sub-field name alone fails.
+
+**Fix:** Read the full group first, then access sub-fields from the array:
+```php
+$customize = get_field( 'customize_data', $season_id ) ?: [];
+$results_enabled = $customize['results_enabled'] ?? false;
+```
+Applies to all four `customize_data` sub-fields: `results_enabled`,
+`results_unavailable_message`, `link_milesplit`, `link_athletic_net`.
+
+**Standing rule:** ACF Group sub-fields must be read via the parent group.
+Direct `get_field( 'sub_field_name', $post_id )` will not resolve them.
+
+---
+
+### Fixed result_display and result_time_seconds not rendering on single-athlete.php
+
+Shadow key migration SQL had never been run on production. After pulling the
+prod DB to local, ran:
+
+```sql
+UPDATE wp_qscbs1aqvn_postmeta SET meta_value = 'field_tb_result_display'
+WHERE meta_key = '_result_display' AND meta_value = 'field_tb_result';
+
+UPDATE wp_qscbs1aqvn_postmeta SET meta_value = 'field_tb_athletic_event'
+WHERE meta_key = '_athletic_event' AND meta_value = 'field_tb_event';
+```
+
+**This migration must also be run on production before deploying.**
+
+---
+
+### Refactored results output on single-athlete.php
+
+Replaced nested Meet → Results structure (repeated header per meet) with a
+single flat list per season. Columns: Meet | Date | Event | Result | Place.
+Each row links to the meet page. Data attributes added to `li.tb-list-row`:
+`data-meet-id`, `data-meet-date`, `data-event`, `data-result-seconds`,
+`data-place`. CSS column rule: `.tb-results-list { --tb-cols: 2fr 1fr 1fr 1fr 1fr; }`
+
 ## 2026-05-09
 
 ### Fixed ACF field key collisions in group_tb_athletic_result

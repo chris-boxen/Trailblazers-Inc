@@ -77,12 +77,14 @@ while ( have_posts() ) :
 			$season_id = get_field( 'season', $enrollment->ID );
 			if ( ! $season_id || isset( $seasons_map[ $season_id ] ) ) continue;
 
+			$customize = get_field( 'customize_data', $season_id ) ?: [];
+			
 			$seasons_map[ $season_id ] = [
-				'season_title'                => get_field( 'season_title',                $season_id ),
-				'results_enabled'             => get_field( 'results_enabled',             $season_id ),
-				'results_unavailable_message' => get_field( 'results_unavailable_message', $season_id ),
-				'link_milesplit'              => get_field( 'link_milesplit',              $season_id ),
-				'link_athletic_net'           => get_field( 'link_athletic_net',           $season_id ),
+				'season_title'                => get_field( 'season_title', $season_id ),
+				'results_enabled'             => $customize['results_enabled']             ?? false,
+				'results_unavailable_message' => $customize['results_unavailable_message'] ?? '',
+				'link_milesplit'              => $customize['link_milesplit']              ?? false,
+				'link_athletic_net'           => $customize['link_athletic_net']          ?? false,
 				'start_date'                  => get_field( 'start_date',                  $season_id ),
 			];
 		}
@@ -353,55 +355,61 @@ while ( have_posts() ) :
 					<p class="tb-no-data">No results recorded for this season.</p>
 
 				<?php else : ?>
-
-					<?php foreach ( $season_results as $meet_id => $meet_results ) :
-						$first_result = $meet_results[0];
-						$date_display = ! empty( $first_result['meet_date'] )
-							? date_i18n( 'F j, Y', strtotime( $first_result['meet_date'] ) )
-							: '';
+				
+					<?php
+					// Flatten meet => results into a single chronological list
+					$flat_results = [];
+					foreach ( $season_results as $meet_id => $meet_results ) {
+						foreach ( $meet_results as $r ) {
+							$flat_results[] = array_merge( $r, [
+								'meet_id'        => $meet_id,
+								'meet_link'      => get_permalink( $meet_id ),
+								'result_seconds' => get_field( 'result_time_seconds', $r['result_id'] ),
+							] );
+						}
+					}
 					?>
-					<div class="tb-results-meet">
-
-						<h4 class="tb-meet-label">
-							<a href="<?php echo esc_url( get_permalink( $meet_id ) ); ?>">
-								<?php echo esc_html( $first_result['meet_name'] ); ?>
-							</a>
-							<?php if ( $date_display ) : ?>
-								<span class="tb-meet-date">(<?php echo esc_html( $date_display ); ?>)</span>
-							<?php endif; ?>
-						</h4>
-
-						<div class="tb-list-wrap">
-							<ul class="tb-list tb-results-list">
-
-								<li class="tb-list-header">
-									<span class="tb-col">Event</span>
-									<span class="tb-col">Result</span>
-									<span class="tb-col">Place</span>
-								</li>
-
-								<?php foreach ( $meet_results as $r ) : ?>
-								<li class="tb-list-row">
-									<div class="tb-list-link">
-										<span class="tb-col"><?php echo esc_html( $r['event_name'] ?: '—' ); ?></span>
-										<span class="tb-col"><?php echo esc_html( $r['result_display'] ?: '—' ); ?></span>
-										<span class="tb-col">
-											<?php echo ( $r['place'] !== '' && $r['place'] !== null )
-												? esc_html( $r['place'] )
-												: '—'; ?>
-										</span>
-									</div>
-								</li>
-								<?php endforeach; ?>
-
-							</ul>
-						</div><!-- .tb-list-wrap -->
-
-					</div><!-- .tb-results-meet -->
-
-					<?php endforeach; ?>
-
-					<?php // External links at bottom of results-enabled seasons ?>
+				
+					<div class="tb-list-wrap">
+						<ul class="tb-list tb-results-list">
+				
+							<li class="tb-list-header">
+								<span class="tb-col">Meet</span>
+								<span class="tb-col">Date</span>
+								<span class="tb-col">Event</span>
+								<span class="tb-col">Result</span>
+								<span class="tb-col">Place</span>
+							</li>
+				
+							<?php foreach ( $flat_results as $r ) :
+								$date_display   = ! empty( $r['meet_date'] )
+									? date_i18n( 'M j, Y', strtotime( $r['meet_date'] ) )
+									: '—';
+								$event_slug     = $r['event_name'] ? sanitize_title( $r['event_name'] ) : '';
+								$seconds_attr   = is_numeric( $r['result_seconds'] ) ? (string) $r['result_seconds'] : '';
+								$place_attr     = ( $r['place'] !== '' && $r['place'] !== null ) ? (string) $r['place'] : '';
+							?>
+							<li class="tb-list-row"
+								data-meet-id="<?php echo esc_attr( $r['meet_id'] ); ?>"
+								data-meet-date="<?php echo esc_attr( $r['meet_date'] ?: '' ); ?>"
+								data-event="<?php echo esc_attr( $event_slug ); ?>"
+								data-result-seconds="<?php echo esc_attr( $seconds_attr ); ?>"
+								data-place="<?php echo esc_attr( $place_attr ); ?>">
+								<a href="<?php echo esc_url( $r['meet_link'] ); ?>" class="tb-list-link">
+									<span class="tb-col"><?php echo esc_html( $r['meet_name'] ?: '—' ); ?></span>
+									<span class="tb-col"><?php echo esc_html( $date_display ); ?></span>
+									<span class="tb-col"><?php echo esc_html( $r['event_name'] ?: '—' ); ?></span>
+									<span class="tb-col"><?php echo esc_html( $r['result_display'] ?: '—' ); ?></span>
+									<span class="tb-col">
+										<?php echo $place_attr !== '' ? esc_html( $place_attr ) : '—'; ?>
+									</span>
+								</a>
+							</li>
+							<?php endforeach; ?>
+				
+						</ul>
+					</div><!-- .tb-list-wrap -->
+				
 					<?php if ( $season_data['link_milesplit'] && $milesplit_id ) : ?>
 						<p class="tb-external-link">
 							<a href="https://www.milesplit.com/athletes/view/<?php echo esc_attr( $milesplit_id ); ?>"
@@ -410,7 +418,7 @@ while ( have_posts() ) :
 							</a>
 						</p>
 					<?php endif; ?>
-
+				
 					<?php if ( $season_data['link_athletic_net'] && $athletic_net_id ) : ?>
 						<p class="tb-external-link">
 							<a href="https://www.athletic.net/TrackAndField/Athlete.aspx?AID=<?php echo esc_attr( $athletic_net_id ); ?>"
@@ -419,7 +427,7 @@ while ( have_posts() ) :
 							</a>
 						</p>
 					<?php endif; ?>
-
+				
 				<?php endif; // results_enabled ?>
 
 			</div><!-- .tb-results-season -->

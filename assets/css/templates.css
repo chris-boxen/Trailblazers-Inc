@@ -220,7 +220,7 @@
 .tb-records-list     { --tb-cols: 1fr 1.5fr 1.5fr 2fr 1.5fr; }
  
 /* Per-meet results (within single-athlete) — Event | Result | Place */
-.tb-results-list     { --tb-cols: 2fr 1.5fr 1fr; }
+.tb-results-list { --tb-cols: 2fr 1fr 1fr 1fr 1fr; }
 
 
 /* =========================================================================

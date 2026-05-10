@@ -81,14 +81,16 @@ As of 2026-05-09.
 
 Templates to build or refactor. Work through these in any order.
 
-- [x] `single-athlete.php` — apply base classes; update queries for TEC meets
+- [x] `single-athlete.php` — base classes, TEC meet queries, results refactor,
+customize_data group fix, data attributes
 - [x] `single-coach.php` — apply base classes
 - [ ] `single-athletic_event.php` — apply base classes; update queries
 - [ ] `taxonomy-sport.php` — apply base classes; update queries for TEC
 - [ ] `archive-athlete.php` — refactor tables to ul/li list system
 - [ ] `archive-athletic_meet.php` — refactor tables to ul/li list system (or confirm archived)
 - [ ] `archive-athletic_record.php` — refactor tables to ul/li list system
-- [ ] `tribe/events/single-event.php` — TEC theme override (meet single)
+- [ ] `tribe/events/single-event.php` — **NEXT** — TEC theme override for
+meet-level results (all athletes, grouped by event or flat list)
 
 ---
 
@@ -108,6 +110,16 @@ Templates to build or refactor. Work through these in any order.
 - [ ] Optional donations field — choice labels missing amounts
 - [ ] `.tb-single-header-secondary-section` — handbook button is full-width
   on right column; confirm or constrain width
+
+---
+
+## Pending — Production Deployment
+
+- [ ] Run shadow key migration SQL on production database:
+      `_result_display`: `field_tb_result` → `field_tb_result_display`
+      `_athletic_event`: `field_tb_event` → `field_tb_athletic_event`
+- [ ] Verify results render on production single-athlete pages after migration
+- [ ] Run Tools → Sync Result Times on production after migration
 
 ---
 

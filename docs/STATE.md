@@ -2,9 +2,9 @@
 
 
 ## Current Objective
-2026 XC registration is live at https://trailblazers.team/. 2025 XC Athletic
-Results imported and verified. Active focus is template build and Athletic
-Records import.
+Active focus is template build. Next item: `tribe/events/single-event.php`
+TEC override for meet-level results. Production deployment of shadow key
+migration SQL still outstanding.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -27,6 +27,10 @@ Records import.
   now filter by tribe_events_cat: athletic-meet.
 - ACF field key collision fixed in `group_tb_athletic_result.json`
   (field_tb_event → field_tb_athletic_event, field_tb_result → field_tb_result_display).
+- `single-athlete.php` results section refactored: flat list per season,
+    data attributes, row-as-link. `customize_data` group access pattern fixed.
+  - 2025 XC enrollment corrected to 118 athletes (26 erroneous posts removed).
+  - Shadow key migration SQL run on local. **Not yet run on production.**
 
 ## Completed — Data Population
 The following have been successfully imported:
