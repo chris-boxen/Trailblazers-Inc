@@ -145,6 +145,7 @@ Notable fields:
 - `result_distance_meters` — Number. Normalized for distance events.
 - `result_height_meters` — Number. Normalized for height events.
 - `result_points` — Number. For points-based events.
+- `heat` — Text. Heat name or number within the event (e.g. "Varsity Boys", "JV Girls", "1", "Elite"). Import-populated. Empty on pre-2026 results.
 
 ---
 

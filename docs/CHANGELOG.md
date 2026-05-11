@@ -1,5 +1,47 @@
 # CHANGELOG
 
+## 2026-05-10 (continued)
+
+### Added heat field to group_tb_athletic_result
+
+- New text field `heat` (key: `field_tb_heat`) added after `event_name`
+- Import-populated; empty on all existing 951 XC results pending re-import
+- Documented in SCHEMA.md
+
+### Built tribe/events/single-event.php — TEC meet results view
+
+- `tribe/events/v2/default-template.php` — overrides TEC outer wrapper;
+  renders TEC natively for all events, appends results section for
+  athletic-meet events only
+- `tribe/events/single-event.php` — results section only (no header/footer);
+  grouped by event → heat; heat sub-headers and filter gated by $has_heats;
+  heat column always shown (— when empty); grade via bulk enrollment query;
+  columns: Athlete | Grade | Heat | Result | Place
+- `.tb-meet-event-list { --tb-cols: 3fr 1fr 1.5fr 1.5fr 1fr; }` added to templates.css
+
+### Updated single-athlete.php — heat column added
+
+- Heat column added between Event and Result
+- data-heat attribute added to li.tb-list-row
+- CSS updated: .tb-results-list { --tb-cols: 2fr 1fr 1fr 1fr 1fr 1fr; }
+
+### Refactored single-athletic_event.php
+
+- Base classes applied throughout: .tb-single, .tb-single-header,
+  .tb-single-headline, .tb-single-meta, .tb-single-section
+- Records and results sections converted from <table> to ul/li list system
+- Results history restructured from season → meet grouped tables to single
+  flat list across all seasons and meets
+- Heat column added; grade and gender data attributes added
+- Columns: Meet | Date | Athlete | Grade | Heat | Result
+- Row-level link removed; Meet and Athlete cells link independently (Option C)
+- Fixed athlete name reading in both records and results loops:
+  get_field( 'names', $athlete_id ) group pattern applied
+- Fixed results_enabled: now read via customize_data group
+- Grade sourced via bulk enrollment query keyed by [athlete_id][season_id]
+- Gender sourced from demographics group on Athlete post
+- New CSS rules: .tb-event-records-list and .tb-event-results-list
+
 ## 2026-05-10
 
 ### Fixed 2025 XC enrollment count — 26 erroneous posts removed

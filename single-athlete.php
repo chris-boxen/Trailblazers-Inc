@@ -132,6 +132,7 @@ while ( have_posts() ) :
 				$results_grouped[ $season_id ][ $meet_id ][] = [
 					'result_id'      => $result->ID,
 					'event_name'     => get_field( 'event_name', $result->ID ),
+					'heat'           => (string) ( get_field( 'heat', $result->ID ) ?: '' ),
 					'result_display' => get_field( 'result_display', $result->ID ),
 					'place'          => get_field( 'place', $result->ID ),
 					'meet_name'      => get_the_title( $meet_id ),
@@ -377,6 +378,7 @@ while ( have_posts() ) :
 								<span class="tb-col">Meet</span>
 								<span class="tb-col">Date</span>
 								<span class="tb-col">Event</span>
+								<span class="tb-col">Heat</span>
 								<span class="tb-col">Result</span>
 								<span class="tb-col">Place</span>
 							</li>
@@ -393,12 +395,14 @@ while ( have_posts() ) :
 								data-meet-id="<?php echo esc_attr( $r['meet_id'] ); ?>"
 								data-meet-date="<?php echo esc_attr( $r['meet_date'] ?: '' ); ?>"
 								data-event="<?php echo esc_attr( $event_slug ); ?>"
+								data-heat="<?php echo esc_attr( isset( $r['heat'] ) ? sanitize_title( $r['heat'] ) : '' ); ?>"
 								data-result-seconds="<?php echo esc_attr( $seconds_attr ); ?>"
 								data-place="<?php echo esc_attr( $place_attr ); ?>">
 								<a href="<?php echo esc_url( $r['meet_link'] ); ?>" class="tb-list-link">
 									<span class="tb-col"><?php echo esc_html( $r['meet_name'] ?: '—' ); ?></span>
 									<span class="tb-col"><?php echo esc_html( $date_display ); ?></span>
 									<span class="tb-col"><?php echo esc_html( $r['event_name'] ?: '—' ); ?></span>
+									<span class="tb-col"><?php echo $r['heat'] !== '' ? esc_html( $r['heat'] ) : '—'; ?></span>
 									<span class="tb-col"><?php echo esc_html( $r['result_display'] ?: '—' ); ?></span>
 									<span class="tb-col">
 										<?php echo $place_attr !== '' ? esc_html( $place_attr ) : '—'; ?>

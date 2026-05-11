@@ -2,9 +2,8 @@
 
 
 ## Current Objective
-Active focus is template build. Next item: `tribe/events/single-event.php`
-TEC override for meet-level results. Production deployment of shadow key
-migration SQL still outstanding.
+Active focus is template build. Next: taxonomy-sport.php.
+Production deployment of shadow key migration SQL still outstanding.
 
 ## Current Repo Status
 - Theme repo exists and is being tracked in GitHub.
@@ -29,8 +28,15 @@ migration SQL still outstanding.
   (field_tb_event → field_tb_athletic_event, field_tb_result → field_tb_result_display).
 - `single-athlete.php` results section refactored: flat list per season,
     data attributes, row-as-link. `customize_data` group access pattern fixed.
-  - 2025 XC enrollment corrected to 118 athletes (26 erroneous posts removed).
-  - Shadow key migration SQL run on local. **Not yet run on production.**
+- 2025 XC enrollment corrected to 118 athletes (26 erroneous posts removed).
+- Shadow key migration SQL run on local. **Not yet run on production.**
+- `tribe/events/single-event.php` and `tribe/events/v2/default-template.php` added —
+    TEC meet results view. Appends results section after TEC's native event output.
+- `single-athlete.php` updated — Heat column and data-heat attribute added to results list.
+- `single-athletic_event.php` refactored — base classes, ul/li lists, flat results list
+  (season → meet grouping removed), heat added, grade + gender data attributes added.
+- `group_tb_athletic_result.json` updated — heat text field added (field_tb_heat).
+  Shadow key migration SQL still outstanding on production.
 
 ## Completed — Data Population
 The following have been successfully imported:

@@ -138,8 +138,16 @@
 
 .tribe-events-content h2 { border-bottom: 2px dotted rgba(0,0,0, 0.2); margin: 2rem 0; }
 
-
-
+/* Single */
+.single-tribe_events #et-main-area { background: #f1f2f3; }
+.single-tribe_events #tribe-events-pg-template,
+.single-tribe_events .tb-single-section {
+	max-width: 1200px;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 1.5rem 0;
+}
+.single-tribe_events .tb-single-section { padding: 0; }
 
 /* Home */
 #xc-meets-grid .tribe-events-header { display: none; }

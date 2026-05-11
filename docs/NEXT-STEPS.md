@@ -84,13 +84,13 @@ Templates to build or refactor. Work through these in any order.
 - [x] `single-athlete.php` — base classes, TEC meet queries, results refactor,
 customize_data group fix, data attributes
 - [x] `single-coach.php` — apply base classes
-- [ ] `single-athletic_event.php` — apply base classes; update queries
+- [x] `single-athletic_event.php` — apply base classes; update queries
 - [ ] `taxonomy-sport.php` — apply base classes; update queries for TEC
 - [ ] `archive-athlete.php` — refactor tables to ul/li list system
 - [ ] `archive-athletic_meet.php` — refactor tables to ul/li list system (or confirm archived)
 - [ ] `archive-athletic_record.php` — refactor tables to ul/li list system
-- [ ] `tribe/events/single-event.php` — **NEXT** — TEC theme override for
-meet-level results (all athletes, grouped by event or flat list)
+- [x] `tribe/events/single-event.php` — TEC meet results view, heat grouping 
++ filter, grade column via bulk enrollment query
 
 ---
 
@@ -120,6 +120,7 @@ meet-level results (all athletes, grouped by event or flat list)
       `_athletic_event`: `field_tb_event` → `field_tb_athletic_event`
 - [ ] Verify results render on production single-athlete pages after migration
 - [ ] Run Tools → Sync Result Times on production after migration
+- [ ] Re-import 2025 XC results with heat column populated
 
 ---
 
@@ -134,3 +135,5 @@ meet-level results (all athletes, grouped by event or flat list)
 - [ ] Revisit theme folder naming (space in folder name)
 - [ ] Add `template-parts/` structure when templates grow complex enough
 - [ ] Consider proper single-site email customization
+- [ ] heat field added to group_tb_athletic_result — existing 951 results have
+no heat value; re-import from source data when ready

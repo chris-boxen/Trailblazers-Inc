@@ -220,7 +220,14 @@
 .tb-records-list     { --tb-cols: 1fr 1.5fr 1.5fr 2fr 1.5fr; }
  
 /* Per-meet results (within single-athlete) — Event | Result | Place */
-.tb-results-list { --tb-cols: 2fr 1fr 1fr 1fr 1fr; }
+.tb-results-list { --tb-cols: 2fr 1fr 1fr 1fr 1fr 1fr; }
+
+/* Per-meet results (event page) */
+.tb-meet-event-list-wrap { --tb-cols: 3fr 1fr 1.5fr 1.5fr 1fr; }
+
+/* Athletic Events */
+.tb-event-records-list-wrap { --tb-cols: 1fr 2fr 1.5fr 2fr 1.5fr; }
+.tb-event-results-list-wrap { --tb-cols: 2fr 1fr 2fr 0.75fr 1.5fr 1.5fr; }
 
 
 /* =========================================================================
