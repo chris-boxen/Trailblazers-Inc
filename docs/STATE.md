@@ -37,6 +37,17 @@ Production deployment of shadow key migration SQL still outstanding.
   (season → meet grouping removed), heat added, grade + gender data attributes added.
 - `group_tb_athletic_result.json` updated — heat text field added (field_tb_heat).
   Shadow key migration SQL still outstanding on production.
+- `tb.js` refactored — multi-grid Isotope support via `.tb-isotope-instance`
+    wrapper pattern and `.each()` scoped init; ID selectors replaced with
+    classes throughout; utility functions accept `filters` as parameter;
+    numeric sort functions for place and result_seconds; jQuery noConflict
+    IIFE wrap added.
+  - `assets/css/isotope.css` updated — all ID selectors converted to classes
+    matching new tb.js conventions.
+  - `tribe/events/single-event.php` refactored — results flattened from
+    event → heat → results to event → results; per-event Isotope instances;
+    per-event heat filter (omitted when no heats); sort buttons: Place, Time,
+    Name; data-last-name and data-gender added to rows.
 
 ## Completed — Data Population
 The following have been successfully imported:

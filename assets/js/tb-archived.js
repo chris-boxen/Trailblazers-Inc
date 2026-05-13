@@ -24,153 +24,206 @@
  */
 function(t,e){"object"==typeof module&&module.exports?module.exports=e(t,require("ev-emitter")):t.imagesLoaded=e(t,t.EvEmitter)}("undefined"!=typeof window?window:this,(function(t,e){let i=t.jQuery,s=t.console;function n(t,e,o){if(!(this instanceof n))return new n(t,e,o);let r=t;var h;("string"==typeof t&&(r=document.querySelectorAll(t)),r)?(this.elements=(h=r,Array.isArray(h)?h:"object"==typeof h&&"number"==typeof h.length?[...h]:[h]),this.options={},"function"==typeof e?o=e:Object.assign(this.options,e),o&&this.on("always",o),this.getImages(),i&&(this.jqDeferred=new i.Deferred),setTimeout(this.check.bind(this))):s.error(`Bad element for imagesLoaded ${r||t}`)}n.prototype=Object.create(e.prototype),n.prototype.getImages=function(){this.images=[],this.elements.forEach(this.addElementImages,this)};const o=[1,9,11];n.prototype.addElementImages=function(t){"IMG"===t.nodeName&&this.addImage(t),!0===this.options.background&&this.addElementBackgroundImages(t);let{nodeType:e}=t;if(!e||!o.includes(e))return;let i=t.querySelectorAll("img");for(let t of i)this.addImage(t);if("string"==typeof this.options.background){let e=t.querySelectorAll(this.options.background);for(let t of e)this.addElementBackgroundImages(t)}};const r=/url\((['"])?(.*?)\1\)/gi;function h(t){this.img=t}function d(t,e){this.url=t,this.element=e,this.img=new Image}return n.prototype.addElementBackgroundImages=function(t){let e=getComputedStyle(t);if(!e)return;let i=r.exec(e.backgroundImage);for(;null!==i;){let s=i&&i[2];s&&this.addBackground(s,t),i=r.exec(e.backgroundImage)}},n.prototype.addImage=function(t){let e=new h(t);this.images.push(e)},n.prototype.addBackground=function(t,e){let i=new d(t,e);this.images.push(i)},n.prototype.check=function(){if(this.progressedCount=0,this.hasAnyBroken=!1,!this.images.length)return void this.complete();let t=(t,e,i)=>{setTimeout((()=>{this.progress(t,e,i)}))};this.images.forEach((function(e){e.once("progress",t),e.check()}))},n.prototype.progress=function(t,e,i){this.progressedCount++,this.hasAnyBroken=this.hasAnyBroken||!t.isLoaded,this.emitEvent("progress",[this,t,e]),this.jqDeferred&&this.jqDeferred.notify&&this.jqDeferred.notify(this,t),this.progressedCount===this.images.length&&this.complete(),this.options.debug&&s&&s.log(`progress: ${i}`,t,e)},n.prototype.complete=function(){let t=this.hasAnyBroken?"fail":"done";if(this.isComplete=!0,this.emitEvent(t,[this]),this.emitEvent("always",[this]),this.jqDeferred){let t=this.hasAnyBroken?"reject":"resolve";this.jqDeferred[t](this)}},h.prototype=Object.create(e.prototype),h.prototype.check=function(){this.getIsImageComplete()?this.confirm(0!==this.img.naturalWidth,"naturalWidth"):(this.proxyImage=new Image,this.img.crossOrigin&&(this.proxyImage.crossOrigin=this.img.crossOrigin),this.proxyImage.addEventListener("load",this),this.proxyImage.addEventListener("error",this),this.img.addEventListener("load",this),this.img.addEventListener("error",this),this.proxyImage.src=this.img.currentSrc||this.img.src)},h.prototype.getIsImageComplete=function(){return this.img.complete&&this.img.naturalWidth},h.prototype.confirm=function(t,e){this.isLoaded=t;let{parentNode:i}=this.img,s="PICTURE"===i.nodeName?i:this.img;this.emitEvent("progress",[this,s,e])},h.prototype.handleEvent=function(t){let e="on"+t.type;this[e]&&this[e](t)},h.prototype.onload=function(){this.confirm(!0,"onload"),this.unbindEvents()},h.prototype.onerror=function(){this.confirm(!1,"onerror"),this.unbindEvents()},h.prototype.unbindEvents=function(){this.proxyImage.removeEventListener("load",this),this.proxyImage.removeEventListener("error",this),this.img.removeEventListener("load",this),this.img.removeEventListener("error",this)},d.prototype=Object.create(h.prototype),d.prototype.check=function(){this.img.addEventListener("load",this),this.img.addEventListener("error",this),this.img.src=this.url,this.getIsImageComplete()&&(this.confirm(0!==this.img.naturalWidth,"naturalWidth"),this.unbindEvents())},d.prototype.unbindEvents=function(){this.img.removeEventListener("load",this),this.img.removeEventListener("error",this)},d.prototype.confirm=function(t,e){this.isLoaded=t,this.emitEvent("progress",[this,this.element,e])},n.makeJQueryPlugin=function(e){(e=e||t.jQuery)&&(i=e,i.fn.imagesLoaded=function(t,e){return new n(this,t,e).jqDeferred.promise(i(this))})},n.makeJQueryPlugin(),n}));
 
+jQuery(document).ready(function($) {
+	if ('.grid') {		
+		var $grid = $('.grid').masonry({
+		  columnWidth: '.grid-sizer',
+		  gutter: '.gutter-sizer',
+		  itemSelector: '.grid-item',
+		  percentPosition: true
+		});
+		// layout Masonry after each image loads
+		$grid.imagesLoaded().progress( function() {
+			  $grid.masonry('layout');
+		});
+		
+		$('.tabbed .tab').click(function(){
+			$grid.masonry('layout');
+			window.dispatchEvent(new Event('resize'));
+		});
+	}
+	
+	/* Tabs */
+	if ('.tabs') {
+		
+	}
+});
 
 /*
-** Multi-grid Isotope — each .tb-isotope-instance is independent
+** Complex, combination filters with checkboxes AND selects
+** https://codepen.io/Boxen/pen/gOqNwab
 */
 
-(function($) {
+var $grid;
+var $filters = [];
+var sortValue;
 
-$('.tb-isotope-instance').each( function() {
+$(function(){
 
-	var $container   = $( this );
-	var $grid        = $container.find('.tb-isotope-grid');
-	var filters      = {};
-	var sortValue    = 'last_name';
-
-	// Skip if no grid in this container
-	if ( ! $grid.length ) return;
-
-	// Init Isotope
-	$grid.isotope({
-		layoutMode:  'vertical',
+	$grid = $('#directory');
+	var filterDisplay = $('#filter-display');/*for debugging to show filters*/
+	$grid.isotope({ 
+		layoutMode: 'vertical',
 		itemSelector: 'li.tb-list-row',
 		getSortData: {
 			first_name: '[data-first-name]',
-			last_name:  '[data-last-name]',
-			grade:      '[data-grade]',
-			place:          function( el ) {
-				var v = parseInt( $( el ).attr('data-place'), 10 );
-				return isNaN( v ) ? Infinity : v;
-			},
-			result_seconds: function( el ) {
-				var v = parseFloat( $( el ).attr('data-result-seconds') );
-				return isNaN( v ) ? Infinity : v;
-			},
-			grad_year:  '[data-grad-year]',
-			time:       '.time',
-			pr:         '.pr',
-			sr:         '.sr',
-		},
-		sortBy: sortValue,
+			last_name: '[data-last-name]',
+			grade: '[data-grade]',
+			grad_year: '[data-grad-year]',
+			time: '.time',
+			pr: '.pr',
+			sr: '.sr',
+		  },
+		sortBy: 'last_name',
 	});
-
-	var iso          = $grid.data('isotope');
-	var $filterCount = $container.find('.filter-count');
-
-	// Sort buttons
-	$container.find('.tb-sorts').on( 'click', 'button', function() {
-		sortValue = $( this ).attr('data-sort-by');
-		$grid.isotope({ sortBy: sortValue });
+	var iso = $grid.data('isotope');
+	var $filterCount = $('.filter-count');
+	
+// Bind sort button click
+	$('#sorts').on( 'click', 'button', function() {
+	  sortValue = $(this).attr('data-sort-by');
+	  console.log("sortValue: " + sortValue);
+	  $grid.isotope({ sortBy: sortValue });
 	});
-
-	// is-checked on button groups
-	$container.find('.button-group').each( function( i, buttonGroup ) {
-		var $buttonGroup = $( buttonGroup );
-		$buttonGroup.on( 'click', 'button', function() {
-			$buttonGroup.find('.is-checked').removeClass('is-checked');
-			$( this ).addClass('is-checked');
-		});
+	
+	// change is-checked class on buttons
+	$('.button-group').each( function( i, buttonGroup ) {
+	  var $buttonGroup = $( buttonGroup );
+	  $buttonGroup.on( 'click', 'button', function() {
+		$buttonGroup.find('.is-checked').removeClass('is-checked');
+		$( this ).addClass('is-checked');
+	  });
 	});
-
-	// Filter changes
-	$container.find('.filter-options').on( 'change', function( event ) {
-		var input   = $( event.target );
-		var tagName = input[0].tagName.toLowerCase();
-
-		if ( tagName === 'input' && input.attr('type') === 'checkbox' ) {
-			manageCheckbox( input, filters );
-		} else if ( tagName === 'select' ) {
-			manageSelect( input, filters );
+	
+//  do stuff when any filter input changes
+	$('.filter-options').on( 'change', function( event ) {
+		
+		var input = $( event.target );
+		var inputType = $(input).attr('type');
+		
+		if (inputType == "checkbox") {
+			manageCheckbox( input );
+		} else if (inputType == "select") {
+			manageSelect( input );
 		}
-
-		var comboFilter = getComboFilter( filters );
+		
+		var comboFilter = getComboFilter( $filters );
 		$grid.isotope({ filter: comboFilter, sortBy: sortValue });
+	
+		filterDisplay.text( comboFilter );
+		
 		updateFilterCount();
 	});
-
+	
 	function updateFilterCount() {
-		$filterCount.text( iso.filteredItems.length );
+	  $filterCount.text( iso.filteredItems.length );
 	}
 	updateFilterCount();
-
 });
 
 function getComboFilter( filters ) {
-	// no change to logic — just receives filters as argument now
 	var i = 0;
 	var comboFilters = [];
+	var message = [];
+	
 	for ( var property in filters ) {
+		message.push( filters[ property ].join(' ') );
 		var filterGroup = filters[ property ];
-		if ( !filterGroup.length ) { continue; }
+		//  skip to next filter group if it doesn't have any values
+		if ( !filterGroup.length ) {
+			  continue;
+		}
 		if ( i === 0 ) {
-			comboFilters = filterGroup.slice(0);
+			//  copy to new array
+				comboFilters = filterGroup.slice(0);
 		} else {
-			var filterSelectors = [];
-			var groupCombo = comboFilters.slice(0);
-			for ( var k = 0; k < filterGroup.length; k++ ) {
-				for ( var j = 0; j < groupCombo.length; j++ ) {
-					filterSelectors.push( groupCombo[j] + filterGroup[k] );
-				}
-			}
-			comboFilters = filterSelectors;
+				var filterSelectors = [];
+		  //  copy to fresh array
+			  var groupCombo = comboFilters.slice(0); // [ A, B ]
+		  //  merge filter Groups
+			  for (var k=0, len3 = filterGroup.length; k < len3; k++) {
+			  for (var j=0, len2 = groupCombo.length; j < len2; j++) {
+				  filterSelectors.push( groupCombo[j] + filterGroup[k] ); // [ 1, 2 ]
+			  }
+			  }
+		  //  apply filter selectors to combo filters for next group
+			  comboFilters = filterSelectors;
 		}
 		i++;
 	}
-	return comboFilters.join(', ');
+	var comboFilter = comboFilters.join(', ');
+	return comboFilter;
 }
 
-function manageCheckbox( checkbox, filters ) {
+function manageCheckbox( checkbox ) {
 	var mycheckbox = checkbox[0];
-	var dataGroup  = checkbox.parents('.option-set').attr('data-group');
-	var filterGroup = filters[ dataGroup ];
-	if ( !filterGroup ) { filterGroup = filters[ dataGroup ] = []; }
-
+	var dataGroup = checkbox.parents('.option-set').attr('data-group');
+	
+	//  create array for filter group if not there yet
+	var filterGroup = $filters[ dataGroup ];
+		if ( !filterGroup ) {
+			filterGroup = $filters[ dataGroup ] = [];
+		}
+	
+	//  reset filter group if the all box was checked
 	var isAll = checkbox.hasClass('all');
-	if ( isAll ) {
-		delete filters[ dataGroup ];
-		if ( !mycheckbox.checked ) { mycheckbox.checked = 'checked'; }
-	}
-
+		if ( isAll ) {
+			delete $filters[ dataGroup ];
+			if ( !mycheckbox.checked ) {
+				  mycheckbox.checked = 'checked';
+			}
+		}
+	
+	/*  If "All" is checked...
+	**	• remove sibling checkmarks	
+	**	• add all the sibling values to the filter
+	**  Otherwise, if not "All"...
+	**	• just add that value
+	*/
+	
+	//  index of filterGroup
 	var index = $.inArray( mycheckbox.value, filterGroup );
+
 	if ( mycheckbox.checked ) {
 		var selector = isAll ? 'input' : 'input.all';
 		checkbox.siblings( selector ).removeAttr('checked');
-		if ( !isAll && index === -1 ) { filters[ dataGroup ].push( mycheckbox.value ); }
+		if ( !isAll && index === -1 ) {
+			//  add filter to group
+			$filters[ dataGroup ].push( mycheckbox.value );
+		}
+		
 	} else if ( !isAll ) {
-		filters[ dataGroup ].splice( index, 1 );
+		//  remove filter from group
+		$filters[ dataGroup ].splice( index, 1 );
+		// if unchecked the last box, check the all
 		if ( !checkbox.siblings('[checked]').length ) {
 			checkbox.siblings('input.all').attr('checked', 'checked');
 		}
 	}
 }
 
-function manageSelect( select, filters ) {
-	var optionValue = $( select ).find(':selected').val();
-	var dataGroup   = select.attr('data-group');
-	var filterGroup = filters[ dataGroup ];
-	if ( !filterGroup ) { filterGroup = filters[ dataGroup ] = []; }
-
-	var isAll = optionValue == '';
-	if ( isAll ) {
-		delete filters[ dataGroup ];
-	} else {
-		if ( filterGroup.length === 0 ) {
-			filterGroup.push( optionValue );
-		} else {
-			filterGroup.splice( 0, 1, optionValue );
+function manageSelect( select ) {
+	var optionText = $( select ).find(":selected").text();
+	var optionValue = $( select ).find(":selected").val();
+	
+	//  create array for filter group if not there yet
+	var dataGroup = select.attr('data-group');	
+	var filterGroup = $filters[ dataGroup ];
+		if ( !filterGroup ) {
+			filterGroup = $filters[ dataGroup ] = [];
 		}
-	}
+	//  index of filterGroup
+	var index = $.inArray( optionValue, filterGroup );
+	//  reset filter group if "all" was selected
+	var isAll = optionValue == "";
+		if ( isAll ) {
+			delete filterGroup.splice( 0, 1);
+		} else {
+			if (filterGroup.length == 0) {
+				filterGroup.push( optionValue );
+			} else {
+				filterGroup.splice( 0, 1, optionValue );
+			}
+			
+		}
 }
-
-})(jQuery);

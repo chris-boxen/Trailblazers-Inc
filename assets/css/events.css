@@ -149,6 +149,18 @@
 }
 .single-tribe_events .tb-single-section { padding: 0; }
 
+/* Meta Group */
+.tribe-events-meta-group {
+	font-family: var(--body-font);
+	font-weight: 500;
+	font-size: 1rem;
+}
+@media (min-width: 768px) {
+	.tribe-events-meta-group {
+		width: auto;
+	}
+}
+
 /* Home */
 #xc-meets-grid .tribe-events-header { display: none; }
 #xc-meets-grid .tribe-common--breakpoint-medium.tribe-events .tribe-events-l-container { padding: 0; }

@@ -8,11 +8,9 @@
  * No get_header() / get_footer() — handled by default-template.php.
  * No WordPress loop — use get_queried_object_id() for the current post ID.
  *
- * Results are grouped by athletic event. Each event block is an independent
- * Isotope instance (.tb-isotope-instance). Heat is a filterable data attribute
- * on each row — athletes can sort and compare times across heats within an event.
- * When no results for a given event have a heat value, the heat filter is omitted
- * for that event. The Heat column always renders (showing — when empty).
+ * Results are grouped by event → heat. When no results have a heat value,
+ * heat sub-headers and the filter UI are omitted, but the Heat column is
+ * always rendered (showing — when empty), consistent with Place.
  *
  * Columns: Athlete | Grade | Heat | Result | Place
  *
@@ -34,7 +32,7 @@
  *   - results_status and season are top-level ACF fields on tribe_events (no group wrapper).
  *   - heat is a top-level text field on athletic_result. Empty string = no heat assigned.
  *
- * CSS note:
+ * CSS note — add to templates.css:
  *   .tb-meet-event-list { --tb-cols: 3fr 1fr 1.5fr 1.5fr 1fr; }
  */
 
@@ -43,12 +41,12 @@ $results_status = get_field( 'results_status', $meet_id ); // Future | Pending |
 $season_id      = get_field( 'season', $meet_id );         // needed for grade lookup
 
 // -------------------------------------------------------------------------
-// RESULTS — query and group by athletic event (flat array per event).
+// RESULTS — query and group by event → heat
 // Only runs when results_status === 'Available'.
 // -------------------------------------------------------------------------
-$results_by_event = []; // [ event_key => [ result, ... ] ]
-$heats_by_event   = []; // [ event_key => [ heat_name, ... ] ] — unique heats per event
-$athlete_ids      = []; // unique athlete IDs for the bulk grade lookup
+$results_by_event = []; // [ event_key => [ heat_key => [ result, ... ] ] ]
+$all_heats        = []; // Ordered unique heat display names, for the filter UI
+$athlete_ids      = []; // Unique athlete IDs, for the bulk grade lookup
 
 if ( $results_status === 'Available' ) {
 
@@ -76,13 +74,9 @@ if ( $results_status === 'Available' ) {
 			$time_seconds   = get_field( 'result_time_seconds', $result->ID );
 
 			// Athlete name — fields are inside the 'names' ACF group.
-			// Direct get_field( 'first_name', $athlete_id ) returns NULL.
+			// Direct get_field( 'first_name', $id ) returns NULL.
 			$athlete_name = '';
-			$last         = '';
-			$gender       = ''; 
 			if ( $athlete_id ) {
-				$demographics = get_field( 'demographics', $athlete_id ) ?: [];
-				$gender       = $demographics['gender'] ?? '';
 				$names        = get_field( 'names', $athlete_id ) ?: [];
 				$first        = $names['first_name']     ?? '';
 				$preferred    = $names['preferred_name'] ?? '';
@@ -97,23 +91,16 @@ if ( $results_status === 'Available' ) {
 
 			$event_key = $event_name ?: 'Unknown Event';
 
-			// Collect unique heat names per event for per-event filter UIs.
+			// Collect unique heat names in encounter order for the filter UI.
 			// Empty heat values are excluded — they show as — in the column.
-			if ( $heat !== '' ) {
-				if ( ! isset( $heats_by_event[ $event_key ] ) ) {
-					$heats_by_event[ $event_key ] = [];
-				}
-				if ( ! in_array( $heat, $heats_by_event[ $event_key ], true ) ) {
-					$heats_by_event[ $event_key ][] = $heat;
-				}
+			if ( $heat !== '' && ! in_array( $heat, $all_heats, true ) ) {
+				$all_heats[] = $heat;
 			}
 
-			$results_by_event[ $event_key ][] = [
+			$results_by_event[ $event_key ][ $heat ][] = [
 				'result_id'      => $result->ID,
 				'athlete_id'     => $athlete_id,
 				'athlete_name'   => $athlete_name ?: 'Unknown Athlete',
-				'last_name'      => $last,
-				'gender'         => $gender,  
 				'result_display' => $result_display,
 				'place'          => $place,
 				'time_seconds'   => $time_seconds,
@@ -122,15 +109,18 @@ if ( $results_status === 'Available' ) {
 			];
 		}
 
-		// Sort each event's results by place ascending (nulls last).
-		foreach ( $results_by_event as $event_key => &$event_results ) {
-			usort( $event_results, function( $a, $b ) {
-				$pa = ( $a['place'] !== '' && $a['place'] !== null ) ? (int) $a['place'] : PHP_INT_MAX;
-				$pb = ( $b['place'] !== '' && $b['place'] !== null ) ? (int) $b['place'] : PHP_INT_MAX;
-				return $pa - $pb;
-			} );
+		// Sort within each event → heat group by place ascending (nulls last).
+		foreach ( $results_by_event as $event_key => &$heat_groups ) {
+			foreach ( $heat_groups as $heat_key => &$heat_results ) {
+				usort( $heat_results, function( $a, $b ) {
+					$pa = ( $a['place'] !== '' && $a['place'] !== null ) ? (int) $a['place'] : PHP_INT_MAX;
+					$pb = ( $b['place'] !== '' && $b['place'] !== null ) ? (int) $b['place'] : PHP_INT_MAX;
+					return $pa - $pb;
+				} );
+			}
+			unset( $heat_results );
 		}
-		unset( $event_results );
+		unset( $heat_groups );
 
 		// Sort event groups alphabetically.
 		ksort( $results_by_event );
@@ -180,6 +170,10 @@ if ( $results_status === 'Available' ) {
 	}
 }
 
+// True when at least one result has a heat value — controls heat sub-headers
+// and the filter UI, but NOT the Heat column (which always renders).
+$has_heats = ! empty( $all_heats );
+
 ?>
 
 <section class="tb-single-section tb-meet-results">
@@ -197,95 +191,87 @@ if ( $results_status === 'Available' ) {
 
 	<?php elseif ( ! empty( $results_by_event ) ) : ?>
 
-		<?php foreach ( $results_by_event as $event_name => $event_results ) :
-			$event_slug      = sanitize_title( $event_name );
-			$event_has_heats = ! empty( $heats_by_event[ $event_name ] );
-		?>
-		<div class="tb-results-event tb-isotope-instance" data-event="<?php echo esc_attr( $event_slug ); ?>">
-
-			<h3 class="tb-event-label"><?php echo esc_html( $event_name ); ?> (<span class="filter-count"></span>)</h3>
-
-			<div class="tb-ui-controls">
-
-				<?php if ( $event_has_heats ) : ?>
-				<div class="tb-filter-controls controls-group">
-					<h4>Filter By</h4>
-					<div class="ui-group">
-						  <select type="select" class="filter-select filter-options" data-group="gender">
-							<option value="">Gender</option>
-							<option value="[data-gender='m']" id="filter-boys">Boys</option>
-							<option value="[data-gender='f']" id="filter-girls">Girls</option>
-							<option value="">All</option>
-						  </select>
-					  </div>
-					<div class="ui-group">
-						<select type="select" class="filter-select filter-options" data-group="heat">
-							<option value="">All Heats</option>
-							<?php foreach ( $heats_by_event[ $event_name ] as $heat_name ) : ?>
-							<option value="[data-heat='<?php echo esc_attr( sanitize_title( $heat_name ) ); ?>']">
-								<?php echo esc_html( $heat_name ); ?>
-							</option>
-							<?php endforeach; ?>
-						</select>
-					</div>
+		<?php // Heat filter — only rendered when results have heat values. ?>
+		<?php if ( $has_heats ) : ?>
+		<div id="ui-controls" class="tb-meet-results-controls">
+			<div id="filter-controls" class="controls-group">
+				<h4>Filter By</h4>
+				<div class="ui-group">
+					<select class="filter-select filter-options" data-group="heat">
+						<option value="">All Heats</option>
+						<?php foreach ( $all_heats as $heat_name ) :
+							$heat_slug = sanitize_title( $heat_name );
+						?>
+						<option value="[data-heat='<?php echo esc_attr( $heat_slug ); ?>']">
+							<?php echo esc_html( $heat_name ); ?>
+						</option>
+						<?php endforeach; ?>
+					</select>
 				</div>
+			</div>
+		</div><!-- #ui-controls -->
+		<?php endif; ?>
+
+		<?php foreach ( $results_by_event as $event_name => $heat_groups ) :
+			$event_slug = sanitize_title( $event_name );
+		?>
+		<div class="tb-results-event" data-event="<?php echo esc_attr( $event_slug ); ?>">
+
+			<h3 class="tb-event-label"><?php echo esc_html( $event_name ); ?></h3>
+
+			<?php foreach ( $heat_groups as $heat_key => $heat_results ) :
+				$heat_display = $heat_key !== '' ? $heat_key : '';
+			?>
+
+				<?php // Heat sub-header — only when heats exist and this group is named. ?>
+				<?php if ( $has_heats && $heat_display !== '' ) : ?>
+				<h4 class="tb-heat-label"><?php echo esc_html( $heat_display ); ?></h4>
 				<?php endif; ?>
 
-				<div class="tb-sort-controls controls-group">
-					<h4>Sort By</h4>
-					<div class="tb-sorts button-group">
-						<button class="button" data-sort-by="result_seconds">Time</button>
-						<button class="button" data-sort-by="last_name">Name</button>
-						<!--<button class="button is-checked" data-sort-by="place">Place</button>-->
+				<div class="tb-list-wrap tb-meet-event-list-wrap">
+					<div class="tb-list-header">
+						<span class="tb-col">Athlete</span>
+						<span class="tb-col">Grade</span>
+						<span class="tb-col">Heat</span>
+						<span class="tb-col">Result</span>
+						<span class="tb-col">Place</span>
 					</div>
-				</div>
+					<ul class="tb-list tb-meet-event-list">
+						<?php foreach ( $heat_results as $r ) :
+							$place_attr   = ( $r['place'] !== '' && $r['place'] !== null ) ? (string) $r['place'] : '';
+							$seconds_attr = is_numeric( $r['time_seconds'] ) ? (string) $r['time_seconds'] : '';
+							$grade        = isset( $grade_map[ $r['athlete_id'] ] ) ? $grade_map[ $r['athlete_id'] ] : '';
+						?>
+						<li class="tb-list-row"
+							data-place="<?php echo esc_attr( $place_attr ); ?>"
+							data-result-seconds="<?php echo esc_attr( $seconds_attr ); ?>"
+							data-athlete-id="<?php echo esc_attr( (string) ( $r['athlete_id'] ?: '' ) ); ?>"
+							data-heat="<?php echo esc_attr( $r['heat_slug'] ); ?>"
+							data-grade="<?php echo esc_attr( strtolower( $grade ) ); ?>">
+							<?php if ( $r['athlete_id'] ) : ?>
+								<a href="<?php echo esc_url( get_permalink( $r['athlete_id'] ) ); ?>" class="tb-list-link">
+							<?php else : ?>
+								<div class="tb-list-link">
+							<?php endif; ?>
+									<span class="tb-col"><?php echo esc_html( $r['athlete_name'] ); ?></span>
+									<span class="tb-col"><?php echo $grade !== '' ? esc_html( $grade ) : '—'; ?></span>
+									<span class="tb-col"><?php echo $r['heat'] !== '' ? esc_html( $r['heat'] ) : '—'; ?></span>
+									<span class="tb-col"><?php echo esc_html( $r['result_display'] ?: '—' ); ?></span>
+									<span class="tb-col"><?php echo $place_attr !== '' ? esc_html( $place_attr ) : '—'; ?></span>
+							<?php if ( $r['athlete_id'] ) : ?>
+								</a>
+							<?php else : ?>
+								</div>
+							<?php endif; ?>
+						</li>
+						<?php endforeach; ?>
+					</ul>
+				</div><!-- .tb-list-wrap .tb-meet-event-list-wrap -->
 
-			</div><!-- .tb-ui-controls -->
+			<?php endforeach; // heat_groups ?>
 
-			<div class="tb-list-wrap tb-meet-event-list-wrap">
-				<div class="tb-list-header">
-					<span class="tb-col">Athlete</span>
-					<span class="tb-col">Grade</span>
-					<span class="tb-col">Heat</span>
-					<span class="tb-col">Result</span>
-					<span class="tb-col">Place</span>
-				</div>
-				<ul class="tb-isotope-grid tb-list tb-meet-event-list">
-					<?php foreach ( $event_results as $r ) :
-						$place_attr   = ( $r['place'] !== '' && $r['place'] !== null ) ? (string) $r['place'] : '';
-						$seconds_attr = is_numeric( $r['time_seconds'] ) ? (string) $r['time_seconds'] : '';
-						$grade        = isset( $grade_map[ $r['athlete_id'] ] ) ? $grade_map[ $r['athlete_id'] ] : '';
-					?>
-					<li class="tb-list-row"
-						data-last-name="<?php echo esc_attr( strtolower( $r['last_name'] ) ); ?>"
-						data-gender="<?php echo esc_attr( strtolower( $r['gender'] ) ); ?>"
-						data-place="<?php echo esc_attr( $place_attr ); ?>"
-						data-result-seconds="<?php echo esc_attr( $seconds_attr ); ?>"
-						data-athlete-id="<?php echo esc_attr( (string) ( $r['athlete_id'] ?: '' ) ); ?>"
-						data-heat="<?php echo esc_attr( $r['heat_slug'] ); ?>"
-						data-grade="<?php echo esc_attr( strtolower( $grade ) ); ?>">
-						<?php if ( $r['athlete_id'] ) : ?>
-							<a href="<?php echo esc_url( get_permalink( $r['athlete_id'] ) ); ?>" class="tb-list-link">
-						<?php else : ?>
-							<div class="tb-list-link">
-						<?php endif; ?>
-								<span class="tb-col"><?php echo esc_html( $r['athlete_name'] ); ?></span>
-								<span class="tb-col"><?php echo $grade !== '' ? esc_html( $grade ) : '—'; ?></span>
-								<span class="tb-col"><?php echo $r['heat'] !== '' ? esc_html( $r['heat'] ) : '—'; ?></span>
-								<span class="tb-col"><?php echo esc_html( $r['result_display'] ?: '—' ); ?></span>
-								<span class="tb-col"><?php echo $place_attr !== '' ? esc_html( $place_attr ) : '—'; ?></span>
-						<?php if ( $r['athlete_id'] ) : ?>
-							</a>
-						<?php else : ?>
-							</div>
-						<?php endif; ?>
-					</li>
-					<?php endforeach; ?>
-				</ul>
-			</div><!-- .tb-list-wrap .tb-meet-event-list-wrap -->
-
-		</div><!-- .tb-results-event .tb-isotope-instance -->
-		<?php endforeach; ?>
+		</div><!-- .tb-results-event -->
+		<?php endforeach; // results_by_event ?>
 
 	<?php endif; ?>
 

@@ -331,12 +331,12 @@ while ( have_posts() ) :
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 4: ATHLETE ROSTER                                          ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section class="tb-single-section tb-season-roster">
+	<section class="tb-single-section tb-season-roster tb-isotope-instance">
 
 		<h2>Athletes (<span class="filter-count"></span>)</h2>
 		
-		<div id="ui-controls">
-			<div id="filter-controls" class="controls-group">
+		<div class="tb-ui-controls">
+			<div class="tb-filter-controls controls-group">
 				<h4>Filter By</h4>
 				  <div class="ui-group">
 					  <select type="select" class="filter-select filter-options" data-group="gender">
@@ -346,11 +346,11 @@ while ( have_posts() ) :
 						<option value="">All</option>
 					  </select>
 				  </div>
-			</div>
+			</div><!-- .tb-filter-controls -->
 		
-			<div id="sort-controls" class="controls-group">
+			<div class="tb-sort-controls controls-group">
 				<h4>Sort By</h4>
-				<div id="sorts" class="button-group">  
+				<div class="tb-sorts button-group">  
 					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
 					<button class="button" data-sort-by="last_name">Last Name</button>
 					<button class="button" data-sort-by="grade">Grade</button>
@@ -358,7 +358,7 @@ while ( have_posts() ) :
 					<!--<button class="button" data-sort-by="sr">SR</button>-->
 				</div>
 			</div>
-		</div><!-- #ui-controls -->
+		</div><!-- .tb-ui-controls -->
 
 		<?php if ( empty( $athletes ) ) : ?>
 			<p class="tb-no-data">No athletes enrolled yet.</p>
@@ -369,7 +369,7 @@ while ( have_posts() ) :
 					<span class="tb-col">Grade</span>
 					<span class="tb-col">Records</span>
 				</div>
-				<ul id="directory" class="tb-list tb-roster-list">
+				<ul class="tb-isotope-grid tb-list tb-roster-list">
 					<?php foreach ( $athletes as $athlete ) : ?>
 					<li class="tb-list-row"
 						data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
@@ -392,9 +392,34 @@ while ( have_posts() ) :
 	<?php // SECTION 5: SIBLING RUNNER ROSTER                                   ?>
 	<?php // ----------------------------------------------------------------- ?>
 	<?php if ( ! empty( $sibling_runners ) ) : ?>
-	<section class="tb-single-section tb-season-sibling-runners">
+	<section class="tb-single-section tb-season-sibling-runners tb-isotope-instance">
 
-		<h2>Sibling Runners</h2>
+		<h2>Sibling Runners (<span class="filter-count"></span>)</h2>
+		
+		<div class="tb-ui-controls">
+			<div class="tb-filter-controls controls-group">
+				<h4>Filter By</h4>
+				  <div class="ui-group">
+					  <select type="select" class="filter-select filter-options" data-group="gender">
+						<option value="">Select Gender</option>
+						<option value="[data-gender='m']" id="filter-boys">Boys</option>
+						<option value="[data-gender='f']" id="filter-girls">Girls</option>
+						<option value="">All</option>
+					  </select>
+				  </div>
+			</div><!-- .tb-filter-controls -->
+		
+			<div class="tb-sort-controls controls-group">
+				<h4>Sort By</h4>
+				<div class="tb-sorts button-group">  
+					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
+					<button class="button" data-sort-by="last_name">Last Name</button>
+					<button class="button" data-sort-by="grade">Grade</button>
+					<!--<button class="button" data-sort-by="pr">PR</button>-->
+					<!--<button class="button" data-sort-by="sr">SR</button>-->
+				</div>
+			</div>
+		</div><!-- .tb-ui-controls -->
 		
 		<div class="tb-list-wrap tb-roster-list-wrap">
 			<div class="tb-list-header">
@@ -402,11 +427,11 @@ while ( have_posts() ) :
 				<span class="tb-col">Grade</span>
 				<span class="tb-col">Records</span>
 			</div>
-			<ul class="tb-list tb-sibling-runners-list">
+			<ul class="tb-isotope-grid tb-list tb-sibling-runners-list">
 				<?php foreach ( $sibling_runners as $athlete ) : ?>
 				<li class="tb-list-row"
 					data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
-					data-gender="<?php echo esc_attr( $athlete['gender'] ); ?>"
+					data-gender="<?php echo esc_attr( strtolower( $athlete['gender'] ) ); ?>"
 					data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>">
 					<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
 						<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>

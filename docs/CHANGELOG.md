@@ -1,5 +1,46 @@
 # CHANGELOG
 
+## 2026-05-12
+
+### Multi-grid Isotope refactor — tb.js, isotope.css, single-athletic_event.php
+
+- Isotope now supports multiple independent grids per page via a
+  `.tb-isotope-instance` wrapper pattern and jQuery `.each()` scoped init
+- Each instance maintains its own `filters` object and `sortValue` — no
+  shared global state between grids
+- `manageCheckbox`, `manageSelect`, `getComboFilter` refactored to accept
+  `filters` as a parameter instead of reading a global
+- ID selectors replaced with classes throughout:
+  `#directory` → `.tb-isotope-grid`
+  `#ui-controls` → `.tb-ui-controls`
+  `#sorts` → `.tb-sorts`
+  `#filter-controls` → `.tb-filter-controls`
+  `#sort-controls` → `.tb-sort-controls`
+- Numeric sort functions added for `place` and `result_seconds` (previously
+  string comparison would mis-sort values like "10" < "2")
+- Entire `tb.js` wrapped in jQuery noConflict IIFE `(function($){ })(jQuery)`
+  — fixes `$ is not defined` error on TEC templates where
+  `jQuery.noConflict()` is called before page scripts execute
+- `assets/css/isotope.css` updated — all ID selectors converted to classes
+- `single-athletic_event.php` updated — `.tb-isotope-instance` added to
+  section tags; ID attributes removed from controls
+
+### Refactored tribe/events/single-event.php — per-event Isotope instances
+
+- Results data structure flattened from `event → heat → results` to
+  `event → results`; heat is now a filterable data attribute on each row,
+  allowing athletes to sort and compare times across heats within an event
+- `$heats_by_event[ event_key ]` added alongside results accumulator —
+  provides unique heat names per event for per-event filter UIs
+- Each `.tb-results-event` div is now a `.tb-isotope-instance`
+- Per-event heat filter select rendered only when that event has heat values
+- Sort buttons per event: Place (default), Time, Name
+- `data-last-name` added — sourced from `$last` already in scope during
+  results loop
+- `data-gender` added — sourced from `demographics` group on Athlete post;
+  `$gender` initialized before `if ( $athlete_id )` block to prevent
+  PHP notices on rows with no linked athlete
+
 ## 2026-05-10 (continued)
 
 ### Added heat field to group_tb_athletic_result
