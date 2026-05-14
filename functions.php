@@ -13,6 +13,7 @@ require_once get_stylesheet_directory() . '/inc/cpt-hooks.php';
 require_once get_stylesheet_directory() . '/inc/query-mods.php';
 require_once get_stylesheet_directory() . '/inc/acf-helpers.php';
 require_once get_stylesheet_directory() . '/inc/gravity-helpers.php';
+require_once get_stylesheet_directory() . '/inc/event-helpers.php';
 require_once get_stylesheet_directory() . '/inc/registration-helpers.php';
 require_once get_stylesheet_directory() . '/inc/results-helpers.php';
 require_once get_stylesheet_directory() . '/inc/login.php';
