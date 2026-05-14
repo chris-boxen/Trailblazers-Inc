@@ -139,27 +139,108 @@
 .tribe-events-content h2 { border-bottom: 2px dotted rgba(0,0,0, 0.2); margin: 2rem 0; }
 
 /* Single */
-.single-tribe_events #et-main-area { background: #f1f2f3; }
-.single-tribe_events #tribe-events-pg-template,
-.single-tribe_events .tb-single-section {
-	max-width: 1200px;
+.single-tribe_events #tribe-events-pg-template {
+	max-width: 100%;
 	margin-left: auto;
 	margin-right: auto;
-	padding: 1.5rem 0;
+	padding: 0;
 }
-.single-tribe_events .tb-single-section { padding: 0; }
 
-/* Meta Group */
+/* TB Event Header */
+.tb-event-header {
+	display: flex;
+	flex-direction: column;
+	padding-bottom: 2rem;
+	background-image: linear-gradient(90deg, #fff, #f1f2f3);
+}
+@media (min-width: 768px) {
+	.tb-event-header { padding-bottom: 3rem; }
+}
+.tribe-events-notices {
+	padding: 0.5rem 0;
+	border-top: 1px dotted #ccc;
+	border-bottom: 1px dotted #ccc;
+}
+.tribe-events .tribe-events-c-subscribe-dropdown {
+	margin: 0.5rem 0;
+}
+
+.tribe-events-event-image {
+	border-radius: 0.25rem;
+	overflow: hidden;
+	margin: 0;
+}
+
+@media (min-width: 768px) {
+	.tb-event-header {
+		flex-direction: row;
+		gap: 2rem;
+		justify-content: space-between;
+	}
+	.tribe-events-event-image {
+		flex-basis: 50%;
+	}
+	.tribe-events-back { margin-bottom: 0.5rem; }
+	.tribe-events-schedule {
+		margin: 1rem 0;
+	}
+}
+
+/* Meta & Content */
+.tribe-events-event-meta:before, 
+.tribe-events-event-meta~div:not(.tribe-events-event-meta,.event-tickets),
+.tribe-events-meta-group.tribe-events-meta-group-gmap {
+	border-top: none;
+}
+
 .tribe-events-meta-group {
 	font-family: var(--body-font);
 	font-weight: 500;
 	font-size: 1rem;
 }
+
+.tribe-events-meta-group.tribe-events-meta-group-gmap {
+	margin-right: 0;
+}
+
 @media (min-width: 768px) {
 	.tribe-events-meta-group {
 		width: auto;
 	}
+	.tribe-events-venue-map {
+		width: 100%;
+		border: 1px solid #ccc;
+		border-radius: 0.25rem;
+		overflow: hidden;
+	}
 }
+
+/* Content */
+.tb-event-content {
+	background-image: linear-gradient(90deg, #fff, #f1f2f3);
+	padding-top: 2px;
+}
+.tb-event-content  p {
+	font-weight: 400;
+	line-height: 1.75rem;
+	margin: 0;
+	padding: 0;
+}
+.tb-event-content  p + p {
+	margin-top: 1rem;	
+}
+
+@media (min-width: 768px) {
+	.tb-event-content { padding-top: 3rem; }
+}
+
+/* Footer */
+.tb-event-footer a {
+	color: var(--tb-green);
+	font-weight: 700;
+}
+
+
 
 /* Home */
 #xc-meets-grid .tribe-events-header { display: none; }

@@ -184,7 +184,7 @@ if ( $results_status === 'Available' ) {
 
 <section class="tb-single-section tb-meet-results">
 
-	<h2>Results</h2>
+	<h2>Team Results</h2>
 
 	<?php if ( $results_status === 'Future' ) : ?>
 		<p class="tb-results-notice">Results will be available after the meet.</p>

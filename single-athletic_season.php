@@ -340,7 +340,7 @@ while ( have_posts() ) :
 				<h4>Filter By</h4>
 				  <div class="ui-group">
 					  <select type="select" class="filter-select filter-options" data-group="gender">
-						<option value="">Select Gender</option>
+						<option value="">Gender</option>
 						<option value="[data-gender='m']" id="filter-boys">Boys</option>
 						<option value="[data-gender='f']" id="filter-girls">Girls</option>
 						<option value="">All</option>
@@ -352,7 +352,7 @@ while ( have_posts() ) :
 				<h4>Sort By</h4>
 				<div class="tb-sorts button-group">  
 					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
-					<button class="button" data-sort-by="last_name">Last Name</button>
+					<button class="button" data-sort-by="last_name">Name</button>
 					<button class="button" data-sort-by="grade">Grade</button>
 					<!--<button class="button" data-sort-by="pr">PR</button>-->
 					<!--<button class="button" data-sort-by="sr">SR</button>-->
@@ -401,7 +401,7 @@ while ( have_posts() ) :
 				<h4>Filter By</h4>
 				  <div class="ui-group">
 					  <select type="select" class="filter-select filter-options" data-group="gender">
-						<option value="">Select Gender</option>
+						<option value="">Gender</option>
 						<option value="[data-gender='m']" id="filter-boys">Boys</option>
 						<option value="[data-gender='f']" id="filter-girls">Girls</option>
 						<option value="">All</option>
@@ -413,7 +413,7 @@ while ( have_posts() ) :
 				<h4>Sort By</h4>
 				<div class="tb-sorts button-group">  
 					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
-					<button class="button" data-sort-by="last_name">Last Name</button>
+					<button class="button" data-sort-by="last_name">Name</button>
 					<button class="button" data-sort-by="grade">Grade</button>
 					<!--<button class="button" data-sort-by="pr">PR</button>-->
 					<!--<button class="button" data-sort-by="sr">SR</button>-->

@@ -17,8 +17,9 @@
 	gap: 2rem;
 }
 .tb-ui-controls .controls-group { flex-basis: 50%; margin: 1rem 0; }
-.tb-filter-controls { gap: 1rem; }
-.tb-sort-controls { justify-content: flex-end; gap: 1rem; }
+.tb-ui-controls .controls-group h4 { padding: 0; font-weight: 500; font-size: 1rem; }
+.tb-filter-controls { gap: 0.25rem; }
+.tb-sort-controls { justify-content: flex-end; gap: 0.25rem; }
 .tb-filter-controls select { padding: 0.25rem 0.5rem; border-radius: 0.25rem; height: 2rem; box-sizing: border-box; }
 
 @media (max-width:900px) {
