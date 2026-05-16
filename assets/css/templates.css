@@ -418,3 +418,28 @@
   margin: 0 0 0.75rem;
   font-style: italic;
 }
+
+/* =========================================================================
+ Record achievement badges — shown inline with result times
+ ========================================================================= */
+.tb-record-badge {
+    display: inline-block;
+    font-size: 0.65em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-left: 5px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.tb-record-badge--pr {
+    background-color: var(--tb-green, #2e6b3e);
+    color: #fff;
+}
+.tb-record-badge--sr {
+    background-color: var(--tb-gold, #c8a951);
+    color: #fff;
+}

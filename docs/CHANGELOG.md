@@ -1,5 +1,93 @@
 # CHANGELOG
 
+## 2026-05-16
+
+### Athletic Records — display, badges, and auto-generation
+
+#### `single-athlete.php` — Personal Records dedup + result badges
+
+**Problem:** The Personal Records section showed every `athletic_record` post for the athlete, including all historical intermediate records. In a full season where every race set a new record, this list becomes long and redundant. The desired display is one row per event + record_type showing the current (most recent) record only.
+
+**Fix — dedup:**
+
+- Added `result_id` and `meet_date_raw` (Y-m-d) keys to each entry in the `$records` array.
+- After the records query loop, `$result_record_map` is built from the full list (maps `result_id → [record_types]`) before any dedup — needed by the badges feature below.
+- Dedup reduces `$records` to one entry per `event_id + record_type`, keeping the entry with the most recent `meet_date_raw`. This collapses the historical list to current PR and SR only.
+- Records sorted PR before SR, then by event name within each type.
+
+**Fix — result badges:**
+
+- In Section 3 (Results history), each result's time span now checks `$result_record_map[$r['result_id']]` and renders inline `<span class="tb-record-badge">` elements for any record types earned on that result. Badges appear on every result where a record was set, not just the current best — preserving the historical narrative.
+- `$result_record_map` is built from the full pre-dedup `$records` array, so all historical PR/SR records earn badges.
+
+**Key implementation note:** `$result_record_map` must be built before the dedup. The dedup runs on `$records`; the map is a separate variable that retains all historical entries.
+
+---
+
+#### `single-athletic_season.php` — Records column populated in roster
+
+**Problem:** The athlete roster header had a "Records" column but each row only rendered two `<span class="tb-col">` elements (Athlete and Grade). No records data was fetched. Column was always blank.
+
+**Fix:**
+
+- After `usort()` on the `$athletes` array, a bulk `WP_Query` fetches all `athletic_record` posts where `athlete IN $athlete_ids_for_records`.
+- For each record: if it's an SR and its linked result's meet is in `$season_meet_ids`, it qualifies as a season SR. All-time PR always qualifies. SR beats PR in the display; within the same type, the most recent record by meet date is kept.
+- Result stored in `$roster_record_map[athlete_id]`.
+- A third `<span class="tb-col">` added to each roster row (athletes and sibling runners) rendering `{type} {result_display}` or `—`.
+
+---
+
+#### `inc/results-helpers.php` — auto-generate PR/SR on result save
+
+**New function: `tb_auto_generate_records()`** Attached to `acf/save_post` at priority 25 (after `result_time_seconds` sync at priority 20). On save of an `athletic_result` post via WP admin:
+
+1. Reads `athlete`, `athletic_event`, `meet` from the result.
+2. Reads `measurement_type` and `is_relay` from the linked Athletic Event. Skips relay events.
+3. Selects the numeric comparison field by measurement type:
+    - Time → `result_time_seconds` (lower is better)
+    - Distance → `result_distance_meters` (higher is better)
+    - Height → `result_height_meters` (higher is better)
+    - Points → `result_points` (higher is better)
+4. Checks for existing record posts already pointing to this result (idempotency guard — prevents duplicates on re-save).
+5. PR check: queries all prior results for this athlete + event (excluding current). If no priors exist, or this result beats the prior best, creates a PR record post.
+6. SR check: queries the season's meet IDs, then prior results for this athlete + event scoped to those meets. If no season priors exist, or this result beats the season best, creates an SR record post.
+
+**Does not fire during WPUCI imports.** Use Tools → Generate Records for post-import bulk generation.
+
+---
+
+**New function: `tb_create_record_post()`** Shared helper called by both `tb_auto_generate_records()` and `tb_run_generate_records()`. Creates a single `athletic_record` post and writes all four fields: `athlete`, `event`, `result`, `record_type`.
+
+Post title format: `{Athlete Display Name} – {Event Name} {Record Type}` (e.g. "Jack Anderson – 5K PR").
+
+Field name reminder: the Athletic Event relationship on `athletic_record` is named `event`, not `athletic_event` (differs from `athletic_result`).
+
+---
+
+**New function: `tb_run_generate_records()` + Tools → Generate Records page** Bulk companion for post-WPUCI-import record generation. Accessible at Tools → Generate Records in WP admin. Select a season, click the button.
+
+Process:
+
+1. Fetches all meet IDs in the season (filtered by `athletic-meet` taxonomy, matching existing query patterns).
+2. Builds a meet_id → meet_date map for chronological sorting.
+3. Fetches all results in those meets; groups by athlete + event.
+4. Per athlete + event group:
+    - Establishes a pre-season all-time best baseline (results in other seasons) so cross-season PRs are evaluated correctly.
+    - Sorts this season's results chronologically (ascending by meet date).
+    - Walks results in order, tracking running all-time best and season best. Creates PR and/or SR record posts each time a best improves.
+5. Idempotent: skips any result that already has a record post of that type pointing to it. Safe to re-run after partial generation.
+6. Returns `['created' => int, 'skipped' => int]`; displayed in admin notice after redirect.
+
+---
+
+#### `assets/css/templates.css` — record badge styles
+
+New rules:
+
+- `.tb-record-badge` — inline-block pill, small caps, tight padding
+- `.tb-record-badge--pr` — green background (`var(--tb-green)`)
+- `.tb-record-badge--sr` — gold background (`var(--tb-gold)`)
+
 ## 2026-05-12
 
 ### Multi-grid Isotope refactor — tb.js, isotope.css, single-athletic_event.php

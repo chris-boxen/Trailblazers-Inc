@@ -180,6 +180,74 @@ while ( have_posts() ) :
 
 		usort( $athletes,        fn( $a, $b ) => strcmp( $a['last_name'], $b['last_name'] ) );
 		usort( $sibling_runners, fn( $a, $b ) => strcmp( $a['last_name'], $b['last_name'] ) );
+		
+		// -------------------------------------------------------------------------
+		// ROSTER RECORDS — bulk query current SR (season-scoped) for all enrolled
+		// athletes. Falls back to all-time PR if no season SR exists.
+		// -------------------------------------------------------------------------
+		$roster_record_map = []; // athlete_id => [ 'display' => string ]
+		
+		if ( ! empty( $athletes ) ) {
+			$season_meet_ids         = array_column( $meets, 'meet_id' );
+			$athlete_ids_for_records = array_column( $athletes, 'athlete_id' );
+		
+			$roster_records_query = new WP_Query( [
+				'post_type'      => 'athletic_record',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+				'no_found_rows'  => true,
+				'meta_query'     => [
+					[
+						'key'     => 'athlete',
+						'value'   => $athlete_ids_for_records,
+						'compare' => 'IN',
+					],
+				],
+			] );
+		
+			if ( $roster_records_query->have_posts() ) {
+				foreach ( $roster_records_query->posts as $rec ) {
+					$a_id     = get_field( 'athlete',     $rec->ID );
+					$rec_type = get_field( 'record_type', $rec->ID );
+					$res_id   = get_field( 'result',      $rec->ID );
+					$meet_id  = $res_id ? get_field( 'meet', $res_id ) : null;
+					$raw      = $meet_id ? get_post_meta( $meet_id, '_EventStartDate', true ) : '';
+					$date     = $raw ? date( 'Y-m-d', strtotime( $raw ) ) : '';
+					$display  = $res_id ? get_field( 'result_display', $res_id ) : '';
+		
+					// Season SR: only count if this meet belongs to the current season.
+					$is_season_sr = ( $rec_type === 'SR' && in_array( $meet_id, $season_meet_ids, true ) );
+					// All-time PR: always eligible.
+					$is_pr        = ( $rec_type === 'PR' );
+		
+					if ( ! $is_season_sr && ! $is_pr ) continue;
+		
+					// Prefer season SR over all-time PR. Within the same type, keep most recent.
+					$existing      = $roster_record_map[$a_id] ?? null;
+					$existing_type = $existing['type'] ?? '';
+		
+					$should_replace = false;
+					if ( ! $existing ) {
+						$should_replace = true;
+					} elseif ( $is_season_sr && $existing_type !== 'SR' ) {
+						// SR always wins over PR in the roster column.
+						$should_replace = true;
+					} elseif ( $rec_type === $existing_type && $date > ( $existing['date'] ?? '' ) ) {
+						// Same type — keep the most recent.
+						$should_replace = true;
+					}
+		
+					if ( $should_replace ) {
+						$roster_record_map[$a_id] = [
+							'type'    => $rec_type,
+							'display' => $display,
+							'date'    => $date,
+						];
+					}
+				}
+			}
+			wp_reset_postdata();
+		}
 	}
 	wp_reset_postdata();
 
@@ -378,6 +446,16 @@ while ( have_posts() ) :
 						<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
 							<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
 							<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
+							<span class="tb-col">
+								<?php
+								$rec = $roster_record_map[ $athlete['athlete_id'] ] ?? null;
+								if ( $rec ) {
+									echo esc_html( $rec['type'] . ' ' . $rec['display'] );
+								} else {
+									echo '—';
+								}
+								?>
+							</span>
 						</a>
 					</li>
 					<?php endforeach; ?>
@@ -436,6 +514,16 @@ while ( have_posts() ) :
 					<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
 						<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
 						<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
+						<span class="tb-col">
+							<?php
+							$rec = $roster_record_map[ $athlete['athlete_id'] ] ?? null;
+							if ( $rec ) {
+								echo esc_html( $rec['type'] . ' ' . $rec['display'] );
+							} else {
+								echo '—';
+							}
+							?>
+						</span>
 					</a>
 				</li>
 				<?php endforeach; ?>

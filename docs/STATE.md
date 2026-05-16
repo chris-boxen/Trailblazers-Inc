@@ -64,7 +64,8 @@ The following have been successfully imported:
 
 ## Remaining — Data Population (deferred, not blocking)
 10. ✅ Athletic Results (2025 XC — 951 posts, 14 meets, via WPUCI)
-11. ⬜ Athletic Records
+11. ✅ Athletic Records (2024 XC — imported manually; auto-generation
+active for future seasons via Tools → Generate Records)
 
 ## Current Development Environment
 - Local is used for development.
@@ -155,3 +156,17 @@ The following have been successfully imported:
 
   ### Known issues
   - RF CC submission spinner takes ~27 seconds with no visible progress — inherent to experimental handler flow; UX polish deferred
+  
+## results-helpers.php bullet:
+- inc/results-helpers.php updated — auto-generate PR/SR logic added:
+  tb_auto_generate_records (acf/save_post hook, priority 25),
+  tb_create_record_post helper, tb_run_generate_records executor,
+  and Tools → Generate Records admin page.
+- single-athlete.php updated — Personal Records section deduped to
+  current PR/SR only (one row per event + type); record achievement
+  badges (PR/SR) added inline to results list.
+- single-athletic_season.php updated — Records column in athlete roster
+  now populated: bulk records query added, season-scoped SR displayed
+  with all-time PR fallback; third span rendered in each roster row.
+- assets/css/templates.css updated — .tb-record-badge,
+  .tb-record-badge--pr, .tb-record-badge--sr added.

@@ -77,6 +77,33 @@ As of 2026-05-09.
   
 ---
 
+## Completed — Athletic Records Data Import
+As of 2026-05-16
+
+- ✅ 2024 XC athletic records imported manually
+- ✅ single-athlete.php — Personal Records section: deduped to one row
+per event + record_type (most recent only); result_id and
+meet_date_raw added to records array; dedup logic added post-query
+- ✅ single-athlete.php — Results section: PR/SR achievement badges
+rendered inline with result time; $result_record_map built from full
+(pre-dedup) records array so all historical records earn badges
+- ✅ single-athletic_season.php — Records column in athlete and sibling
+runner rosters: bulk records query added after enrollment build;
+season-scoped SR preferred, all-time PR as fallback; third tb-col
+span added to roster rows
+- ✅ inc/results-helpers.php — tb_auto_generate_records() added
+(acf/save_post priority 25): auto-creates PR/SR record posts on WP
+admin result save; handles all measurement types (Time/Distance/Height/
+Points) with correct comparison direction; skips relays; idempotent
+- ✅ inc/results-helpers.php — tb_create_record_post() helper added
+- ✅ inc/results-helpers.php — tb_run_generate_records() and
+Tools → Generate Records admin page added: bulk PR/SR generation for
+a selected season; use after every WPUCI results import; idempotent;
+walks results chronologically to preserve historical record sequence
+- ✅ assets/css/templates.css — .tb-record-badge rules added
+
+---
+
 ## Active — Template Build
 
 Templates to build or refactor. Work through these in any order.
@@ -126,7 +153,6 @@ customize_data group fix, data attributes
 
 ## Deferred — Schema / Data
 
-- [ ] Athletic Records data import
 - [ ] Confirm `publicly_queryable` is false on Family, Application, Enrollment,
   and Athletic Physical CPTs
 - [ ] Decide whether TEC `tribe_events_cat` needs sport sub-categories

@@ -187,14 +187,45 @@ while ( have_posts() ) :
 				'event_name'     => $linked_event_id
 					? ( get_field( 'event_name', $linked_event_id ) ?: get_the_title( $linked_event_id ) )
 					: '—',
+				'result_id'      => $linked_result_id, 
 				'result_display' => $linked_result_id ? get_field( 'result_display', $linked_result_id ) : '—',
 				'meet_id'        => $meet_id,
 				'meet_name'      => $meet_id ? get_the_title( $meet_id ) : '—',
+				'meet_date_raw'  => $meet_date, 
 				'meet_date'      => $meet_date ? date_i18n( 'F j, Y', strtotime( $meet_date ) ) : '—',
 			];
 		}
 	}
 	wp_reset_postdata();
+	
+	// Build result → record-type lookup (used in Section 3 results to show badges).
+	// Must be done before dedup so ALL historical records are represented.
+	$result_record_map = [];
+	foreach ( $records as $rec ) {
+		if ( $rec['result_id'] ) {
+			$result_record_map[ $rec['result_id'] ][] = $rec['record_type'];
+		}
+	}
+	
+	// Deduplicate: keep only the most recent record per event + record_type.
+	$current_records = [];
+	foreach ( $records as $rec ) {
+		$key = $rec['event_id'] . '_' . $rec['record_type'];
+		if (
+			! isset( $current_records[ $key ] ) ||
+			$rec['meet_date_raw'] > $current_records[ $key ]['meet_date_raw']
+		) {
+			$current_records[ $key ] = $rec;
+		}
+	}
+	
+	// Sort: PR before SR, then by event name within each type.
+	usort( $current_records, function( $a, $b ) {
+		$type_cmp = strcmp( $a['record_type'], $b['record_type'] );
+		return $type_cmp !== 0 ? $type_cmp : strcmp( $a['event_name'], $b['event_name'] );
+	} );
+	
+	$records = array_values( $current_records );
 
 ?>
 
@@ -403,7 +434,22 @@ while ( have_posts() ) :
 									<span class="tb-col"><?php echo esc_html( $date_display ); ?></span>
 									<span class="tb-col"><?php echo esc_html( $r['event_name'] ?: '—' ); ?></span>
 									<span class="tb-col"><?php echo $r['heat'] !== '' ? esc_html( $r['heat'] ) : '—'; ?></span>
-									<span class="tb-col"><?php echo esc_html( $r['result_display'] ?: '—' ); ?></span>
+									<span class="tb-col">
+										<?php echo esc_html( $r['result_display'] ?: '—' ); ?>
+										<?php
+										$badges = $result_record_map[ $r['result_id'] ] ?? [];
+										if ( $badges ) :
+											sort( $badges ); // PR before SR alphabetically
+											foreach ( $badges as $badge ) :
+										?>
+											<span class="tb-record-badge tb-record-badge--<?php echo esc_attr( strtolower( $badge ) ); ?>">
+												<?php echo esc_html( $badge ); ?>
+											</span>
+										<?php
+											endforeach;
+										endif;
+										?>
+									</span>
 									<span class="tb-col">
 										<?php echo $place_attr !== '' ? esc_html( $place_attr ) : '—'; ?>
 									</span>
