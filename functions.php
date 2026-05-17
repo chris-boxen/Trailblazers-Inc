@@ -24,6 +24,45 @@ require_once get_stylesheet_directory() . '/inc/admin-widgets.php';
 /*	Load child theme stylesheets & scripts
 /*------------------------------------------------------------------------------------*/
 
+add_action( 'wp_enqueue_scripts', 'tb_enqueue_assets' );
+function tb_enqueue_assets() {
+
+    $ver = '1.1'; // bump this when you push changes
+
+    wp_enqueue_style(
+        'tb-styles',
+        get_stylesheet_directory_uri() . '/assets/css/styles.css',
+        array(),
+        $ver
+    );
+    wp_enqueue_style(
+        'tb-templates',
+        get_stylesheet_directory_uri() . '/assets/css/templates.css',
+        array( 'tb-styles' ),
+        $ver
+    );
+    wp_enqueue_style(
+        'tb-events',
+        get_stylesheet_directory_uri() . '/assets/css/events.css',
+        array( 'tb-styles' ),
+        $ver
+    );
+    wp_enqueue_style(
+        'tb-isotope',
+        get_stylesheet_directory_uri() . '/assets/css/isotope.css',
+        array( 'tb-styles' ),
+        $ver
+    );
+
+    wp_enqueue_script(
+        'tb-scripts',
+        get_stylesheet_directory_uri() . '/assets/js/tb.js',
+        array( 'jquery' ),
+        $ver,
+        true
+    );
+}
+
 add_action("wp_enqueue_scripts", "load_childTheme_styles", 11);
 function load_childTheme_styles()
 {
