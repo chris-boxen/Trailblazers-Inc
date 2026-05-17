@@ -48,7 +48,10 @@ $('.tb-isotope-instance').each( function() {
 		getSortData: {
 			first_name: '[data-first-name]',
 			last_name:  '[data-last-name]',
-			grade:      '[data-grade]',
+			grade: function( el ) {
+				var v = parseInt( $( el ).attr('data-grade'), 10 );
+				return isNaN( v ) ? Infinity : v;
+			},
 			place:          function( el ) {
 				var v = parseInt( $( el ).attr('data-place'), 10 );
 				return isNaN( v ) ? Infinity : v;
@@ -57,10 +60,14 @@ $('.tb-isotope-instance').each( function() {
 				var v = parseFloat( $( el ).attr('data-result-seconds') );
 				return isNaN( v ) ? Infinity : v;
 			},
-			grad_year:  '[data-grad-year]',
-			time:       '.time',
-			pr:         '.pr',
-			sr:         '.sr',
+			pr: function( el ) {
+				var v = parseFloat( $( el ).attr('data-pr') );
+				return isNaN( v ) ? Infinity : v;
+			},
+			sr: function( el ) {
+				var v = parseFloat( $( el ).attr('data-sr') );
+				return isNaN( v ) ? Infinity : v;
+			},
 		},
 		sortBy: sortValue,
 	});

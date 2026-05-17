@@ -185,7 +185,7 @@ while ( have_posts() ) :
 		// ROSTER RECORDS — bulk query current SR (season-scoped) for all enrolled
 		// athletes. Falls back to all-time PR if no season SR exists.
 		// -------------------------------------------------------------------------
-		$roster_record_map = []; // athlete_id => [ 'display' => string ]
+		$roster_record_map = []; // athlete_id => [ 'pr' => [ display, date ] | null, 'sr' => [...] | null ]
 		
 		if ( ! empty( $athletes ) ) {
 			$season_meet_ids         = array_column( $meets, 'meet_id' );
@@ -222,27 +222,26 @@ while ( have_posts() ) :
 		
 					if ( ! $is_season_sr && ! $is_pr ) continue;
 		
-					// Prefer season SR over all-time PR. Within the same type, keep most recent.
-					$existing      = $roster_record_map[$a_id] ?? null;
-					$existing_type = $existing['type'] ?? '';
-		
-					$should_replace = false;
-					if ( ! $existing ) {
-						$should_replace = true;
-					} elseif ( $is_season_sr && $existing_type !== 'SR' ) {
-						// SR always wins over PR in the roster column.
-						$should_replace = true;
-					} elseif ( $rec_type === $existing_type && $date > ( $existing['date'] ?? '' ) ) {
-						// Same type — keep the most recent.
-						$should_replace = true;
+					// Store PR and SR independently. Within each type, keep the most recent.
+					if ( $is_pr ) {
+						$existing_pr = $roster_record_map[ $a_id ]['pr'] ?? null;
+						if ( ! $existing_pr || $date > ( $existing_pr['date'] ?? '' ) ) {
+							$roster_record_map[ $a_id ]['pr'] = [
+								'display' => $display,
+								'date'    => $date,
+								'seconds' => $res_id ? (float) get_field( 'result_time_seconds', $res_id ) : '',
+							];
+						}
 					}
-		
-					if ( $should_replace ) {
-						$roster_record_map[$a_id] = [
-							'type'    => $rec_type,
-							'display' => $display,
-							'date'    => $date,
-						];
+					if ( $is_season_sr ) {
+						$existing_sr = $roster_record_map[ $a_id ]['sr'] ?? null;
+						if ( ! $existing_sr || $date > ( $existing_sr['date'] ?? '' ) ) {
+							$roster_record_map[ $a_id ]['sr'] = [
+								'display' => $display,
+								'date'    => $date,
+								'seconds' => $res_id ? (float) get_field( 'result_time_seconds', $res_id ) : '',
+							];
+						}
 					}
 				}
 			}
@@ -422,8 +421,8 @@ while ( have_posts() ) :
 					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
 					<button class="button" data-sort-by="last_name">Name</button>
 					<button class="button" data-sort-by="grade">Grade</button>
-					<!--<button class="button" data-sort-by="pr">PR</button>-->
-					<!--<button class="button" data-sort-by="sr">SR</button>-->
+					<button class="button" data-sort-by="pr">PR</button>
+					<button class="button" data-sort-by="sr">SR</button>
 				</div>
 			</div>
 		</div><!-- .tb-ui-controls -->
@@ -439,21 +438,37 @@ while ( have_posts() ) :
 				</div>
 				<ul class="tb-isotope-grid tb-list tb-roster-list">
 					<?php foreach ( $athletes as $athlete ) : ?>
+					<?php
+						$athlete_records = $roster_record_map[ $athlete['athlete_id'] ] ?? [];
+						$pr              = $athlete_records['pr'] ?? null;
+						$sr              = $athlete_records['sr'] ?? null;
+						$pr_seconds      = ( $pr && $pr['seconds'] ) ? (string) $pr['seconds'] : '';
+						$sr_seconds      = ( $sr && $sr['seconds'] ) ? (string) $sr['seconds'] : '';
+					?>
 					<li class="tb-list-row"
 						data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
 						data-gender="<?php echo esc_attr( strtolower( $athlete['gender'] ) ); ?>"
-						data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>">
+						data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>"
+						data-pr="<?php echo esc_attr( $pr_seconds ); ?>"
+						data-sr="<?php echo esc_attr( $sr_seconds ); ?>">
 						<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
 							<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
 							<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
 							<span class="tb-col">
 								<?php
-								$rec = $roster_record_map[ $athlete['athlete_id'] ] ?? null;
-								if ( $rec ) {
-									echo esc_html( $rec['type'] . ' ' . $rec['display'] );
-								} else {
-									echo '—';
-								}
+								$athlete_records = $roster_record_map[ $athlete['athlete_id'] ] ?? [];
+								$pr              = $athlete_records['pr'] ?? null;
+								$sr              = $athlete_records['sr'] ?? null;
+								if ( $pr || $sr ) :
+									if ( $pr ) : ?>
+										<span class="tb-record-badge tb-record-badge--pr">PR <?php echo esc_html( $pr['display'] ); ?></span>
+									<?php endif;
+									if ( $sr ) : ?>
+										<span class="tb-record-badge tb-record-badge--sr">SR <?php echo esc_html( $sr['display'] ); ?></span>
+									<?php endif; ?>
+								<?php else : ?>
+									—
+								<?php endif;
 								?>
 							</span>
 						</a>
@@ -493,8 +508,8 @@ while ( have_posts() ) :
 					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
 					<button class="button" data-sort-by="last_name">Name</button>
 					<button class="button" data-sort-by="grade">Grade</button>
-					<!--<button class="button" data-sort-by="pr">PR</button>-->
-					<!--<button class="button" data-sort-by="sr">SR</button>-->
+					<button class="button" data-sort-by="pr">PR</button>
+					<button class="button" data-sort-by="sr">SR</button>
 				</div>
 			</div>
 		</div><!-- .tb-ui-controls -->
@@ -507,21 +522,37 @@ while ( have_posts() ) :
 			</div>
 			<ul class="tb-isotope-grid tb-list tb-sibling-runners-list">
 				<?php foreach ( $sibling_runners as $athlete ) : ?>
+				<?php
+					$athlete_records = $roster_record_map[ $athlete['athlete_id'] ] ?? [];
+					$pr              = $athlete_records['pr'] ?? null;
+					$sr              = $athlete_records['sr'] ?? null;
+					$pr_seconds      = ( $pr && $pr['seconds'] ) ? (string) $pr['seconds'] : '';
+					$sr_seconds      = ( $sr && $sr['seconds'] ) ? (string) $sr['seconds'] : '';
+				?>
 				<li class="tb-list-row"
 					data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
 					data-gender="<?php echo esc_attr( strtolower( $athlete['gender'] ) ); ?>"
-					data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>">
+					data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>"
+					data-pr="<?php echo esc_attr( $pr_seconds ); ?>"
+					data-sr="<?php echo esc_attr( $sr_seconds ); ?>">
 					<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
 						<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
 						<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
 						<span class="tb-col">
 							<?php
-							$rec = $roster_record_map[ $athlete['athlete_id'] ] ?? null;
-							if ( $rec ) {
-								echo esc_html( $rec['type'] . ' ' . $rec['display'] );
-							} else {
-								echo '—';
-							}
+							$athlete_records = $roster_record_map[ $athlete['athlete_id'] ] ?? [];
+							$pr              = $athlete_records['pr'] ?? null;
+							$sr              = $athlete_records['sr'] ?? null;
+							if ( $pr || $sr ) :
+								if ( $pr ) : ?>
+									<span class="tb-record-badge tb-record-badge--pr">PR <?php echo esc_html( $pr['display'] ); ?></span>
+								<?php endif;
+								if ( $sr ) : ?>
+									<span class="tb-record-badge tb-record-badge--sr">SR <?php echo esc_html( $sr['display'] ); ?></span>
+								<?php endif; ?>
+							<?php else : ?>
+								—
+							<?php endif;
 							?>
 						</span>
 					</a>

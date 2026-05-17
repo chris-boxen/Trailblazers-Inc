@@ -2,6 +2,57 @@
 
 ## 2026-05-16
 
+### PR/SR badges and sort improvements — season roster + meet results
+
+#### `tribe-events/tb-meet-results.php` — PR/SR badges added to results list
+
+- After the grade lookup block, a bulk `WP_Query` collects all result IDs
+  from `$results_by_event` and fetches matching `athletic_record` posts in a
+  single `IN` query. Builds `$result_record_map[ result_id ] => [ record_types ]`.
+- In the render loop, the Result column now emits `.tb-record-badge` spans for
+  any record types earned on that result. Same badge classes as `single-athlete.php`.
+
+#### `single-athletic_season.php` — roster records column redesigned
+
+**Problem:** `$roster_record_map` used a winner-takes-all accumulation: SR beat
+PR, and only one record was stored per athlete. This caused 2025 roster to show
+SR only and 2026 roster to show PR only, even when athletes had both.
+
+**Fix — dual record storage:**
+- `$roster_record_map` now stores `pr` and `sr` as independent sub-keys.
+- Each stores `display`, `date`, and `seconds` (from `result_time_seconds`).
+- Within each type, the most recent record by meet date is kept.
+
+**Fix — render:**
+- Records column renders both badges when present: `[PR 16:29.52] [SR 16:29.52]`
+- `<br>` separator removed; column uses flex row layout instead.
+- `data-pr` and `data-sr` attributes added to each `<li>` with time-in-seconds
+  value for Isotope sort support. Variables set in a PHP block immediately before
+  the `<li>` tag.
+
+#### `assets/css/templates.css` — scoped roster badge overrides
+
+- New scoped rules on `.tb-roster-list-wrap .tb-record-badge` and
+  `.tb-sibling-runners-list .tb-record-badge` resize the badge to normal reading
+  size (`0.82rem`) and use `inline-flex` with `align-items: center` so the time
+  value sits inside the pill.
+- `.tb-roster-list-wrap .tb-col:last-child` and
+  `.tb-sibling-runners-list .tb-col:last-child` set `display: flex; flex-wrap: wrap;
+  gap: 0.4rem` so PR and SR badges sit side by side.
+- Base `.tb-record-badge` unchanged — inline result badges on `single-athlete.php`
+  and `tb-meet-results.php` are unaffected.
+
+#### `assets/js/tb.js` — numeric sort fixes
+
+- `grade` sort converted from string shorthand to `parseInt` function — fixes
+  lexicographic ordering (10, 11, 12, 6, 7…) → correct numeric order.
+- `pr` and `sr` sorts converted from string shorthand to `parseFloat` functions —
+  fixes same issue for decimal seconds values.
+- All three use `Infinity` as the fallback for missing/empty values so athletes
+  without a record sort to the bottom.
+
+## 2026-05-16
+
 ### Athletic Records — display, badges, and auto-generation
 
 #### `single-athlete.php` — Personal Records dedup + result badges

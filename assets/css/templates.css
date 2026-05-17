@@ -443,3 +443,23 @@
     background-color: var(--tb-gold, #c8a951);
     color: #fff;
 }
+
+.tb-roster-list-wrap .tb-record-badge,
+.tb-sibling-runners-list .tb-record-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 3px 8px 3px 6px;
+    border-radius: 4px;
+    gap: 0.35em;
+}
+
+.tb-roster-list-wrap .tb-col:last-child,
+.tb-sibling-runners-list .tb-col:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+}

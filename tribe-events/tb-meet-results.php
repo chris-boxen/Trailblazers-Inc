@@ -178,6 +178,51 @@ if ( $results_status === 'Available' ) {
 
 		wp_reset_postdata();
 	}
+	
+	// -------------------------------------------------------------------------
+	// RECORD MAP — build result_id → [record_types] for badge display.
+	// Queries athletic_record posts whose linked result is in this meet.
+	// Only runs when there are results to display.
+	// -------------------------------------------------------------------------
+	$result_record_map = []; // [ result_id => [ 'PR', 'SR', ... ] ]
+	
+	if ( ! empty( $results_by_event ) ) {
+	
+		// Collect all result IDs from the grouped results.
+		$all_result_ids = [];
+		foreach ( $results_by_event as $event_results ) {
+			foreach ( $event_results as $r ) {
+				$all_result_ids[] = $r['result_id'];
+			}
+		}
+	
+		if ( ! empty( $all_result_ids ) ) {
+			$records_query = new WP_Query( [
+				'post_type'      => 'athletic_record',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+				'meta_query'     => [
+					[
+						'key'     => 'result',
+						'value'   => $all_result_ids,
+						'compare' => 'IN',
+					],
+				],
+			] );
+	
+			foreach ( $records_query->posts as $record_id ) {
+				$linked_result = (int) get_post_meta( $record_id, 'result', true );
+				$record_type   = get_field( 'record_type', $record_id );
+				if ( $linked_result && $record_type ) {
+					$result_record_map[ $linked_result ][] = $record_type;
+				}
+			}
+	
+			wp_reset_postdata();
+		}
+	}
 }
 
 ?>
@@ -272,7 +317,22 @@ if ( $results_status === 'Available' ) {
 								<span class="tb-col"><?php echo esc_html( $r['athlete_name'] ); ?></span>
 								<span class="tb-col"><?php echo $grade !== '' ? esc_html( $grade ) : '—'; ?></span>
 								<span class="tb-col"><?php echo $r['heat'] !== '' ? esc_html( $r['heat'] ) : '—'; ?></span>
-								<span class="tb-col"><?php echo esc_html( $r['result_display'] ?: '—' ); ?></span>
+								<span class="tb-col">
+									<?php echo esc_html( $r['result_display'] ?: '—' ); ?>
+									<?php
+									$badges = $result_record_map[ $r['result_id'] ] ?? [];
+									if ( $badges ) :
+										sort( $badges ); // PR before SR alphabetically
+										foreach ( $badges as $badge ) :
+									?>
+										<span class="tb-record-badge tb-record-badge--<?php echo esc_attr( strtolower( $badge ) ); ?>">
+											<?php echo esc_html( $badge ); ?>
+										</span>
+									<?php
+										endforeach;
+									endif;
+									?>
+								</span>
 								<span class="tb-col"><?php echo $place_attr !== '' ? esc_html( $place_attr ) : '—'; ?></span>
 						<?php if ( $r['athlete_id'] ) : ?>
 							</a>
