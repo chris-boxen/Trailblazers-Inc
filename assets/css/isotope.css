@@ -23,10 +23,10 @@
 .tb-filter-controls select { padding: 0.25rem 0.5rem; border-radius: 0.25rem; height: 2rem; box-sizing: border-box; }
 
 @media (max-width:900px) {
-	.tb-ui-controls { flex-direction: column; gap: 0.5rem; align-items: start; }
-	.tb-ui-controls .controls-group { margin: 0; }
-	.tb-ui-controls h4 { font-size: 1rem; }
-	.tb-filter-controls { gap: 0.5rem; }
+	.tb-ui-controls { flex-direction: column; gap: 0; align-items: start; }
+	.tb-ui-controls .controls-group { margin: 0.5rem 0; }
+	.tb-ui-controls h4 { font-size: 0.875rem; margin-right: 0.25rem; }
+	.tb-filter-controls { gap: 0; }
 	.page-id-178 .container { width: 90%; }
 }
 

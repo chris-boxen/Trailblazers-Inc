@@ -296,6 +296,15 @@ while ( have_posts() ) :
 					<?php echo wp_kses_post( nl2br( $description ) ); ?>
 				</div>
 			<?php endif; ?>
+			
+			<div class="tb-internal-nav-wrap">
+				<ul class="tb-internal-nav">
+					<li>Jump to:</li>
+					<li><a href="#coaches">Coaches</a></li>
+					<li><a href="#meets">Meets</a></li>
+					<li><a href="#athletes">Athletes</a></li>
+				</ul>
+			</div><!-- .tb-internal-nav -->
 
 		</div><!-- .tb-single-headline -->
 
@@ -326,7 +335,7 @@ while ( have_posts() ) :
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 2: COACHES                                                 ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section class="tb-single-section tb-season-coaches">
+	<section id="coaches" class="tb-single-section tb-season-coaches">
 
 		<h2>Coaches</h2>
 
@@ -359,7 +368,7 @@ while ( have_posts() ) :
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 3: MEETS                                                   ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section class="tb-single-section tb-season-meets">
+	<section id="meets" class="tb-single-section tb-season-meets">
 
 		<h2>Meet Schedule</h2>
 
@@ -404,7 +413,7 @@ while ( have_posts() ) :
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 4: ATHLETE ROSTER                                          ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section class="tb-single-section tb-season-roster tb-isotope-instance">
+	<section id="athletes" class="tb-single-section tb-season-roster tb-isotope-instance">
 
 		<h2>Athletes (<span class="filter-count"></span>)</h2>
 		

@@ -29,7 +29,7 @@ function load_childTheme_styles()
 {
   wp_enqueue_script(
   'tb-scripts',
-  get_stylesheet_directory_uri() . '/assets/js/tb.js?v=1.0',
+  get_stylesheet_directory_uri() . '/assets/js/tb.js?v=1.1',
   array('jquery'), false, true
   );
 }
