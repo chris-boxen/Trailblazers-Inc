@@ -30,6 +30,7 @@ function(t,e){"object"==typeof module&&module.exports?module.exports=e(t,require
 */
 
 (function($) {
+$(document).ready( function() {
 
 $('.tb-isotope-instance').each( function() {
 
@@ -107,6 +108,8 @@ $('.tb-isotope-instance').each( function() {
 	});
 
 	function updateFilterCount() {
+		var iso = $grid.data('isotope');
+		if ( ! iso ) return;
 		$filterCount.text( iso.filteredItems.length );
 	}
 	updateFilterCount();
@@ -180,4 +183,5 @@ function manageSelect( select, filters ) {
 	}
 }
 
+}); // Document Ready
 })(jQuery);

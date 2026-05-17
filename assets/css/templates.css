@@ -206,6 +206,8 @@
 
 /* Meet Schedule — Meet | Date | Location | Results */
 .tb-meets-list   { --tb-cols: 2fr 1.5fr 2fr 1fr; }
+.tb-meet-results-status--pending { color: #aaa; }
+.tb-meet-results-status--available { color: var(--tb-green); }
 
 /* Athlete Roster — Athlete | Grade | Participation */
 .tb-roster-list-wrap  { --tb-cols: 2fr 1fr 3fr; }
@@ -249,7 +251,7 @@
 }
 .tb-archive-header h1 {
   font-family: var(--heading-font);
-  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-size: clamp(2.0rem, 3vw, 3.75rem);
   font-weight: 200;
   letter-spacing: -0.02em;
   color: var(--dark-green);
@@ -335,7 +337,7 @@
 
 .tb-single-title {
   font-family: var(--heading-font);
-  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-size: clamp(2rem, 3vw, 3.75rem);
   font-weight: 200;
   letter-spacing: -0.02em;
   color: var(--dark-green);
@@ -389,18 +391,24 @@
 .tb-single-section {
   padding: 1rem 2rem;
 }
+.tb-single-section:last-of-type {
+  padding-bottom: 2rem;
+}
 @media (min-width: 640px) {
   .tb-single-section {
     padding: 1.5rem 3rem;
+  }
+  .tb-single-section:last-of-type {
+    padding-bottom: 3rem;
   }
 }
 
 .tb-single-section > h2 {
   font-family: var(--heading-font);
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
   color: var(--dark-green);
-  margin: 0 0 0.2rem;
+  margin: 0 0 0.5rem;
   padding: 0;
   line-height: 2rem;
 }
@@ -417,6 +425,14 @@
   color: var(--body-color);
   margin: 0 0 0.75rem;
   font-style: italic;
+}
+
+/* =========================================================================
+ RESULTS SECTIONS
+ ========================================================================= */
+
+.tb-results-season {
+  margin-top: 2rem;
 }
 
 /* =========================================================================

@@ -334,11 +334,11 @@ while ( have_posts() ) :
 			<p class="tb-no-data">No coaches assigned yet.</p>
 		<?php else : ?>
 			<ul class="tb-list tb-coaches-list">
-				<li class="tb-list-header">
+				<!--<li class="tb-list-header">
 					<span class="tb-col">Name</span>
 					<span class="tb-col">Title</span>
 					<span class="tb-col">Role</span>
-				</li>
+				</li>-->
 				<?php foreach ( $coaches as $coach ) : ?>
 				<li class="tb-list-row"
 					data-name="<?php echo esc_attr( $coach['name'] ); ?>"
@@ -367,12 +367,12 @@ while ( have_posts() ) :
 			<p class="tb-no-data">No meets scheduled yet.</p>
 		<?php else : ?>
 			<ul class="tb-list tb-meets-list">
-				<li class="tb-list-header">
+				<!--<li class="tb-list-header">
 					<span class="tb-col">Meet</span>
 					<span class="tb-col">Date</span>
 					<span class="tb-col">Location</span>
 					<span class="tb-col">Results</span>
-				</li>
+				</li>-->
 				<?php foreach ( $meets as $meet ) : ?>
 				<?php
 				$loc         = array_filter( [ $meet['city'], $meet['state'] ] );
@@ -385,7 +385,13 @@ while ( have_posts() ) :
 						<span class="tb-col"><?php echo esc_html( $meet['meet_name'] ); ?></span>
 						<span class="tb-col"><?php echo esc_html( $meet['date_display'] ?: '—' ); ?></span>
 						<span class="tb-col"><?php echo esc_html( $loc_display ); ?></span>
-						<span class="tb-col"><?php echo esc_html( $meet['results_status'] ?: 'Future' ); ?></span>
+						<span class="tb-col">
+							<?php if ( $meet['results_status'] === 'Pending' ) : ?>
+								<span class="tb-meet-results-status tb-meet-results-status--pending">Results Pending...</span>
+							<?php elseif ( $meet['results_status'] === 'Available' ) : ?>
+								<span class="tb-meet-results-status tb-meet-results-status--available">Results Available</span>
+							<?php endif; ?>
+						</span>
 					</a>
 				</li>
 				<?php endforeach; ?>
