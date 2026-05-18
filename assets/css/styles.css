@@ -57,6 +57,9 @@ body.admin-bar { --myscreentop: 32px; }
   #main-content .container { width: 100%; padding: 0 16px; }
 }
 
+/* Links */
+a { transition: 0.3s all ease-in-out; }
+
 /* Buttons */
 a.button {
   display: inline-block;
@@ -78,35 +81,187 @@ a.button:hover { background: #333; }
 /* 
 ** -----------------------------------------------------------------------
 ** Nav
+** Note: Flexbox layout settings managed in Divi Theme Builder
 ** -----------------------------------------------------------------------
 */
-.et_pb_menu--without-logo .et_pb_menu__menu>nav>ul>li {
-    margin: 0;
+
+#tb-logo { width: auto; }
+#tb-logo img { max-height: 2.25rem; }
+
+#tb-main-menu > ul {
+    margin: 0; padding: 0;
 }
-.et_pb_menu--without-logo .et_pb_menu__menu>nav>ul>li>a {
+#tb-main-menu > ul > li {
+    margin: 0; padding: 0; list-style: none;
+}
+#tb-main-menu > ul > li > a {
     padding: 0;
     line-height: 2rem;
+    font-family: Roboto Slab, Roboto, sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--tb-green);
+}
+#tb-main-menu > ul > li > a:hover {
+  color: var(--secondary-color);
 }
 
-.et_pb_menu--with-logo .et_pb_menu__menu li.button a,
-.et-db #et-boc .et-l .et_pb_menu_0_tb_header.et_pb_menu .button a {
+#tb-main-menu > ul > li > a.button {
   color: white !important;
   background: var(--tb-green);
   border-radius: 0.25rem;
-  padding: 0 1rem !important;
+  padding: 0 0.75rem !important;
   height: 2rem;
   line-height: 2rem;
 }
- .et_pb_menu--with-logo .et_pb_menu__menu li.button a:hover {
+#tb-main-menu > ul > li > a.button.secondary { background: #999; }
+
+#tb-main-menu > ul > li > a.button:hover,
+#tb-main-menu > ul > li > a.button.secondary:hover {
   opacity: 1;
   color: white !important;
   background: var(--secondary-color);
  }
  
- .et_pb_menu--with-logo .et_pb_menu__menu li.button.secondary a,
- .et-db #et-boc .et-l .et_pb_menu_0_tb_header.et_pb_menu .button.secondary a { background: #999; }
- .et-db #et-boc .et-l .et_pb_menu_0_tb_header.et_pb_menu li.button + li.button { padding-left: 0; }
- 
+
+#tb-main-menu > ul > li + li { margin-left: 1rem; }
+#tb-main-menu > ul > li:has(.button) + li:has(.button) { margin-left: 0.25rem; }
+
+
+/* 
+ ** -----------------------------------------------------------------------
+ ** Hamburger Menu
+ ** -----------------------------------------------------------------------
+ */
+#tb-mobile-menu { 
+   background: none; 
+   margin: 0.875rem 1rem 0 0;
+   padding: 0;
+   width: 2.125rem;
+ }
+#hamburger-menu {
+  background: var(--tb-green);
+  width: 2.125rem;
+  height: 2rem;
+  border-radius: 0.25rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s all ease-in-out;
+}
+#hamburger-menu:hover { background: var(--secondary-color); }
+  
+#hamburger-menu .icon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  -webkit-transform: rotate(0deg);
+  -moz-transform: rotate(0deg);
+  -o-transform: rotate(0deg);
+  transform: rotate(0deg);
+  -webkit-transition: .5s ease-in-out;
+  -moz-transition: .5s ease-in-out;
+  -o-transition: .5s ease-in-out;
+  transition: .5s ease-in-out;
+  cursor: pointer;
+  z-index: 99;
+}
+
+#hamburger-menu span {
+  display: block;
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  background: white;
+  border-radius: 2px;
+  opacity: 1;
+  left: 0;
+  -webkit-transform: rotate(0deg);
+  -moz-transform: rotate(0deg);
+  -o-transform: rotate(0deg);
+  transform: rotate(0deg);
+  -webkit-transition: .25s ease-in-out;
+  -moz-transition: .25s ease-in-out;
+  -o-transition: .25s ease-in-out;
+  transition: .25s ease-in-out;
+}
+
+  body.nav-open #hamburger-menu span {
+    color: white;
+  }
+
+#hamburger-menu span:nth-child(1) {
+  top: 1px;
+}
+
+#hamburger-menu span:nth-child(2) {
+  top: 10px;
+}
+
+#hamburger-menu span:nth-child(3) {
+  top: 19px;
+}
+
+.open #hamburger-menu span:nth-child(1) {
+  top: 9px;
+  -webkit-transform: rotate(135deg);
+  -moz-transform: rotate(135deg);
+  -o-transform: rotate(135deg);
+  transform: rotate(135deg);
+}
+
+.open #hamburger-menu span:nth-child(2) {
+  opacity: 0;
+  left: -32px;
+}
+
+.open #hamburger-menu span:nth-child(3) {
+  top: 9px;
+  -webkit-transform: rotate(-135deg);
+  -moz-transform: rotate(-135deg);
+  -o-transform: rotate(-135deg);
+  transform: rotate(-135deg);
+}
+
+/* 
+ ** -----------------------------------------------------------------------
+ ** Nav Drawer
+ ** -----------------------------------------------------------------------
+ */
+#nav-drawer {
+  position: fixed;
+  z-index: 9;
+  width: 50vw;
+  height: 100vh;
+  left: 100vw;
+  top: var(--myscreentop);
+  background: var(--tb-green);
+  transition: 0.5s all ease-in-out;
+}
+#nav-drawer.open { left: 50vw; }
+#nav-drawer .et_flex_column { --vertical-gap: 0; }
+
+@media (max-width: 484px) {
+  #nav-drawer { width: 80vw; }
+  #nav-drawer.open { left: 20vw; }
+}
+
+#nav-drawer #mobile-main-menu {
+  margin: 1.25rem 2rem 2rem;
+  padding: 0;
+}
+
+#nav-drawer #mobile-main-menu > li {
+  list-style: none;
+}
+#nav-drawer #mobile-main-menu > li a {
+  color: white;
+  font-family: Roboto Slab, Roboto, sans-serif;
+  font-weight: 700;
+}
+#nav-drawer #mobile-main-menu > li a:hover { color: var(--light-green); }
+
+
 /* 
  ** -----------------------------------------------------------------------
  ** Registration Shortcodes
