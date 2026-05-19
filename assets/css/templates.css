@@ -213,10 +213,26 @@
   .tb-meets-list .tb-list-row .tb-col:nth-of-type(3) { display: none; }
 }
 
-/* Athlete Roster — Athlete | Grade | Participation */
-.tb-roster-list-wrap  { --tb-cols: 2fr 1fr 3fr; }
+/* Athlete Roster */
+/* Cross-country: Name | Grade | Gender | Experience | Records */
+.tb-season-roster.is-cross-country .tb-roster-list-wrap {
+    --tb-cols: 1fr 1fr 1fr 1fr;
+}
+
+/* All other sports: Name | Grade | Gender | Experience */
+.tb-roster-list-wrap {
+    --tb-cols: 1fr 1fr 1fr;
+}
+
 @media (max-width: 600px) {
-  .tb-roster-list-wrap  { --tb-cols: 2.75fr 1fr 2.25fr; }
+  .tb-roster-list-wrap {
+      --tb-cols: 3fr 1fr 2fr;
+  }
+  .tb-season-roster.is-cross-country .tb-list-header .tb-col:nth-of-type(3),
+  .tb-season-roster.is-cross-country .tb-list-row .tb-col:nth-of-type(3) { display: none; }
+  .tb-season-roster.is-cross-country .tb-roster-list-wrap {
+      --tb-cols: 3fr 1fr 2fr;
+  }
 }
 
 /* Season Archive — Season | Sport | Dates | Status */

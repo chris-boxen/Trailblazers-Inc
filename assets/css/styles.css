@@ -86,7 +86,11 @@ a.button:hover { background: #333; }
 */
 
 #tb-logo { width: auto; }
-#tb-logo img { max-height: 2.25rem; }
+#tb-logo img { 
+  width: 100%;
+  height: 100%;
+  max-height: 2.25rem; 
+}
 
 #tb-main-menu > ul {
     margin: 0; padding: 0;
@@ -149,7 +153,6 @@ a.button:hover { background: #333; }
   align-items: center;
   transition: 0.3s all ease-in-out;
 }
-#hamburger-menu:hover { background: var(--secondary-color); }
   
 #hamburger-menu .icon {
   width: 24px;

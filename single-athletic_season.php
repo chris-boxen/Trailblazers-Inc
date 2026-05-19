@@ -50,6 +50,17 @@ while ( have_posts() ) :
 
 	// Sport taxonomy terms
 	$sports = get_the_terms( $season_id, 'sport' );
+	
+	// Determine sport context for conditional roster columns
+	$is_cross_country = false;
+	if ( $sports && ! is_wp_error( $sports ) ) {
+		foreach ( $sports as $sport_term ) {
+			if ( $sport_term->slug === 'cross-country' ) {
+				$is_cross_country = true;
+				break;
+			}
+		}
+	}
 
 	// Format dates
 	$start_display = $start_date ? date_i18n( 'F j, Y', strtotime( $start_date ) ) : '';
@@ -160,6 +171,11 @@ while ( have_posts() ) :
 			$gender		  = $demographics['gender']  ?? '';
 
 			$participation_type = get_field( 'participation_type', $enrollment->ID );
+			// Experience
+			$new_returning_raw  = get_field( 'new_returning_athlete', $enrollment->ID ) ?: '';
+			$experience_label   = str_starts_with( $new_returning_raw, 'New' )       ? 'New'       : '';
+			$experience_label   = str_starts_with( $new_returning_raw, 'Returning' ) ? 'Returning' : $experience_label;
+			$experience_attr    = strtolower( $experience_label ); // 'new' | 'returning' | ''
 
 			$entry = [
 				'athlete_id'         => $athlete_id,
@@ -169,6 +185,8 @@ while ( have_posts() ) :
 				'grade'              => get_field( 'grade', $enrollment->ID ),
 				'gender'             => $demographics['gender'] ?? '',  // M | F
 				'participation_type' => $participation_type,
+				'experience_label'   => $experience_label,
+				'experience_attr'    => $experience_attr,
 			];
 
 			if ( $participation_type === 'Sibling Runner' ) {
@@ -413,7 +431,10 @@ while ( have_posts() ) :
 	<?php // ----------------------------------------------------------------- ?>
 	<?php // SECTION 4: ATHLETE ROSTER                                          ?>
 	<?php // ----------------------------------------------------------------- ?>
-	<section id="athletes" class="tb-single-section tb-season-roster tb-isotope-instance">
+	
+	<?php $roster_section_class = 'tb-single-section tb-season-roster tb-isotope-instance' . ( $is_cross_country ? ' is-cross-country' : '' ); ?>
+	
+	<section id="athletes" class="<?php echo esc_attr( $roster_section_class ); ?>">
 
 		<h2>Athletes (<span class="filter-count"></span>)</h2>
 		
@@ -428,6 +449,22 @@ while ( have_posts() ) :
 						<option value="">All</option>
 					  </select>
 				  </div>
+				  <div class="ui-group">
+					  <select class="filter-select filter-options" data-group="grade-level">
+						  <option value="">Grade Level</option>
+						  <option value="[data-grade-level='high-school']">High School</option>
+						  <option value="[data-grade-level='middle-school']">Middle School</option>
+						  <option value="">All</option>
+					  </select>
+				  </div>
+				  <div class="ui-group">
+						<select class="filter-select filter-options" data-group="experience">
+							<option value="">Experience</option>
+							<option value="[data-experience='new']">New</option>
+							<option value="[data-experience='returning']">Returning</option>
+							<option value="">All</option>
+						</select>
+					</div>
 			</div><!-- .tb-filter-controls -->
 		
 			<div class="tb-sort-controls controls-group">
@@ -436,8 +473,10 @@ while ( have_posts() ) :
 					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
 					<button class="button" data-sort-by="last_name">Name</button>
 					<button class="button" data-sort-by="grade">Grade</button>
-					<button class="button" data-sort-by="pr">PR</button>
-					<button class="button" data-sort-by="sr">SR</button>
+					<?php if ( $is_cross_country ) : ?>
+						<button class="button" data-sort-by="pr">PR</button>
+						<button class="button" data-sort-by="sr">SR</button>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div><!-- .tb-ui-controls -->
@@ -449,7 +488,10 @@ while ( have_posts() ) :
 				<div class="tb-list-header">
 					<span class="tb-col">Athlete</span>
 					<span class="tb-col">Grade</span>
-					<span class="tb-col">Records</span>
+					<span class="tb-col">Experience</span>
+					<?php if ( $is_cross_country ) : ?>
+						<span class="tb-col">Records</span>
+					<?php endif; ?>
 				</div>
 				<ul class="tb-isotope-grid tb-list tb-roster-list">
 					<?php foreach ( $athletes as $athlete ) : ?>
@@ -460,32 +502,44 @@ while ( have_posts() ) :
 						$pr_seconds      = ( $pr && $pr['seconds'] ) ? (string) $pr['seconds'] : '';
 						$sr_seconds      = ( $sr && $sr['seconds'] ) ? (string) $sr['seconds'] : '';
 					?>
+					<?php
+						$grade_int   = (int) $athlete['grade'];
+						$grade_level = '';
+						if ( $grade_int >= 6 && $grade_int <= 8  ) { $grade_level = 'middle-school'; }
+						if ( $grade_int >= 9 && $grade_int <= 12 ) { $grade_level = 'high-school'; }
+					?>
 					<li class="tb-list-row"
 						data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
 						data-gender="<?php echo esc_attr( strtolower( $athlete['gender'] ) ); ?>"
 						data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>"
-						data-pr="<?php echo esc_attr( $pr_seconds ); ?>"
-						data-sr="<?php echo esc_attr( $sr_seconds ); ?>">
+						data-grade-level="<?php echo esc_attr( $grade_level ); ?>"
+						data-experience="<?php echo esc_attr( $athlete['experience_attr'] ); ?>"
+						<?php if ( $is_cross_country ) : ?>
+							data-pr="<?php echo esc_attr( $pr_seconds ); ?>"
+							data-sr="<?php echo esc_attr( $sr_seconds ); ?>"
+						<?php endif; ?>>
 						<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
 							<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
 							<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
-							<span class="tb-col">
-								<?php
-								$athlete_records = $roster_record_map[ $athlete['athlete_id'] ] ?? [];
-								$pr              = $athlete_records['pr'] ?? null;
-								$sr              = $athlete_records['sr'] ?? null;
-								if ( $pr || $sr ) :
-									if ( $pr ) : ?>
-										<span class="tb-record-badge tb-record-badge--pr">PR <?php echo esc_html( $pr['display'] ); ?></span>
-									<?php endif;
-									if ( $sr ) : ?>
-										<span class="tb-record-badge tb-record-badge--sr">SR <?php echo esc_html( $sr['display'] ); ?></span>
+							<span class="tb-col"><?php echo esc_html( $athlete['experience_label'] ?: '—' ); ?></span>
+							<?php if ( $is_cross_country ) : ?>
+								<span class="tb-col">
+									<?php
+									$athlete_records = $roster_record_map[ $athlete['athlete_id'] ] ?? [];
+									$pr              = $athlete_records['pr'] ?? null;
+									$sr              = $athlete_records['sr'] ?? null;
+									if ( $pr || $sr ) :
+										if ( $pr ) : ?>
+											<span class="tb-record-badge tb-record-badge--pr">PR <?php echo esc_html( $pr['display'] ); ?></span>
+										<?php endif;
+										if ( $sr ) : ?>
+											<span class="tb-record-badge tb-record-badge--sr">SR <?php echo esc_html( $sr['display'] ); ?></span>
+										<?php endif; ?>
+									<?php else : ?>
+										—
 									<?php endif; ?>
-								<?php else : ?>
-									—
-								<?php endif;
-								?>
-							</span>
+								</span>
+							<?php endif; ?>
 						</a>
 					</li>
 					<?php endforeach; ?>
@@ -500,7 +554,10 @@ while ( have_posts() ) :
 	<?php // SECTION 5: SIBLING RUNNER ROSTER                                   ?>
 	<?php // ----------------------------------------------------------------- ?>
 	<?php if ( ! empty( $sibling_runners ) ) : ?>
-	<section class="tb-single-section tb-season-sibling-runners tb-isotope-instance">
+		
+	<?php $roster_section_class = 'tb-single-section tb-season-roster tb-isotope-instance' . ( $is_cross_country ? ' is-cross-country' : '' ); ?>
+	
+	<section id="athletes" class="<?php echo esc_attr( $roster_section_class ); ?>">
 
 		<h2>Sibling Runners (<span class="filter-count"></span>)</h2>
 		
@@ -515,6 +572,14 @@ while ( have_posts() ) :
 						<option value="">All</option>
 					  </select>
 				  </div>
+				  <div class="ui-group">
+					  <select class="filter-select filter-options" data-group="experience">
+						  <option value="">Experience</option>
+						  <option value="[data-experience='new']">New</option>
+						  <option value="[data-experience='returning']">Returning</option>
+						  <option value="">All</option>
+					  </select>
+				  </div>
 			</div><!-- .tb-filter-controls -->
 		
 			<div class="tb-sort-controls controls-group">
@@ -523,8 +588,10 @@ while ( have_posts() ) :
 					<!--<button class="button" data-sort-by="first_name">First Name</button>-->
 					<button class="button" data-sort-by="last_name">Name</button>
 					<button class="button" data-sort-by="grade">Grade</button>
-					<button class="button" data-sort-by="pr">PR</button>
-					<button class="button" data-sort-by="sr">SR</button>
+					<?php if ( $is_cross_country ) : ?>
+						<button class="button" data-sort-by="pr">PR</button>
+						<button class="button" data-sort-by="sr">SR</button>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div><!-- .tb-ui-controls -->
@@ -533,7 +600,10 @@ while ( have_posts() ) :
 			<div class="tb-list-header">
 				<span class="tb-col">Athlete</span>
 				<span class="tb-col">Grade</span>
-				<span class="tb-col">Records</span>
+				<span class="tb-col">Experience</span>
+				<?php if ( $is_cross_country ) : ?>
+					<span class="tb-col">Records</span>
+				<?php endif; ?>
 			</div>
 			<ul class="tb-isotope-grid tb-list tb-sibling-runners-list">
 				<?php foreach ( $sibling_runners as $athlete ) : ?>
@@ -547,29 +617,33 @@ while ( have_posts() ) :
 				<li class="tb-list-row"
 					data-last-name="<?php echo esc_attr( strtolower( $athlete['last_name'] ) ); ?>"
 					data-gender="<?php echo esc_attr( strtolower( $athlete['gender'] ) ); ?>"
-					data-grade="<?php echo esc_attr( $athlete['grade'] ); ?>"
-					data-pr="<?php echo esc_attr( $pr_seconds ); ?>"
-					data-sr="<?php echo esc_attr( $sr_seconds ); ?>">
+					data-experience="<?php echo esc_attr( $athlete['experience_attr'] ); ?>"
+					<?php if ( $is_cross_country ) : ?>
+						data-pr="<?php echo esc_attr( $pr_seconds ); ?>"
+						data-sr="<?php echo esc_attr( $sr_seconds ); ?>"
+					<?php endif; ?>>
 					<a href="<?php echo esc_url( get_permalink( $athlete['athlete_id'] ) ); ?>" class="tb-list-link">
 						<span class="tb-col"><?php echo esc_html( $athlete['name'] ); ?></span>
 						<span class="tb-col"><?php echo esc_html( $athlete['grade'] ?: '—' ); ?></span>
-						<span class="tb-col">
-							<?php
-							$athlete_records = $roster_record_map[ $athlete['athlete_id'] ] ?? [];
-							$pr              = $athlete_records['pr'] ?? null;
-							$sr              = $athlete_records['sr'] ?? null;
-							if ( $pr || $sr ) :
-								if ( $pr ) : ?>
-									<span class="tb-record-badge tb-record-badge--pr">PR <?php echo esc_html( $pr['display'] ); ?></span>
-								<?php endif;
-								if ( $sr ) : ?>
-									<span class="tb-record-badge tb-record-badge--sr">SR <?php echo esc_html( $sr['display'] ); ?></span>
+						<span class="tb-col"><?php echo esc_html( $athlete['experience_label'] ?: '—' ); ?></span>
+						<?php if ( $is_cross_country ) : ?>
+							<span class="tb-col">
+								<?php
+								$athlete_records = $roster_record_map[ $athlete['athlete_id'] ] ?? [];
+								$pr              = $athlete_records['pr'] ?? null;
+								$sr              = $athlete_records['sr'] ?? null;
+								if ( $pr || $sr ) :
+									if ( $pr ) : ?>
+										<span class="tb-record-badge tb-record-badge--pr">PR <?php echo esc_html( $pr['display'] ); ?></span>
+									<?php endif;
+									if ( $sr ) : ?>
+										<span class="tb-record-badge tb-record-badge--sr">SR <?php echo esc_html( $sr['display'] ); ?></span>
+									<?php endif; ?>
+								<?php else : ?>
+									—
 								<?php endif; ?>
-							<?php else : ?>
-								—
-							<?php endif;
-							?>
-						</span>
+							</span>
+						<?php endif; ?>
 					</a>
 				</li>
 				<?php endforeach; ?>

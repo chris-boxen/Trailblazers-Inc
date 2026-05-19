@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## 2026-05-18
+
+### Updated `single-athletic_season.php` — Experience + Grade Level columns and filters
+
+**Roster — new columns:**
+- Experience column added to athlete and sibling runner roster lists, sourced
+  from `new_returning_athlete` on the Enrollment post. Displays "New" or
+  "Returning" (strips the word "Athlete" from stored value).
+- `data-experience` attribute added to roster rows (`new` | `returning`).
+- `data-grade-level` attribute added to roster rows (`middle-school` | `high-school`).
+  Computed at render time from existing `$athlete['grade']`: grades 6–8 = middle school,
+  grades 9–12 = high school. Grades outside this range render as empty string.
+
+**Roster — PR/SR badge column now gated on sport:**
+- `$is_cross_country` flag derived from the season's `sport` taxonomy terms.
+  Checks for slug `cross-country`.
+- Records column (header + data span) only renders when `$is_cross_country` is true.
+- `data-pr` and `data-sr` attributes only written to rows when `$is_cross_country`
+  is true.
+- Section tag receives `.is-cross-country` modifier class when applicable —
+  used for CSS column-width switching via `--tb-cols`.
+
+**Filter controls — two new selects:**
+- Experience filter: `data-group="experience"` — options: New / Returning / All.
+- Grade Level filter: `data-group="grade-level"` — options: High School /
+  Middle School / All.
+- Both integrate with existing `manageSelect` / `getComboFilter` / Isotope
+  instance pattern. No JS changes required.
+
+**CSS (`templates.css`):**
+- `.tb-roster-list` default `--tb-cols`: 4-column (Name / Grade / Gender / Experience).
+- `.tb-season-roster.is-cross-country .tb-roster-list` `--tb-cols`: 5-column
+  (adds Records).
+
 ## 2026-05-16
 
 ### PR/SR badges and sort improvements — season roster + meet results

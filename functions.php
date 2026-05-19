@@ -27,7 +27,7 @@ require_once get_stylesheet_directory() . '/inc/admin-widgets.php';
 add_action( 'wp_enqueue_scripts', 'tb_enqueue_assets' );
 function tb_enqueue_assets() {
 
-    $ver = '1.2'; // bump this when you push changes
+    $ver = '1.8'; // bump this when you push changes
 
     wp_enqueue_style(
         'tb-styles',
@@ -61,14 +61,4 @@ function tb_enqueue_assets() {
         $ver,
         true
     );
-}
-
-add_action("wp_enqueue_scripts", "load_childTheme_styles", 11);
-function load_childTheme_styles()
-{
-  wp_enqueue_script(
-  'tb-scripts',
-  get_stylesheet_directory_uri() . '/assets/js/tb.js?v=1.1',
-  array('jquery'), false, true
-  );
 }

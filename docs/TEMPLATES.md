@@ -85,7 +85,7 @@ Attribute values are always lowercase slugs. Space-separated values used for mul
 | `taxonomy-sport.php` athlete rows | `data-gender`, `data-status` |
 | `single-athletic_season.php` coaches | `data-name`, `data-role` |
 | `single-athletic_season.php` meets | `data-date`, `data-results` |
-| `single-athletic_season.php` athletes | `data-grade`, `data-type` |
+| `single-athletic_season.php` athletes | `data-last-name`, `data-gender`, `data-grade`, `data-experience`, `data-pr` *(XC only)*, `data-sr` *(XC only)* |
 | `single-athlete.php` result rows | `data-meet-id`, `data-meet-date`, `data-event`, `data-heat`, `data-result-seconds`, `data-place` |
 | `tribe/events/single-event.php` result rows | `data-place`, `data-result-seconds`, `data-athlete-id`, `data-heat`, `data-grade` |
 | `single-athletic_event.php` result rows | `data-meet`, `data-date`, `data-year`, `data-last-name`, `data-grade`, `data-gender`, `data-heat`, `data-result-seconds` |
