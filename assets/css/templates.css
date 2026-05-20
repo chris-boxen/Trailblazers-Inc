@@ -203,12 +203,16 @@
 
 /* Coaches — Name | Title | Role */
 .tb-coaches-list { --tb-cols: 2fr 1.5fr 1.5fr; }
+@media (max-width: 480px) {
+  .tb-coaches-list .tb-list-row .tb-col:nth-of-type(2) { display: none; }
+  .tb-coaches-list { --tb-cols: 1fr 1fr; }
+}
 
 /* Meet Schedule — Meet | Date | Location | Results */
 .tb-meets-list   { --tb-cols: 2fr 1.5fr 2fr 1fr; }
 .tb-meet-results-status--pending { color: #aaa; }
 .tb-meet-results-status--available { color: var(--tb-green); }
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .tb-meets-list   { --tb-cols: 2fr 1.75fr 1.25fr; }
   .tb-meets-list .tb-list-row .tb-col:nth-of-type(3) { display: none; }
 }
@@ -224,7 +228,7 @@
     --tb-cols: 1fr 1fr 1fr;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .tb-roster-list-wrap {
       --tb-cols: 3fr 1fr 2fr;
   }

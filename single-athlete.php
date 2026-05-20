@@ -44,9 +44,10 @@ while ( have_posts() ) :
 	$last_name       = $names['last_name']       ?? '';
 	$preferred_name  = $names['preferred_name']  ?? '';
 	$family_id       = get_field( 'family',         $athlete_id ); // top-level
-	$milesplit_id    = get_field( 'milesplit_id',    $athlete_id ); // top-level
-	$athletic_net_id = $demographics['athletic_net_id'] ?? '';
 	$photo_id        = get_field( 'featured_image', $athlete_id ); // top-level
+	$ids             = get_field( 'ids', $athlete_id );
+	$milesplit_id    = $ids['milesplit_id']    ?? '';
+	$athletic_net_id = $ids['athletic_net_id'] ?? '';
 
 	$display_name   = $preferred_name ?: $first_name;
 	$full_name      = trim( $display_name . ' ' . $last_name );
