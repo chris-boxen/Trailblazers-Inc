@@ -77,6 +77,11 @@ while ( have_posts() ) :
 		foreach ( $enrollments_query->posts as $enrollment ) {
 			$season_id = get_field( 'season', $enrollment->ID );
 			if ( ! $season_id || isset( $seasons_map[ $season_id ] ) ) continue;
+			
+			$season_sport_terms = get_the_terms( $season_id, 'sport' );
+			$season_sport_slug  = ( $season_sport_terms && ! is_wp_error( $season_sport_terms ) )
+				? $season_sport_terms[0]->slug
+				: '';
 
 			$customize = get_field( 'customize_data', $season_id ) ?: [];
 			
@@ -87,6 +92,7 @@ while ( have_posts() ) :
 				'link_milesplit'              => $customize['link_milesplit']              ?? false,
 				'link_athletic_net'           => $customize['link_athletic_net']          ?? false,
 				'start_date'                  => get_field( 'start_date',                  $season_id ),
+				'sport_slug'                  => $season_sport_slug,
 			];
 		}
 	}
@@ -335,7 +341,7 @@ while ( have_posts() ) :
 
 
 	<?php // ----------------------------------------------------------------- ?>
-	<?php // SECTION 3: RESULTS HISTORY                                         ?>
+	<?php // SECTION 3: RESULTS HISTORY                                        ?>
 	<?php // ----------------------------------------------------------------- ?>
 	<section class="tb-single-section tb-athlete-results">
 
@@ -362,31 +368,31 @@ while ( have_posts() ) :
 					$unavail_msg = $season_data['results_unavailable_message'];
 					echo $unavail_msg
 						? wp_kses_post( wpautop( $unavail_msg ) )
-						: '<p class="tb-results-unavailable">Results are not available for this season.</p>';
+						: '<p class="tb-results-unavailable">Results are not enabled for this season.</p>';
 					?>
-
-					<?php if ( $season_data['link_milesplit'] && $milesplit_id ) : ?>
-						<p class="tb-external-link">
-							<a href="https://www.milesplit.com/athletes/view/<?php echo esc_attr( $milesplit_id ); ?>"
-							   target="_blank" rel="noopener noreferrer">
-								Full profile on Milesplit
-							</a>
-						</p>
-					<?php endif; ?>
-
-					<?php if ( $season_data['link_athletic_net'] && $athletic_net_id ) : ?>
-						<p class="tb-external-link">
-							<a href="https://www.athletic.net/TrackAndField/Athlete.aspx?AID=<?php echo esc_attr( $athletic_net_id ); ?>"
-							   target="_blank" rel="noopener noreferrer">
-								Full profile on Athletic.net
-							</a>
-						</p>
-					<?php endif; ?>
+					
+					<?php if ($milesplit_id || $athletic_net_id) : ?>
+						<p class="tb-no-data">View <?php echo esc_html( $preferred_name ); ?>’s results on:</p>
+						<ul class="tb-third-party-links">
+							<?php if ( $season_data['link_milesplit'] && $milesplit_id ) : ?>
+								<li><a href="https://sc.milesplit.com/athletes/<?php echo esc_attr( $milesplit_id ); ?>"
+							   	target="_blank" rel="noopener noreferrer">
+									Milesplit
+								</a></li>
+							<?php endif; ?>
+							<?php if ( $season_data['link_athletic_net'] && $athletic_net_id ) : ?>
+								<li><a href="https://www.athletic.net/athlete/<?php echo esc_attr( $athletic_net_id ); ?>/<?php echo esc_attr( $season_data['sport_slug'] ); ?>/all"
+							   	target="_blank" rel="noopener noreferrer">
+									Athletic.net
+								</a></li>
+							<?php endif; ?>
+						</ul>
+					<?php endif; // milesplit || athleticnet ?>
 
 				<?php elseif ( empty( $season_results ) ) : ?>
 
-					<p class="tb-no-data">No results recorded for this season.</p>
-
+					<p class="tb-no-data">Results not yet available.</p>
+					
 				<?php else : ?>
 				
 					<?php
@@ -460,24 +466,6 @@ while ( have_posts() ) :
 				
 						</ul>
 					</div><!-- .tb-list-wrap -->
-				
-					<?php if ( $season_data['link_milesplit'] && $milesplit_id ) : ?>
-						<p class="tb-external-link">
-							<a href="https://www.milesplit.com/athletes/view/<?php echo esc_attr( $milesplit_id ); ?>"
-							   target="_blank" rel="noopener noreferrer">
-								Full profile on Milesplit
-							</a>
-						</p>
-					<?php endif; ?>
-				
-					<?php if ( $season_data['link_athletic_net'] && $athletic_net_id ) : ?>
-						<p class="tb-external-link">
-							<a href="https://www.athletic.net/TrackAndField/Athlete.aspx?AID=<?php echo esc_attr( $athletic_net_id ); ?>"
-							   target="_blank" rel="noopener noreferrer">
-								Full profile on Athletic.net
-							</a>
-						</p>
-					<?php endif; ?>
 				
 				<?php endif; // results_enabled ?>
 

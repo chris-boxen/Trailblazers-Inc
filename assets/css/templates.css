@@ -44,8 +44,7 @@
 
 .tb-no-data {
   color: var(--body-color);
-  font-style: italic;
-  padding: 0.75rem 0;
+  padding: 0;
   margin: 0;
 }
 
@@ -486,6 +485,10 @@ h2 + .tb-list { margin-top: 1rem; }
 .tb-results-season {
   margin-top: 2rem;
 }
+
+.tb-third-party-links li { display: inline; }
+.tb-third-party-links li + li:before { content: "|"; }
+.tb-third-party-links li a { font-weight: 700; }
 
 /* =========================================================================
  Record achievement badges — shown inline with result times
