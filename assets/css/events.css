@@ -179,7 +179,7 @@
 		justify-content: space-between;
 	}
 	.tribe-events-event-image {
-		flex-basis: 50%;
+		flex-basis: 33%;
 	}
 	.tribe-events-back { margin-bottom: 0.5rem; }
 	.tribe-events-schedule {

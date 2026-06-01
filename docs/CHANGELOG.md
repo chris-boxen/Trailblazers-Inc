@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## 2026-05-19
+
+### Fixed and extended external profile links — `single-athlete.php`
+
+**Bug fix — IDs read from wrong ACF group:**
+`milesplit_id` and `athletic_net_id` are sub-fields of the `ids` ACF Group
+on the Athlete CPT. The template was reading `milesplit_id` as a top-level
+field and `athletic_net_id` from the `demographics` group — both wrong.
+Both values were always empty, suppressing all external links.
+
+**Fix:**
+```php
+$ids             = get_field( 'ids', $athlete_id );
+$milesplit_id    = $ids['milesplit_id']    ?? '';
+$athletic_net_id = $ids['athletic_net_id'] ?? '';
+```
+
+**Sport-aware Athletic.net URLs:**
+Added `sport_slug` to `$seasons_map` by querying the season's `sport`
+taxonomy term. Athletic.net URLs are now sport-specific:
+`https://www.athletic.net/athlete/{id}/{sport_slug}/all`
+(e.g., `/cross-country/all` vs. `/track-and-field/all`)
+
+**Link display scoped to `results_enabled = false` branch only:**
+External profile links now appear only when results are disabled for
+a season — the intended behavior. Previously they appeared in two of
+three branches. The empty-results branch (`results_enabled = true`,
+no results recorded) now shows only "No results recorded for this season."
+
+**Athletic.net ID convention:**
+`athletic_net_id` stores the full URL slug (e.g., `13767219-jack-anderson`),
+not just the numeric portion. This is intentional — Athletic.net slugs
+are not guaranteed to match the athlete's name as stored in this system.
+
 ## 2026-05-18
 
 ### Updated `single-athletic_season.php` — Experience + Grade Level columns and filters
