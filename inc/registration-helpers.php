@@ -134,7 +134,40 @@ add_shortcode( 'tb_reg_router', function() {
         return ob_get_clean();
     }
 
-    // Check manual status override first
+    // Check enrollment state BEFORE open/closed status — enrolled families must
+    // reach their confirmation content (which includes the physicals link)
+    // regardless of whether registration is still open to new signups.
+    if ( is_user_logged_in() ) {
+        $user_id   = get_current_user_id();
+        $family_id = tb_get_family_post_id( $user_id );
+
+        if ( $family_id ) {
+            $active_season_id = (int) get_option( 'tb_active_season_id' );
+
+            if ( $active_season_id ) {
+                $enrollments = get_posts( [
+                    'post_type'      => 'enrollment',
+                    'posts_per_page' => 1,
+                    'meta_query'     => [
+                        [ 'key' => 'family', 'value' => $family_id ],
+                        [ 'key' => 'season', 'value' => $active_season_id ],
+                    ],
+                    'fields' => 'ids',
+                ] );
+
+                if ( ! empty( $enrollments ) ) {
+                    // Already enrolled — show confirmation content with physicals link
+                    $msg = get_field( 'reg_returning_family_confirmation', 'option' );
+                    return $msg
+                        ? wpautop( $msg )
+                        : '<p>Your family is already registered for this season. '
+                          . 'Please contact us if you have questions.</p>';
+                }
+            }
+        }
+    }
+
+    // Check manual status override
     $status = get_field( 'reg_status', 'option' );
 
     if ( $status === 'closed' ) {
@@ -193,32 +226,6 @@ add_shortcode( 'tb_reg_router', function() {
     if ( ! $family_id ) {
         wp_redirect( home_url( '/registration/new-families/' ) );
         exit;
-    }
-
-    // Check for an active-season Enrollment
-    $active_season_id = (int) get_option( 'tb_active_season_id' );
-    $enrolled         = false;
-
-    if ( $active_season_id ) {
-        $enrollments = get_posts( [
-            'post_type'      => 'enrollment',
-            'posts_per_page' => 1,
-            'meta_query'     => [
-                [ 'key' => 'family', 'value' => $family_id ],
-                [ 'key' => 'season', 'value' => $active_season_id ],
-            ],
-            'fields' => 'ids',
-        ] );
-        $enrolled = ! empty( $enrollments );
-    }
-
-    // Already enrolled — show confirmation / already-registered message
-    if ( $enrolled ) {
-        $msg = get_field( 'reg_returning_family_confirmation', 'option' );
-        return $msg
-            ? wpautop( $msg )
-            : '<p>Your family is already registered for this season. '
-              . 'Please contact us if you have questions.</p>';
     }
 
     // Has Family post, not yet enrolled — route to Returning Family form
