@@ -186,6 +186,19 @@ while ( have_posts() ) :
 			$meet_id   = $linked_result_id ? get_field( 'meet', $linked_result_id ) : null;
 			$raw_date  = $meet_id ? get_post_meta( $meet_id, '_EventStartDate', true ) : '';
 			$meet_date = $raw_date ? date( 'Y-m-d', strtotime( $raw_date ) ) : '';
+			
+			$measurement     = $linked_event_id ? get_field( 'measurement_type', $linked_event_id ) : 'Time';
+			$lower_is_better = ( $measurement === 'Time' );
+			
+			$numeric_value = 0;
+			if ( $linked_result_id ) {
+				switch ( $measurement ) {
+					case 'Time':     $numeric_value = (float) get_post_meta( $linked_result_id, 'result_time_seconds',    true ); break;
+					case 'Distance': $numeric_value = (float) get_post_meta( $linked_result_id, 'result_distance_meters', true ); break;
+					case 'Height':   $numeric_value = (float) get_post_meta( $linked_result_id, 'result_height_meters',   true ); break;
+					case 'Points':   $numeric_value = (float) get_post_meta( $linked_result_id, 'result_points',          true ); break;
+				}
+			}
 
 			$records[] = [
 				'record_id'      => $record->ID,
@@ -200,6 +213,8 @@ while ( have_posts() ) :
 				'meet_name'      => $meet_id ? get_the_title( $meet_id ) : '—',
 				'meet_date_raw'  => $meet_date, 
 				'meet_date'      => $meet_date ? date_i18n( 'F j, Y', strtotime( $meet_date ) ) : '—',
+				'numeric_value'   => $numeric_value,
+				'lower_is_better' => $lower_is_better,
 			];
 		}
 	}
@@ -218,11 +233,16 @@ while ( have_posts() ) :
 	$current_records = [];
 	foreach ( $records as $rec ) {
 		$key = $rec['event_id'] . '_' . $rec['record_type'];
-		if (
-			! isset( $current_records[ $key ] ) ||
-			$rec['meet_date_raw'] > $current_records[ $key ]['meet_date_raw']
-		) {
+		if ( ! isset( $current_records[ $key ] ) ) {
 			$current_records[ $key ] = $rec;
+		} else {
+			$existing = $current_records[ $key ];
+			$new_is_better = $rec['lower_is_better']
+				? ( $rec['numeric_value'] > 0 && $rec['numeric_value'] < $existing['numeric_value'] )
+				: ( $rec['numeric_value'] > $existing['numeric_value'] );
+			if ( $new_is_better ) {
+				$current_records[ $key ] = $rec;
+			}
 		}
 	}
 	
