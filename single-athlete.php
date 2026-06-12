@@ -232,6 +232,8 @@ while ( have_posts() ) :
 	// Deduplicate: keep only the most recent record per event + record_type.
 	$current_records = [];
 	foreach ( $records as $rec ) {
+		if ( $rec['record_type'] === 'SR' ) continue;
+		
 		$key = $rec['event_id'] . '_' . $rec['record_type'];
 		if ( ! isset( $current_records[ $key ] ) ) {
 			$current_records[ $key ] = $rec;
