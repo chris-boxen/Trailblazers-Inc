@@ -732,6 +732,15 @@ add_filter( 'gform_field_value_tb_test', function() {
 } );
 
 /**
+ * Populate the hidden Email field on the physicals form.
+ * Parameter name: tb_user_email
+ */
+add_filter( 'gform_field_value_tb_user_email', function() {
+    $user = wp_get_current_user();
+    return $user && $user->ID ? $user->user_email : '';
+} );
+
+/**
  * Populate the Athlete select field on the physicals form with athletes
  * enrolled in the active season for the logged-in user's family.
  * Runs at priority 20 to override any residual GPPA output.
