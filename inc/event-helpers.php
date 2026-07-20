@@ -13,3 +13,8 @@ add_action( 'wp', function() {
 		10
 	);
 });
+
+add_filter( 'tribe_ical_feed_posts_per_page', 'custom_increase_ical_feed_limit' );
+function custom_increase_ical_feed_limit( $count ) {
+	return 100; // Changes the limit from default to 100 events
+}
