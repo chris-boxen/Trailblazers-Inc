@@ -2,7 +2,17 @@
 ** Events
 */
 
-:root {
+html:root {
+--light-green: #A0C30F;
+--medium-green: #306935;
+--dark-green: #253D1B;
+--tb-orange: #F68C22;
+--tb-amber: #D34F27;
+
+--tb-green: var(--medium-green);
+--secondary-color: var(--tb-orange);
+--body-color: #777;	
+	
 --tec-grid-gutter: 48px;
 --tec-grid-gutter-negative: calc(var(--tec-grid-gutter)*-1);
 --tec-grid-gutter-half: calc(var(--tec-grid-gutter)/2);
@@ -242,5 +252,16 @@
 }
 
 /* Home */
-#tb-upcoming-events .tribe-events .tribe-events-l-container { padding: 0; }
+#featured-events .tribe-events .tribe-events-l-container,
+#tb-upcoming-events .tribe-events .tribe-events-l-container { 
+	padding: 0 var(--tec-grid-gutter-half); 
+	min-height: auto; 
+	max-width: 100%;
+}
+
+#featured-events .tribe-events .tribe-events-l-container .tribe-events-header,
+#featured-events .tribe-events .tribe-events-l-container .tribe-events-c-nav,
+#featured-events .tribe-events .tribe-events-l-container .tribe-events-c-subscribe-dropdown__container { display: none; }
+
+
 #tb-upcoming-events .tribe-events .tribe-events-l-container .tribe-events-header { display: none; }
