@@ -220,12 +220,16 @@ while ( have_posts() ) :
 	}
 	wp_reset_postdata();
 	
-	// Build result → record-type lookup (used in Section 3 results to show badges).
+	// Build result → record lookup (used in Section 3 results to show badges).
 	// Must be done before dedup so ALL historical records are represented.
+	// Carries event_id so Section 3 can scope Cross Country seasons to 5K-only badges.
 	$result_record_map = [];
 	foreach ( $records as $rec ) {
 		if ( $rec['result_id'] ) {
-			$result_record_map[ $rec['result_id'] ][] = $rec['record_type'];
+			$result_record_map[ $rec['result_id'] ][] = [
+				'type'     => $rec['record_type'],
+				'event_id' => $rec['event_id'],
+			];
 		}
 	}
 	
@@ -375,6 +379,21 @@ while ( have_posts() ) :
 
 			<?php foreach ( $seasons_map as $season_id => $season_data ) :
 				$season_results = $results_grouped[ $season_id ] ?? [];
+				
+				// Cross Country seasons badge the 5K only. 3K records still exist and
+				// still generate — they just don't badge here. Track seasons are
+				// unaffected (no event restriction, same as before).
+				$season_is_xc = false;
+				$season_sport_terms = get_the_terms( $season_id, 'sport' );
+				if ( $season_sport_terms && ! is_wp_error( $season_sport_terms ) ) {
+					foreach ( $season_sport_terms as $season_sport_term ) {
+						if ( $season_sport_term->slug === 'cross-country' ) {
+							$season_is_xc = true;
+							break;
+						}
+					}
+				}
+				$five_k_event_id = $season_is_xc ? tb_get_five_k_event_id() : null;
 			?>
 			<div class="tb-results-season">
 
@@ -466,7 +485,12 @@ while ( have_posts() ) :
 									<span class="tb-col">
 										<?php echo esc_html( $r['result_display'] ?: '—' ); ?>
 										<?php
-										$badges = $result_record_map[ $r['result_id'] ] ?? [];
+										$raw_badges = $result_record_map[ $r['result_id'] ] ?? [];
+										$badges = [];
+										foreach ( $raw_badges as $b ) {
+											if ( $five_k_event_id && $b['event_id'] != $five_k_event_id ) continue;
+											$badges[] = $b['type'];
+										}
 										if ( $badges ) :
 											sort( $badges ); // PR before SR alphabetically
 											foreach ( $badges as $badge ) :

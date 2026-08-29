@@ -8,6 +8,14 @@ and pre-flight checklist.
 Template build resumes after the import. Next template: `taxonomy-sport.php`.
 
 ## Current Repo Status
+- `inc/results-helpers.php` — added `tb_get_five_k_event_id()`, a cached
+lookup for the 5K Athletic Event post by `event_name`. Used to scope
+Cross Country PR/SR badge display to 5K only in
+`single-athletic_season.php`, `tribe-events/tb-meet-results.php`, and
+`single-athlete.php`'s Results History section — resolves the roster's
+3K/5K collapse bug. `single-athlete.php`'s Personal Records section and
+`archive-athletic_record.php` remain unfiltered; both still show full
+3K + 5K history by design.
 - Theme repo exists and is being tracked in GitHub.
 - ACF Local JSON is active and saving into `acf-json/`.
 - All schema changes from the TEC integration are committed.

@@ -877,3 +877,28 @@ function tb_generate_records_page(): void {
 	</div>
 	<?php
 }
+
+/**
+ * Get the post ID of the "5K" Athletic Event, by event_name lookup.
+ * Cached per-request. Returns null if no event is named exactly "5K".
+ */
+function tb_get_five_k_event_id(): ?int {
+	static $id = null;
+	if ( $id === null ) {
+		$posts = get_posts( [
+			'post_type'      => 'athletic_event',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+			'meta_query'     => [
+				[
+					'key'     => 'event_name',
+					'value'   => '5K',
+					'compare' => '=',
+				],
+			],
+		] );
+		$id = $posts ? (int) $posts[0] : 0;
+	}
+	return $id ?: null;
+}

@@ -209,18 +209,35 @@ while ( have_posts() ) :
 			$season_meet_ids         = array_column( $meets, 'meet_id' );
 			$athlete_ids_for_records = array_column( $athletes, 'athlete_id' );
 		
+			// Season roster records column only renders for Cross Country, and only
+			// the 5K should count there. 3K records still exist and still show in
+			// full on single-athlete.php's Personal Records history — this only
+			// scopes what feeds the roster badge/sort columns.
+			$five_k_event_id = $is_cross_country ? tb_get_five_k_event_id() : null;
+		
+			$record_meta_query = [
+				'relation' => 'AND',
+				[
+					'key'     => 'athlete',
+					'value'   => $athlete_ids_for_records,
+					'compare' => 'IN',
+				],
+			];
+		
+			if ( $five_k_event_id ) {
+				$record_meta_query[] = [
+					'key'     => 'event',
+					'value'   => $five_k_event_id,
+					'compare' => '=',
+				];
+			}
+		
 			$roster_records_query = new WP_Query( [
 				'post_type'      => 'athletic_record',
 				'posts_per_page' => -1,
 				'post_status'    => 'publish',
 				'no_found_rows'  => true,
-				'meta_query'     => [
-					[
-						'key'     => 'athlete',
-						'value'   => $athlete_ids_for_records,
-						'compare' => 'IN',
-					],
-				],
+				'meta_query'     => $record_meta_query,
 			] );
 		
 			if ( $roster_records_query->have_posts() ) {
@@ -404,11 +421,16 @@ while ( have_posts() ) :
 				<?php
 				$loc         = array_filter( [ $meet['city'], $meet['state'] ] );
 				$loc_display = $loc ? implode( ', ', $loc ) : '—';
+				// Jump straight to the results section when the meet page has one worth showing.
+				$meet_url = get_permalink( $meet['meet_id'] );
+				if ( in_array( $meet['results_status'], [ 'Pending', 'Available' ], true ) ) {
+					$meet_url .= '#meet-results';
+				}
 				?>
 				<li class="tb-list-row"
 					data-date="<?php echo esc_attr( $meet['meet_date'] ); ?>"
 					data-results="<?php echo esc_attr( strtolower( $meet['results_status'] ?: 'future' ) ); ?>">
-					<a href="<?php echo esc_url( get_permalink( $meet['meet_id'] ) ); ?>" class="tb-list-link">
+					<a href="<?php echo esc_url( $meet_url ); ?>" class="tb-list-link">
 						<span class="tb-col"><?php echo esc_html( $meet['meet_name'] ); ?></span>
 						<span class="tb-col"><?php echo esc_html( $meet['date_display'] ?: '—' ); ?></span>
 						<span class="tb-col"><?php echo esc_html( $loc_display ); ?></span>

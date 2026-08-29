@@ -74,6 +74,29 @@ As of 2026-05-09.
 - ✅ 📊 Results dashboard widget — per-meet counts, sync notice, sync button
 - ✅ `tribe_events_cat: athletic-meet` filter applied to all meet queries
   (`single-athletic_season.php`, admin widget)
+  
+  
+  ---
+  
+  ## Completed — 5K-Only Badge Scoping
+  As of 2026-08-29.
+  
+  - ✅ Diagnosed roster PR/SR bug as a missing event dimension in
+    `$roster_record_map` — 3K times sorting ahead of 5K due to raw numeric
+    comparison across event types
+  - ✅ `tb_get_five_k_event_id()` added to `inc/results-helpers.php` — single
+    source of truth for the 5K Athletic Event, used by all three templates
+    below
+  - ✅ `single-athletic_season.php` — roster records query scoped to 5K for
+    Cross Country
+  - ✅ `tribe-events/tb-meet-results.php` — meet-results badge query scoped
+    to 5K for Cross Country meets; 3K results still display without a badge
+  - ✅ `single-athlete.php` — Results History badges scoped to 5K for Cross
+    Country seasons; Personal Records section intentionally left showing
+    full 3K + 5K history
+  - [ ] Not yet deployed to production — confirm production's 5K Athletic
+    Event post has `event_name` set to exactly `5K` before pushing, since
+    `tb_get_five_k_event_id()` depends on an exact match
 
 ---
 

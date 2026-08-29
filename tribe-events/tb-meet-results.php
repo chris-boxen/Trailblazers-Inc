@@ -42,6 +42,22 @@ $meet_id        = get_queried_object_id();
 $results_status = get_field( 'results_status', $meet_id ); // Future | Pending | Available
 $season_id      = get_field( 'season', $meet_id );         // needed for grade lookup
 
+// Cross Country meets only show 5K PR/SR badges (3K badges suppressed here;
+// 3K results still display normally, and 3K records still show in full on
+// single-athlete.php). Track meets are unaffected — no event restriction.
+$is_cross_country = false;
+if ( $season_id ) {
+	$sport_terms = get_the_terms( $season_id, 'sport' );
+	if ( $sport_terms && ! is_wp_error( $sport_terms ) ) {
+		foreach ( $sport_terms as $sport_term ) {
+			if ( $sport_term->slug === 'cross-country' ) {
+				$is_cross_country = true;
+				break;
+			}
+		}
+	}
+}
+
 // -------------------------------------------------------------------------
 // RESULTS — query and group by athletic event (flat array per event).
 // Only runs when results_status === 'Available'.
@@ -197,19 +213,32 @@ if ( $results_status === 'Available' ) {
 		}
 	
 		if ( ! empty( $all_result_ids ) ) {
+			$record_meta_query = [
+				'relation' => 'AND',
+				[
+					'key'     => 'result',
+					'value'   => $all_result_ids,
+					'compare' => 'IN',
+				],
+			];
+			if ( $is_cross_country ) {
+				$five_k_event_id = tb_get_five_k_event_id();
+				if ( $five_k_event_id ) {
+					$record_meta_query[] = [
+						'key'     => 'event',
+						'value'   => $five_k_event_id,
+						'compare' => '=',
+					];
+				}
+			}
+					
 			$records_query = new WP_Query( [
 				'post_type'      => 'athletic_record',
 				'posts_per_page' => -1,
 				'post_status'    => 'publish',
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
-				'meta_query'     => [
-					[
-						'key'     => 'result',
-						'value'   => $all_result_ids,
-						'compare' => 'IN',
-					],
-				],
+				'meta_query'     => $record_meta_query,
 			] );
 	
 			foreach ( $records_query->posts as $record_id ) {
@@ -227,7 +256,7 @@ if ( $results_status === 'Available' ) {
 
 ?>
 
-<section class="tb-single-section tb-meet-results">
+<section class="tb-single-section tb-meet-results" id="meet-results">
 
 	<h2>Team Results</h2>
 

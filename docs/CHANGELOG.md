@@ -1,5 +1,56 @@
 # CHANGELOG
 
+## 2026-08-29
+
+### 5K-only PR/SR badge scoping — season roster, meet results, athlete profile
+
+**Problem:** The 2026 Homecoming XC results import surfaced a pre-existing gap:
+`$roster_record_map` in `single-athletic_season.php` had no event dimension, so
+3K and 5K PR/SR data collapsed together. Because 3K times are numerically
+smaller than 5K times, 3K records dominated any time-based sort — 3K PRs/SRs
+sorted ahead of 5K on the roster. The same badge-mixing existed on
+`tribe-events/tb-meet-results.php` and `single-athlete.php`. Decision: for
+Cross Country, badges and sort in the season roster and meet-results views
+should reflect the 5K only. `single-athlete.php`'s Personal Records section
+is exempt — it remains the full all-time record book (3K and 5K both shown),
+by design.
+
+**New helper — `inc/results-helpers.php`:**
+- `tb_get_five_k_event_id()` — looks up the Athletic Event post whose
+  `event_name` is exactly `5K`, cached per-request via a static variable.
+  Centralizes "which event counts" in one place rather than hardcoding a
+  post ID (which may differ between local and production) across three
+  templates.
+
+**Fix — `single-athletic_season.php`:**
+- `$roster_records_query`'s `meta_query` now adds an `event = 5K` condition
+  whenever `$is_cross_country` is true. 3K records no longer populate
+  `$roster_record_map`; the Records column, sort buttons, and
+  `data-pr`/`data-sr` attributes reflect 5K only on Cross Country rosters.
+  Track rosters are unaffected (the Records column doesn't render there).
+
+**Fix — `tribe-events/tb-meet-results.php`:**
+- Added `$is_cross_country`, derived from the meet's season sport taxonomy
+  (not previously computed in this file).
+- `$result_record_map`'s query adds the same `event = 5K` condition when
+  `$is_cross_country` is true. 3K results still display in full (time,
+  place) on Cross Country meet pages — they just no longer carry a PR/SR
+  badge. Track meets are unaffected.
+
+**Fix — `single-athlete.php`:**
+- `$result_record_map` now stores `['type' => ..., 'event_id' => ...]` per
+  entry instead of a bare type string, so Section 3 (Results History) can
+  filter per season.
+- Each iteration of the Section 3 season loop computes `$season_is_xc` and
+  `$five_k_event_id`; the badge render loop skips any record whose
+  `event_id` doesn't match when the season is Cross Country.
+- Section 2 (Personal Records) is unchanged — still shows full 3K + 5K
+  history, deduped per event + record_type as before.
+
+**Scope note:** `archive-athletic_record.php` (the public all-time Records
+archive) was not touched — 3K records continue to show there in full, same
+as `single-athlete.php`'s Personal Records section.
+
 ## 2026-05-19
 
 ### Fixed and extended external profile links — `single-athlete.php`
