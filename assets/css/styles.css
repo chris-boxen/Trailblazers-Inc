@@ -92,13 +92,17 @@ a.button:hover { background: #333; }
   max-height: 2.25rem; 
 }
 
-#tb-main-menu > ul {
+#tb-main-menu nav > ul {
     margin: 0; padding: 0;
 }
-#tb-main-menu > ul > li {
-    margin: 0; padding: 0; list-style: none;
+#tb-main-menu nav > ul > li {
+    margin: 0; 
+    padding: 0; 
+    list-style: none;
+    height: 3rem;
+    align-items: center;
 }
-#tb-main-menu > ul > li > a {
+#tb-main-menu nav > ul > li > a {
     padding: 0;
     line-height: 2rem;
     font-family: Roboto Slab, Roboto, sans-serif;
@@ -106,11 +110,11 @@ a.button:hover { background: #333; }
     font-size: 1rem;
     color: var(--tb-green);
 }
-#tb-main-menu > ul > li > a:hover {
+#tb-main-menu nav > ul > li > a:hover {
   color: var(--secondary-color);
 }
 
-#tb-main-menu > ul > li > a.button {
+#tb-main-menu nav > ul > li.button > a {
   color: white !important;
   background: var(--tb-green);
   border-radius: 0.25rem;
@@ -118,18 +122,36 @@ a.button:hover { background: #333; }
   height: 2rem;
   line-height: 2rem;
 }
-#tb-main-menu > ul > li > a.button.secondary { background: #999; }
+#tb-main-menu nav > ul > li.button.secondary > a { background: #999; }
 
-#tb-main-menu > ul > li > a.button:hover,
-#tb-main-menu > ul > li > a.button.secondary:hover {
+#tb-main-menu nav > ul > li.button:hover > a,
+#tb-main-menu nav > ul > li.button.secondary:hover > a {
   opacity: 1;
   color: white !important;
   background: var(--secondary-color);
  }
- 
 
-#tb-main-menu > ul > li + li { margin-left: 1rem; }
-#tb-main-menu > ul > li:has(.button) + li:has(.button) { margin-left: 0.25rem; }
+#tb-main-menu nav > ul > li + li { margin-left: 1rem; }
+#tb-main-menu nav > ul > li.button + li.button { margin-left: 0.25rem; }
+
+/*
+** Sub Menu
+*/
+
+#tb-main-menu nav > ul > li.menu-item-has-children a {
+  padding-right: 1em;
+}
+#tb-main-menu nav > ul ul.sub-menu {
+  top: calc(100%);
+  padding: 0.5em 0;
+  background: var(--tb-green);
+  border-top: 8px solid white;
+  box-shadow: none;
+}
+
+#tb-main-menu nav > ul ul.sub-menu a {
+  color: white;
+}
 
 
 /* 
