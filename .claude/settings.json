@@ -5,12 +5,14 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git show *)",
-      "Bash(php -l *)"
+      "Bash(php -l *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push origin main)"
     ],
     "ask": [
       "Edit(/acf-json/**)",
       "Edit(/functions.php)",
-      "Bash(git commit *)",
       "Bash(git checkout *)",
       "Bash(git switch *)",
       "Bash(git reset *)",
@@ -23,7 +25,8 @@
       "Bash(rm *)"
     ],
     "deny": [
-      "Bash(git push *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
       "Read(//**/wp-config.php)"
     ]
   }
