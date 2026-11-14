@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(php -l *)"
+    ],
+    "ask": [
+      "Edit(/acf-json/**)",
+      "Edit(/functions.php)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "Bash(git reset *)",
+      "Bash(git restore *)",
+      "Bash(git clean *)",
+      "Bash(git rebase *)",
+      "Bash(git merge *)",
+      "Bash(wp *)",
+      "Bash(mysql *)",
+      "Bash(rm *)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Read(//**/wp-config.php)"
+    ]
+  }
+}
