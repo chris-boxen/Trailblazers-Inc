@@ -41,8 +41,10 @@ Cross Country PR/SR badge display to 5K only in
 - 2025 XC enrollment corrected to 118 athletes (26 erroneous posts removed).
 - **Shadow key migration complete on both local and production.** Verified
   against the production database 2026-07-19 — see "Environment Status" below.
-- `tribe/events/single-event.php` and `tribe/events/v2/default-template.php` added —
-  TEC meet results view. Appends results section after TEC's native event output.
+- `tribe-events/single-event.php` (TEC classic override, page controller) and
+  `tribe-events/tb-meet-results.php` (results section, loaded for athletic-meet
+  events only). Replaced the earlier `tribe/events/` + `v2/default-template.php`
+  approach on 2026-05-13.
 - `single-athlete.php` updated — Heat column and data-heat attribute added to results list.
 - `single-athletic_event.php` refactored — base classes, ul/li lists, flat results list
   (season → meet grouping removed), heat added, grade + gender data attributes added.
@@ -54,7 +56,7 @@ Cross Country PR/SR badge display to 5K only in
   IIFE wrap added.
 - `assets/css/isotope.css` updated — all ID selectors converted to classes
   matching new tb.js conventions.
-- `tribe/events/single-event.php` refactored — results flattened from
+- `tribe-events/tb-meet-results.php` refactored — results flattened from
   event → heat → results to event → results; per-event Isotope instances;
   per-event heat filter (omitted when no heats); sort buttons: Place, Time,
   Name; data-last-name and data-gender added to rows.
@@ -196,8 +198,8 @@ The following have been successfully imported:
 - ⚠️ "Use Stripe's Payment Element" must be unchecked on RF field 57; Payment
   Element flow throws 500 due to known GF Stripe + GPPA interaction
   (Gravity Wiz ticket filed)
-- ⚠️ `gform_field_value_tb_user_email` filter is **missing** — Form 16 (athlete
-  physicals) hidden field 5 needs it. See NEXT-STEPS.md Known Bugs.
+- ✅ `gform_field_value_tb_user_email` — populates Form 16 (athlete physicals)
+  hidden field 5. GF-side parameter name still to verify; see NEXT-STEPS.md.
 
 ### End-to-end test status
 - ✅ Test 3 (New Family, Check/Cash) — 2026-05-01 — all CPT writes verified:

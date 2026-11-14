@@ -193,10 +193,9 @@ Templates to build or refactor. Work through these in any order.
 - [x] `single-athletic_event.php` — apply base classes; update queries
 - [ ] `taxonomy-sport.php` — apply base classes; update queries for TEC
 - [x] `archive-athlete.php` — refactor tables to ul/li list system
-- [ ] `archive-athletic_meet.php` — refactor tables to ul/li list system
-      (or confirm archived)
+- [x] `archive-athletic_meet.php` — confirmed archived in `_archived-templates/`
 - [ ] `archive-athletic_record.php` — refactor tables to ul/li list system
-- [x] `tribe/events/single-event.php` — TEC meet results view, heat grouping
+- [x] `tribe-events/single-event.php` + `tribe-events/tb-meet-results.php` — TEC meet results view, heat grouping
       + filter, grade column via bulk enrollment query
 
 ---
@@ -235,11 +234,10 @@ Templates to build or refactor. Work through these in any order.
 - [ ] **TEC PHP 8.x warning** — `Undefined array key "is-widget"` in
       `Tribe_Events.php`. Non-fatal compatibility bug; updating the plugin is
       the preferred fix.
-- [ ] **Missing `gform_field_value_tb_user_email` filter** — Form 16 (athlete
-      physicals) hidden field 5 should capture the current user's email. Add the
-      filter to `inc/gravity-helpers.php` Section 6, after `tb_active_season_id`
-      and before the `gform_pre_render` athlete dropdown filter. Verify field 5's
-      Parameter Name is exactly `tb_user_email` in the GF editor.
+- [ ] **Verify Form 16 email capture.** The `gform_field_value_tb_user_email`
+      filter exists in `inc/gravity-helpers.php` Section 6. Confirm field 5's
+      Parameter Name is exactly `tb_user_email` in the GF editor and that a test
+      submission records the user's email.
 
 ---
 
@@ -260,6 +258,6 @@ Templates to build or refactor. Work through these in any order.
 - [ ] Decide whether TEC `tribe_events_cat` needs sport sub-categories
 - [ ] Additional Singlets (Returning) — future: derive from nested form entries
 - [ ] Revisit payment abstraction if workflow becomes more complex
-- [ ] Revisit theme folder naming (space in folder name)
+- [x] Theme folder renamed to `trailblazers-2026`
 - [ ] Add `template-parts/` structure when templates grow complex enough
 - [ ] Consider proper single-site email customization

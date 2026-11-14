@@ -16,11 +16,11 @@ All CPT-specific templates are built as PHP files.
 | `single-athletic_event.php` | PHP | ✅ Built | Header with linked sport, records, results (Season → Meet) |
 | `taxonomy-sport.php` | PHP | ✅ Built | Sport header, seasons, coaches, athletes table with filtering attributes |
 | `archive-athlete.php` | PHP | ✅ Built | All athletes, sortable/filterable list, data attributes |
-| `archive-athletic_meet.php` | PHP | ✅ Built | All meets, sortable/filterable list, data attributes |
+| `archive-athletic_meet.php` | PHP | Archived | Moved to `_archived-templates/` with the `athletic_meet` CPT retirement |
 | `archive-athletic_record.php` | PHP | ✅ Built | Sport → Event → Records, data attributes including data-is-current |
 | `archive-athletic_season.php` | PHP | ✅ Built | All seasons, ul/li list, data-sport / data-status / data-year attributes, sorted start_date DESC |
-| `tribe/events/single-event.php` | PHP | ✅ Built | Meet results section, appended after TEC native output via default-template.php override. Results grouped by event → heat. Columns: Athlete, Grade, Heat, Result, Place. |
-| `tribe/events/v2/default-template.php` | PHP | ✅ Built | TEC outer template override. Renders TEC natively for all events; appends single-event.php for athletic-meet category only. |
+| `tribe-events/single-event.php` | PHP | ✅ Built | TEC classic single-event override and page controller. Loads `tb-meet-results.php` for athletic-meet events; footer nav placed after results; related events removed. |
+| `tribe-events/tb-meet-results.php` | PHP | ✅ Built | Meet results section (not a TEC override). Flat event → results list, per-event Isotope instance and heat filter, sort by Place / Time / Name. Columns: Athlete, Grade, Heat, Result, Place. |
 
 ## Likely no public template
 - Family
@@ -87,7 +87,7 @@ Attribute values are always lowercase slugs. Space-separated values used for mul
 | `single-athletic_season.php` meets | `data-date`, `data-results` |
 | `single-athletic_season.php` athletes | `data-last-name`, `data-gender`, `data-grade`, `data-experience`, `data-pr` *(XC only)*, `data-sr` *(XC only)* |
 | `single-athlete.php` result rows | `data-meet-id`, `data-meet-date`, `data-event`, `data-heat`, `data-result-seconds`, `data-place` |
-| `tribe/events/single-event.php` result rows | `data-place`, `data-result-seconds`, `data-athlete-id`, `data-heat`, `data-grade` |
+| `tribe-events/tb-meet-results.php` result rows | `data-place`, `data-result-seconds`, `data-athlete-id`, `data-heat`, `data-grade` |
 | `single-athletic_event.php` result rows | `data-meet`, `data-date`, `data-year`, `data-last-name`, `data-grade`, `data-gender`, `data-heat`, `data-result-seconds` |
 
 ## Template-parts direction

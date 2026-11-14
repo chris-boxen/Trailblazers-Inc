@@ -130,7 +130,7 @@ for historical continuity.
 Fields:
 - `season` — Post Object → `athletic_season`
 - `results_status` — Select (Future / Pending / Available). Gates per-meet results
-  display in `tribe/events/single-event.php`.
+  display in `tribe-events/tb-meet-results.php`.
 
 ---
 

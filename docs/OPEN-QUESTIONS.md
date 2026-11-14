@@ -10,15 +10,9 @@ fields: `result_time_seconds`, `result_distance_meters`, `result_height_meters`,
 ---
 
 ## 2. Theme folder naming
-### Question
-Should the theme folder be renamed from `Trailblazers 2026` to a slug-style folder
-name like `trailblazers-2026`?
-
-### Why it matters
-Cleaner terminal/Git workflows and fewer path quirks.
-
-### Current lean
-Probably yes, but not urgent.
+### Status: RESOLVED
+### Decision
+Folder renamed from `Trailblazers 2026` to `trailblazers-2026`.
 
 ---
 
@@ -64,7 +58,7 @@ All CPT templates are PHP files. Divi Theme Builder is not used for any CPT temp
 - `taxonomy-sport.php` → PHP (needs query update)
 - `archive-athlete.php` → PHP
 - `archive-athletic_record.php` → PHP (needs query update)
-- `tribe/events/single-event.php` → PHP TEC theme override (to build)
+- `tribe-events/single-event.php` → PHP TEC theme override (loads `tb-meet-results.php`)
 - `single-athletic_meet.php` → **ARCHIVED** (`_archived-templates/`)
 - `archive-athletic_meet.php` → **ARCHIVED** (`_archived-templates/`)
 
@@ -102,7 +96,7 @@ results-bearing records.
 - `athletic_result.meet` now points to `tribe_events`.
 - TEC's native archive (`/event/`) is redirected to a custom query page via
   `template_redirect` hook.
-- Single meet display is a TEC theme override at `tribe/events/single-event.php`.
+- Single meet display is a TEC theme override at `tribe-events/single-event.php`.
 - **Naming rule:** Always say "Athletic Event" (the definition CPT) vs. "TEC Event"
   or "Meet Event" (the `tribe_events` instance). Never just "event."
 
