@@ -224,8 +224,9 @@ Identical in structure to New Family Page 4.
 | **— Eligibility — Sibling Runner —** | Section | | | Conditional: Participation Type = Sibling Runner |
 | Parent Supervision Acknowledgment | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Sibling Runner. |
 | Policy Compliance (Sibling Runner) | Checkbox | `enrollment` → `eligibility_confirmed` | user | Required if Sibling Runner. |
-| **— Uniform —** | Section | | | |
-| Requesting New Singlet? | Radio | `enrollment` → `singlet_requested` | user | **Default: Yes.** New athletes are required to purchase a singlet. |
+| *(Singlet Enabled)* | Hidden (Field 23 on production Form 11) | *(conditional logic only)* | hook | Parameter `tb_singlet_enabled`. `1` or `0` from the active season's `reg_singlet_enabled` toggle (`inc/gravity-helpers.php` Section 5). |
+| **— Uniform —** | Section | | | Conditional: **Show if Singlet Enabled = 1.** Hidden section → no singlet fields validated or saved → hook writes `singlet_requested = No`, `singlet_status = Not Needed`. |
+| Requesting New Singlet? | Radio | `enrollment` → `singlet_requested` | user | **Default: Yes.** New athletes are required to purchase a singlet when the season offers one. |
 | Singlet Sizing Group | Select | `enrollment` → `singlet_sizing_group` | user | Conditional: visible if Singlet Requested = Yes. |
 | Singlet Size | Select | `enrollment` → `singlet_size` | user | Conditional: visible if Singlet Requested = Yes. |
 
@@ -260,7 +261,8 @@ Field 1 (Family Post ID) is a hidden GPPA anchor that self-resolves via `family 
 | **— Eligibility — Sibling Runner —** | Section | | | Conditional: Participation Type = Sibling Runner |
 | Parent Supervision Acknowledgment | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
 | Policy Compliance (Sibling Runner) | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
-| **— Uniform —** | Section | | | |
+| *(Singlet Enabled)* | Hidden (Field 24 on production Form 14) | *(conditional logic only)* | hook | Parameter `tb_singlet_enabled`. Same filter and behavior as Register New Athlete. |
+| **— Uniform —** | Section | | | Conditional: **Show if Singlet Enabled = 1.** |
 | Requesting New Singlet? | Radio | `enrollment` → `singlet_requested` | user | **Default: No.** Returning athletes already have a singlet. Yes only if requesting a replacement. |
 | Singlet Sizing Group | Select | `enrollment` → `singlet_sizing_group` | user | Conditional: visible if Singlet Requested = Yes. |
 | Singlet Size | Select | `enrollment` → `singlet_size` | user | Conditional: visible if Singlet Requested = Yes. |
@@ -342,6 +344,8 @@ during these evaluations may be used for research purposes.</p>
 ---
 
 ## Open Items
+
+- [ ] **Singlet charges on per-season parent forms:** the nested-form toggle hides the singlet fields but does not change parent form totals. For any season with `reg_singlet_enabled` off, remove the singlet count/subtotal fields and the `* 35` term from Registration Total on that season's duplicated parent forms.
 
 - [ ] **Stripe confirmation hook:** Confirm which hook updates `payment_status` to `Paid` — likely `gform_stripe_fulfillment` or `gform_stripe_after_payment_intent_succeeded`. Uncomment stub in `inc/gravity-helpers.php` once Stripe is connected on live domain.
 - [ ] **Handbook URL:** Active season post `handbook` field is a placeholder. Update before opening registration.

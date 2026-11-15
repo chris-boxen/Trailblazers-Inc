@@ -148,6 +148,23 @@ GROUP BY meta_key, meta_value;
 
 ---
 
+## Active — 2027 Track & Field Registration
+
+Singlet toggle built 2026-11-14 (see CHANGELOG). Remaining:
+
+- [ ] Turn `reg_singlet_enabled` off on the 2027 T&F season (production) and
+      confirm it is the active season in Registration Settings
+- [ ] Remove singlet charges from the 2027 T&F parent forms: Registration
+      Total formulas, singlet count/subtotal fields, Additional Singlets
+      (Returning), and the "$35/singlet" fee text
+- [ ] Test on production: Uniform section hidden in both nested forms; total
+      has no singlet charge; test Enrollment shows `Not Needed` (delete after)
+- [ ] Spot-check an XC-season form still shows the Uniform section
+- [ ] Local: ACF → Field Groups → Sync Athletic Season Fields; add the
+      `tb_singlet_enabled` hidden field + Uniform conditional to local nested forms
+
+---
+
 ## Active — 2026 XC Results Import
 
 CSV columns (time-only; no numeric measurement columns needed for XC):

@@ -109,6 +109,13 @@ Attached to `athletic_season` CPT.
 Notable fields:
 - `handbook` — Link field. URL used by `gform_field_value` hook to populate the
   handbook URL hidden field on registration forms.
+- `reg_singlet_enabled` — True/False (`field_6af90d6f645ea`), default on, top
+  level. Controls whether the Uniform (singlet) section appears in both athlete
+  nested forms, via `gform_field_value_tb_singlet_enabled`. No saved value
+  counts as on.
+- `coach_roster` repeater — `coach`, `coach_role`, `override_bio`,
+  `bio_override`, `override_image`. `coach_featured_image` was dropped
+  2026-11-14 when production's copy of this group was adopted.
 - `customize_data` group — contains per-season feature flags:
   - `calendar_show_meets` — True/False. Controls public meet calendar surfacing.
   - `calendar_show_practices` — True/False. Controls practice calendar surfacing.

@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## 2026-11-14
+
+### Per-season singlet toggle for registration
+
+**Problem:** The athlete nested forms assumed every season sells singlets
+through registration. For 2027 Track & Field the coaches are handling singlets
+through a different channel. The nested forms are permanent and shared across
+seasons, so the singlet couldn't just be deleted from them.
+
+**Change:**
+- ACF: `reg_singlet_enabled` (True/False, default on) added to Athletic Season.
+  Created on production; JSON pulled into git.
+- `inc/gravity-helpers.php` Section 5: `gform_field_value_tb_singlet_enabled`
+  returns `1`/`0` from the active season's toggle. Unsaved counts as `1`, so
+  existing seasons behave as before.
+- GF (production): hidden field `tb_singlet_enabled` added to Register New
+  Athlete (Form 11, field 23) and Register Returning Athlete (Form 14,
+  field 24). Each Uniform section shows only when the value is `1`.
+- No handler change: a hidden Uniform section saves nothing, so Enrollments get
+  `singlet_requested = No` and `singlet_status = Not Needed`.
+
+**Side effect, by choice:** production's copy of `group_tb_athletic_season`
+never received 243cab8 (2026-05-02). Adopting it dropped the coach roster's
+`coach_featured_image` sub-field and the `bio_override` conditional logic. No
+template used either.
+
+**Deploy note:** the GF hidden field went live before the filter, which briefly
+hid the Uniform section on production for every season until the theme was
+deployed.
+
 ## 2026-08-29
 
 ### 5K-only PR/SR badge scoping — season roster, meet results, athlete profile

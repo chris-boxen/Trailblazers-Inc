@@ -193,6 +193,9 @@ The following have been successfully imported:
   CC failure guard; season/user ID fallbacks
 - ✅ `gform_field_value_tb_handbook_url` — populates hidden handbook URL
   field on Page 3 of both registration forms from active season post
+- ⚠️ `gform_field_value_tb_singlet_enabled` — shows/hides the Uniform section
+  in both athlete nested forms from the active season's `reg_singlet_enabled`.
+  Deployed to production 2026-11-14; production test pending (NEXT-STEPS.md).
 - ✅ RF uses Experimental GF Elements handler — PaymentIntent created via AJAX
   after entry creation; webhook required for payment confirmation
 - ⚠️ "Use Stripe's Payment Element" must be unchecked on RF field 57; Payment
