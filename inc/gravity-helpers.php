@@ -705,6 +705,23 @@ add_filter( 'gform_field_value_tb_handbook_url', function() {
     return ! empty( $handbook['url'] ) ? $handbook['url'] : '';
 } );
 
+/**
+ * Populate the hidden "Singlet Enabled" field on both athlete nested forms
+ * (Register New Athlete, Register Returning Athlete).
+ * Parameter name on the GF hidden field: tb_singlet_enabled
+ *
+ * The Uniform section in each nested form shows only when this field is 1.
+ * Driven by the active season's 'reg_singlet_enabled' toggle. A season with
+ * no saved value counts as enabled, so seasons created before the toggle
+ * keep offering the singlet.
+ */
+add_filter( 'gform_field_value_tb_singlet_enabled', function() {
+    $season_id = (int) get_option( 'tb_active_season_id' );
+    if ( ! $season_id ) return '1';
+    $enabled = get_post_meta( $season_id, 'reg_singlet_enabled', true );
+    return ( $enabled === '' || $enabled === '1' ) ? '1' : '0';
+} );
+
 
 // =============================================================================
 // SECTION 6 — PHYSICALS POPULATION
