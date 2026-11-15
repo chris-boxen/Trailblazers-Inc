@@ -168,6 +168,27 @@
             "allow_in_bindings": 1
         },
         {
+            "key": "field_6af90d6f645ea",
+            "label": "Offer singlet in registration",
+            "name": "reg_singlet_enabled",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 1,
+            "allow_in_bindings": 0,
+            "ui_on_text": "",
+            "ui_off_text": "",
+            "ui": 1
+        },
+        {
             "key": "field_69c97a933ea6a",
             "label": "Customize Season Data",
             "name": "customize_data",
@@ -421,22 +442,13 @@
                     "type": "wysiwyg",
                     "instructions": "",
                     "required": 0,
-                    "conditional_logic": [
-                        [
-                            {
-                                "field": "field_tb_coach_roster_override_bio",
-                                "operator": "==",
-                                "value": "1"
-                            }
-                        ]
-                    ],
+                    "conditional_logic": 0,
                     "wrapper": {
                         "width": "",
                         "class": "",
                         "id": ""
                     },
                     "default_value": "",
-                    "allow_in_bindings": 1,
                     "tabs": "all",
                     "toolbar": "full",
                     "media_upload": 1,
@@ -463,32 +475,6 @@
                     "ui": 1,
                     "ui_on_text": "Yes",
                     "ui_off_text": "No",
-                    "parent_repeater": "field_tb_coach_roster"
-                },
-                {
-                    "key": "field_tb_coach_roster_coach_featured_image",
-                    "label": "Featured Image",
-                    "name": "coach_featured_image",
-                    "aria-label": "",
-                    "type": "image",
-                    "instructions": "",
-                    "required": 0,
-                    "conditional_logic": 0,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "return_format": "id",
-                    "library": "all",
-                    "min_width": "",
-                    "min_height": "",
-                    "min_size": "",
-                    "max_width": "",
-                    "max_height": "",
-                    "max_size": "",
-                    "mime_types": "",
-                    "preview_size": "medium",
                     "parent_repeater": "field_tb_coach_roster"
                 }
             ]
@@ -545,5 +531,5 @@
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1777756140
+    "modified": 1794707031
 }
