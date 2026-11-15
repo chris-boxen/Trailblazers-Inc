@@ -1058,3 +1058,24 @@ function tb_handle_physicals( $entry, $form ) {
         update_field( 'field_69c9e3f08452e', $status_group, $enrollment_id );
     }
 }
+
+
+// =============================================================================
+// SECTION 8 — NESTED FORM MODAL
+// =============================================================================
+
+/**
+ * Turn off the GP Nested Forms sticky modal footer for all nested forms.
+ *
+ * With the footer pinned, parents clicked Add/Save without scrolling and
+ * missed fields further down the nested form (required fields threw an
+ * error; optional ones were silently skipped). Unpinned, the buttons sit
+ * after the last field, so reaching them means scrolling past every field.
+ *
+ * modalStickyFooter is a documented GPNF script arg (passed to the modal's
+ * stickyFooter option); no custom CSS involved.
+ */
+add_filter( 'gpnf_init_script_args', function( $args ) {
+    $args['modalStickyFooter'] = false;
+    return $args;
+} );
