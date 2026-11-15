@@ -706,21 +706,92 @@ add_filter( 'gform_field_value_tb_handbook_url', function() {
 } );
 
 /**
+ * Read a True/False registration toggle from the active season.
+ *
+ * Returns true when the toggle is on OR has never been saved, so seasons
+ * created before a toggle existed keep their original behavior. Returns true
+ * when no active season is set.
+ *
+ * @param  string $field_name  ACF field name on Athletic Season (top level).
+ * @return bool
+ */
+function tb_active_season_flag( $field_name ) {
+    $season_id = (int) get_option( 'tb_active_season_id' );
+    if ( ! $season_id ) return true;
+    $value = get_post_meta( $season_id, $field_name, true );
+    return $value === '' || $value === '1';
+}
+
+/**
  * Populate the hidden "Singlet Enabled" field on both athlete nested forms
  * (Register New Athlete, Register Returning Athlete).
  * Parameter name on the GF hidden field: tb_singlet_enabled
  *
  * The Uniform section in each nested form shows only when this field is 1.
- * Driven by the active season's 'reg_singlet_enabled' toggle. A season with
- * no saved value counts as enabled, so seasons created before the toggle
- * keep offering the singlet.
+ * Driven by the active season's 'reg_singlet_enabled' toggle.
  */
 add_filter( 'gform_field_value_tb_singlet_enabled', function() {
-    $season_id = (int) get_option( 'tb_active_season_id' );
-    if ( ! $season_id ) return '1';
-    $enabled = get_post_meta( $season_id, 'reg_singlet_enabled', true );
-    return ( $enabled === '' || $enabled === '1' ) ? '1' : '0';
+    return tb_active_season_flag( 'reg_singlet_enabled' ) ? '1' : '0';
 } );
+
+/**
+ * Preselect "Athlete" on Participation Type when the active season does not
+ * allow sibling runners ('reg_sibling_runners_enabled' off).
+ * Parameter name on the Participation Type radio in both athlete nested
+ * forms: tb_participation_type
+ *
+ * When sibling runners are allowed, returns '' so the radio behaves as before.
+ */
+add_filter( 'gform_field_value_tb_participation_type', function() {
+    return tb_active_season_flag( 'reg_sibling_runners_enabled' ) ? '' : 'Athlete';
+} );
+
+/**
+ * Hide Participation Type and lock it to "Athlete" when the active season
+ * does not allow sibling runners.
+ *
+ * The field is found by its parameter name (tb_participation_type), so this
+ * works on both nested forms regardless of environment-specific form IDs.
+ *
+ * Uses GF Visibility: Hidden rather than conditional logic: the value is
+ * still submitted and still drives the Eligibility sections' conditional
+ * logic (Athlete section shows, Sibling Runner section stays hidden).
+ * Conditional logic would blank the value and hide the Athlete eligibility
+ * section with it.
+ *
+ * Runs on render, validation, and submission so the server side matches
+ * what the parent saw.
+ */
+function tb_lock_participation_type( $form ) {
+    if ( tb_active_season_flag( 'reg_sibling_runners_enabled' ) ) {
+        return $form;
+    }
+
+    foreach ( $form['fields'] as $field ) {
+        if ( $field->inputName !== 'tb_participation_type' ) {
+            continue;
+        }
+
+        $athlete_choices = [];
+        foreach ( (array) $field->choices as $choice ) {
+            if ( rgar( $choice, 'value' ) === 'Athlete' ) {
+                $choice['isSelected'] = true;
+                $athlete_choices[]    = $choice;
+            }
+        }
+
+        if ( $athlete_choices ) {
+            $field->choices = $athlete_choices;
+        }
+        $field->defaultValue = 'Athlete';
+        $field->visibility   = 'hidden';
+    }
+
+    return $form;
+}
+add_filter( 'gform_pre_render',            'tb_lock_participation_type' );
+add_filter( 'gform_pre_validation',        'tb_lock_participation_type' );
+add_filter( 'gform_pre_submission_filter', 'tb_lock_participation_type' );
 
 
 // =============================================================================

@@ -189,6 +189,27 @@
             "ui": 1
         },
         {
+            "key": "field_tb_reg_sibling_runners_enabled",
+            "label": "Allow sibling runners",
+            "name": "reg_sibling_runners_enabled",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "When off, Participation Type is hidden in both athlete nested forms and every registrant is submitted as Athlete.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 1,
+            "allow_in_bindings": 0,
+            "ui_on_text": "",
+            "ui_off_text": "",
+            "ui": 1
+        },
+        {
             "key": "field_69c97a933ea6a",
             "label": "Customize Season Data",
             "name": "customize_data",
@@ -531,5 +552,5 @@
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1794707031
+    "modified": 1794766932
 }
