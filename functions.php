@@ -27,7 +27,7 @@ require_once get_stylesheet_directory() . '/inc/admin-widgets.php';
 add_action( 'wp_enqueue_scripts', 'tb_enqueue_assets' );
 function tb_enqueue_assets() {
 
-    $ver = '2.1'; // bump this when you push changes
+    $ver = '2.2'; // bump this when you push changes
 
     wp_enqueue_style(
         'tb-styles',

@@ -394,7 +394,7 @@ a.button:hover { background: #333; }
   --gf-ctrl-label-letter-spacing-primary: 0;
   --gf-ctrl-label-line-height-primary: 1em;
   --gf-label-space-primary: 0.5rem;
-  --gf-label-choice-field-space-primary: 0;
+  --gf-label-choice-field-space-primary: var(--gf-field-choice-gap); /* legend → choices on radio/checkbox fieldsets; matches the gap between choices */
   
   
   /* Description */
