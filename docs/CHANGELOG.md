@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## 2026-11-15
+
+### Per-season sibling runner toggle for registration
+
+**Problem:** Track & Field has no sibling runners, but both athlete nested
+forms ask for Participation Type. Hiding it with conditional logic (as with
+the singlet) would blank its value, and the Athlete eligibility section is
+conditional on Participation Type = Athlete, so it would disappear too.
+
+**Change:**
+- ACF: `reg_sibling_runners_enabled` (True/False, default on) added to Athletic
+  Season. Written directly in JSON, deployed, then synced on production.
+- `inc/gravity-helpers.php` Section 5:
+  - `tb_active_season_flag()` — shared toggle reader (unsaved = on); the
+    singlet filter now uses it.
+  - `gform_field_value_tb_participation_type` preselects Athlete when off.
+  - `tb_lock_participation_type` (pre_render, pre_validation,
+    pre_submission_filter) finds the field by parameter name, removes the
+    Sibling Runner choice, and sets GF Visibility: Hidden. The value still
+    submits, so eligibility logic and the handler are unchanged.
+- GF (production): parameter `tb_participation_type` on the Participation Type
+  radio in both nested forms.
+
+**Verified:** production render with the toggle off on 2027 T&F:
+Participation Type hidden, Athlete eligibility section shows.
+
 ## 2026-11-14
 
 ### Per-season singlet toggle for registration

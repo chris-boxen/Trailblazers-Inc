@@ -150,18 +150,28 @@ GROUP BY meta_key, meta_value;
 
 ## Active — 2027 Track & Field Registration
 
-Singlet toggle built 2026-11-14 (see CHANGELOG). Remaining:
+Singlet toggle built 2026-11-14; sibling runner toggle built 2026-11-15
+(see CHANGELOG).
 
-- [ ] Turn `reg_singlet_enabled` off on the 2027 T&F season (production) and
-      confirm it is the active season in Registration Settings
+- [x] Sibling runner toggle deployed, ACF synced, `tb_participation_type`
+      parameter set on both nested forms, toggle off on 2027 T&F (production)
+- [x] Verified on production form render: Participation Type hidden; Athlete
+      eligibility section shows
+- [ ] Confirm `reg_singlet_enabled` is off on the 2027 T&F season and the
+      Uniform section is hidden in both nested forms
 - [ ] Remove singlet charges from the 2027 T&F parent forms: Registration
       Total formulas, singlet count/subtotal fields, Additional Singlets
       (Returning), and the "$35/singlet" fee text
-- [ ] Test on production: Uniform section hidden in both nested forms; total
-      has no singlet charge; test Enrollment shows `Not Needed` (delete after)
-- [ ] Spot-check an XC-season form still shows the Uniform section
-- [ ] Local: ACF → Field Groups → Sync Athletic Season Fields; add the
-      `tb_singlet_enabled` hidden field + Uniform conditional to local nested forms
+- [ ] Test submission on production (Check/Cash): total has no singlet
+      charge; Enrollment shows `participation_type = Athlete`,
+      `eligibility_confirmed = true`, singlet `Not Needed` (delete after)
+- [ ] Spot-check an XC-season form: both participation choices and the
+      Uniform section still show
+- [ ] Coaches: confirm a former XC sibling runner registering for T&F should
+      become `Athlete` (returning form also updates the Athlete post)
+- [ ] Local: ACF Sync for Athletic Season Fields; on local nested forms add
+      the `tb_singlet_enabled` hidden field + Uniform conditional, and the
+      `tb_participation_type` parameter on Participation Type
 
 ---
 

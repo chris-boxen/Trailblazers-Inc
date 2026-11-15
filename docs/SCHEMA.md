@@ -113,6 +113,10 @@ Notable fields:
   level. Controls whether the Uniform (singlet) section appears in both athlete
   nested forms, via `gform_field_value_tb_singlet_enabled`. No saved value
   counts as on.
+- `reg_sibling_runners_enabled` — True/False
+  (`field_tb_reg_sibling_runners_enabled`), default on, top level. When off,
+  Participation Type is hidden and locked to Athlete in both athlete nested
+  forms (`tb_lock_participation_type`). No saved value counts as on.
 - `coach_roster` repeater — `coach`, `coach_role`, `override_bio`,
   `bio_override`, `override_image`. `coach_featured_image` was dropped
   2026-11-14 when production's copy of this group was adopted.

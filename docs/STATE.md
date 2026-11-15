@@ -196,6 +196,13 @@ The following have been successfully imported:
 - ⚠️ `gform_field_value_tb_singlet_enabled` — shows/hides the Uniform section
   in both athlete nested forms from the active season's `reg_singlet_enabled`.
   Deployed to production 2026-11-14; production test pending (NEXT-STEPS.md).
+- ✅ `tb_lock_participation_type` + `gform_field_value_tb_participation_type` —
+  when the active season's `reg_sibling_runners_enabled` is off, Participation
+  Type is preselected as Athlete, set to GF Visibility: Hidden, and limited to
+  the Athlete choice. Render verified on production 2026-11-15 (field hidden,
+  Athlete eligibility shows); test submission pending.
+- `tb_active_season_flag()` — shared reader for season registration toggles;
+  unsaved counts as on.
 - ✅ RF uses Experimental GF Elements handler — PaymentIntent created via AJAX
   after entry creation; webhook required for payment confirmation
 - ⚠️ "Use Stripe's Payment Element" must be unchecked on RF field 57; Payment

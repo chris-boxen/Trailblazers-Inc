@@ -207,7 +207,7 @@ Identical in structure to New Family Page 4.
 
 | Field | GF Type | Maps to | How set | Notes |
 |---|---|---|---|---|
-| Participation Type | Radio | `enrollment` → `participation_type` | user | Athlete / Sibling Runner. Drives all conditional logic. |
+| Participation Type | Radio | `enrollment` → `participation_type` | user | Athlete / Sibling Runner. Drives all conditional logic. Parameter `tb_participation_type`: when the active season's `reg_sibling_runners_enabled` is off, `tb_lock_participation_type` preselects Athlete, removes Sibling Runner, and sets Visibility: Hidden. Do **not** hide this field with conditional logic; that blanks the value and hides the Athlete eligibility section. |
 | **— Identity —** | Section | | | |
 | First Name | Text | `athlete` → `first_name` | user | Required. |
 | Last Name | Text | `athlete` → `last_name` | user | Required. |
@@ -251,7 +251,7 @@ Field 1 (Family Post ID) is a hidden GPPA anchor that self-resolves via `family 
 | Gender | Radio | *(display only)* | **read-only** | GPPA values → `meta_gender`. |
 | Date of Birth | Date | *(display only)* | **read-only** | GPPA values → `meta_dob`. |
 | Grade | Select | `enrollment` → `grade` | user | Required. Entered fresh each season. 1st–12th. |
-| Participation Type | Radio | `enrollment` → `participation_type` | user | Athlete / Sibling Runner. May change season to season (sibling runner can become full athlete). |
+| Participation Type | Radio | `enrollment` → `participation_type` | user | Athlete / Sibling Runner. May change season to season (sibling runner can become full athlete). Parameter `tb_participation_type`; same sibling-runner toggle behavior as Register New Athlete. The handler also writes this value to the Athlete post. |
 | **— Eligibility — Athlete —** | Section | | | Conditional: Participation Type = Athlete |
 | Residency | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
 | Homeschooled | Checkbox | `enrollment` → `eligibility_confirmed` | user | Re-confirmed each season. |
