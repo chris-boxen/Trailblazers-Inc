@@ -8,8 +8,8 @@
  *
  * Registration form additions:
  *   - First Name and Last Name fields added to the WP registration form
- *   - Username auto-generated as first initial + last name (lowercase)
- *     e.g. "John Smith" → "jsmith", with numeric suffix for duplicates
+ *   - Username auto-generated as first + last name (lowercase)
+ *     e.g. "John Smith" → "johnsmith", with numeric suffix for duplicates
  *   - First/last name saved to WP user meta on successful registration
  */
 
@@ -134,13 +134,22 @@ add_filter( 'registration_errors', function( $errors, $sanitized_user_login, $us
 		$errors->add( 'last_name_error', __( 'Please enter your last name.' ) );
 	}
 
+	// The username is generated from first + last name, and pre_user_login
+	// (section 6) adds a numeric suffix when it's taken. Core checks for
+	// duplicates before that filter runs, so drop its error and let the
+	// suffix handle it.
+	if ( $first && $last ) {
+		$errors->remove( 'username_exists' );
+	}
+
 	return $errors;
 }, 10, 3 );
 
 
 // ---------------------------------------------------------------------------
-// 6. Generate username from first initial + last name before registration
-//    Runs at priority 5 so it fires before WP checks for duplicate usernames
+// 6. Generate username from first + last name before registration
+//    Fires inside wp_insert_user(), after core's duplicate check in
+//    register_new_user(); section 5 removes that check's error
 // ---------------------------------------------------------------------------
 
 add_filter( 'pre_user_login', function( $user_login ) {
@@ -149,7 +158,7 @@ add_filter( 'pre_user_login', function( $user_login ) {
 
 	if ( empty( $first ) || empty( $last ) ) return $user_login;
 
-	// Build base: first initial + last name, lowercase, no spaces/special chars
+	// Build base: first + last name, lowercase, no spaces/special chars
 	$base     = strtolower( $first . $last );
 	$base     = preg_replace( '/[^a-z0-9]/', '', $base );
 	$username = $base;
