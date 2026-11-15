@@ -244,6 +244,22 @@ function tb_create_athlete_post( $nested_entry, $family_id ) {
 
 
 /**
+ * Display name for an Athletic Season, used in Enrollment and Application
+ * post titles. Prefers the season_title field, falls back to the post title
+ * (same pattern as inc/admin-widgets.php).
+ *
+ * @param  int    $season_id  Athletic Season post ID.
+ * @return string             Season name, or '' when no season.
+ */
+function tb_season_label( $season_id ) {
+    $season_id = (int) $season_id;
+    if ( ! $season_id ) return '';
+    $label = get_field( 'season_title', $season_id );
+    return $label ?: get_the_title( $season_id );
+}
+
+
+/**
  * Create an Enrollment post linking an athlete to the current season registration.
  *
  * @param  array $args {
@@ -280,7 +296,7 @@ function tb_create_enrollment_post( $args ) {
      $athlete_title = $athlete_post ? $athlete_post->post_title : 'Athlete ' . $args['athlete_id'];
  
      $enrollment_id = wp_insert_post( [
-         'post_title'  => "$athlete_title — 2026 XC",
+         'post_title'  => trim( "$athlete_title — " . tb_season_label( $args['season_id'] ), ' —' ),
          'post_type'   => 'enrollment',
          'post_status' => 'publish',
      ] );
@@ -445,7 +461,7 @@ function tb_handle_new_family( $entry, $form ) {
     // 2. Create Application post
     // -------------------------------------------------------------------------
     $application_id = wp_insert_post( [
-        'post_title'  => $family_name . ' — 2026 XC Registration',
+        'post_title'  => $family_name . ' — ' . trim( tb_season_label( $season_id ) . ' Registration' ),
         'post_type'   => 'application',
         'post_status' => 'publish',
     ] );
@@ -591,7 +607,7 @@ function tb_handle_returning_family( $entry, $form ) {
      $family_title = $family_post ? $family_post->post_title : 'Family ' . $family_id;
  
      $application_id = wp_insert_post( [
-         'post_title'  => $family_title . ' — 2026 XC Registration',
+         'post_title'  => $family_title . ' — ' . trim( tb_season_label( $season_id ) . ' Registration' ),
          'post_type'   => 'application',
          'post_status' => 'publish',
      ] );
