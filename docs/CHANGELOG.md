@@ -2,6 +2,25 @@
 
 ## 2026-11-15
 
+### Duplicate names get a numeric username suffix
+
+**Problem:** Account signup (`wp-login.php?action=register`) builds the
+username from first + last name. A second "Jen Anderson" was rejected with
+"This username is already registered." The `pre_user_login` filter in
+`inc/login.php` already adds a numeric suffix, but core's
+`register_new_user()` checks for a duplicate username before
+`wp_create_user()` runs that filter, so the suffix never ran.
+
+**Change:** `inc/login.php` Section 5 (`registration_errors`) removes core's
+`username_exists` error once first and last name are present, letting the
+Section 6 suffix loop produce `jenanderson2`, `jenanderson3`, etc. Duplicate
+email checks are unchanged. Comments that described the username as first
+initial + last name were corrected; the code has always used the full first
+name. (ddfa81a)
+
+**Verified:** production signup for a second Jen Anderson created
+`jenanderson2`.
+
 ### Per-season sibling runner toggle for registration
 
 **Problem:** Track & Field has no sibling runners, but both athlete nested
